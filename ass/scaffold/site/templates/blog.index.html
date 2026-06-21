@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+
+{% block title %}Blog — {{ site.title }}{% endblock %}
+
+{% block content %}
+  <h1>Blog</h1>
+  {# Listing templates see summary fields only — no body_html. #}
+  <ul class="post-list">
+    {% for item in items %}
+    <li>
+      <a href="{{ item.url }}">{{ item.title }}</a>
+      {% if item.date %}<time>{{ item.date }}</time>{% endif %}
+      {% if item.summary %}<p>{{ item.summary }}</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+
+  {% if page.total_pages > 1 %}
+  <nav class="pagination">
+    {% if page.has_prev %}<a href="{{ page.prev_url }}">&larr; Newer</a>{% endif %}
+    <span>Page {{ page.number }} of {{ page.total_pages }}</span>
+    {% if page.has_next %}<a href="{{ page.next_url }}">Older &rarr;</a>{% endif %}
+  </nav>
+  {% endif %}
+{% endblock %}

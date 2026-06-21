@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block title %}{{ term.name }} — {{ site.title }}{% endblock %}
+
+{% block content %}
+  <h1>{{ taxonomy }}: {{ term.name }}</h1>
+  <p>{{ term.count }} item(s).</p>
+  <ul class="post-list">
+    {% for item in items %}
+    <li>
+      <a href="{{ item.url }}">{{ item.title }}</a>
+      {% if item.date %}<time>{{ item.date }}</time>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

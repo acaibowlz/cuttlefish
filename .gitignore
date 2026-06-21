@@ -1,0 +1,17 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+*.egg-info/
+dist/
+build/
+
+# uv
+# (uv.lock IS committed)
+
+# ass build artifacts (in generated sites)
+public/
+.ass/
+
+# pytest
+.pytest_cache/

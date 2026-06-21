@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <section class="hero">
+    <h1>{{ site.title }}</h1>
+    <p>Welcome. This landing page is configured in <code>config.toml</code> under <code>[home]</code>.</p>
+  </section>
+
+  <section class="recent">
+    <h2>Recent posts</h2>
+    <ul class="post-list">
+      {% for item in recent %}
+      <li>
+        <a href="{{ item.url }}">{{ item.title }}</a>
+        {% if item.date %}<time>{{ item.date }}</time>{% endif %}
+        {% if item.summary %}<p>{{ item.summary }}</p>{% endif %}
+      </li>
+      {% endfor %}
+    </ul>
+  </section>
+{% endblock %}

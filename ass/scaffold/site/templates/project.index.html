@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block title %}Projects — {{ site.title }}{% endblock %}
+
+{% block content %}
+  <h1>Projects</h1>
+  <ul class="project-list">
+    {% for item in items %}
+    <li>
+      <a href="{{ item.url }}">{{ item.title }}</a>
+      {% if item.summary %}<p>{{ item.summary }}</p>{% endif %}
+    </li>
+    {% endfor %}
+  </ul>
+{% endblock %}

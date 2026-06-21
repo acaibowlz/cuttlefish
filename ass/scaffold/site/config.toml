@@ -1,0 +1,34 @@
+title = "My ass Site"
+base_url = "https://example.com"
+
+[home]
+template = "home.html"
+recent = { type = "blog", count = 5 }
+
+[content_types.blog]
+template = "blog.html"
+index_template = "blog.index.html"
+permalink = "/blog/{slug}/"
+index_permalink = "/blog/"
+paginate = 10
+sort_by = "date"
+reverse = true
+
+[content_types.project]
+template = "project.html"
+index_template = "project.index.html"
+permalink = "/projects/{slug}/"
+index_permalink = "/projects/"
+sort_by = "title"
+reverse = false
+
+# Standalone pages: no index, no taxonomy. Do NOT add index_template here.
+[content_types.pages]
+template = "page.html"
+permalink = "/{slug}/"
+
+[taxonomies.tags]
+template = "taxonomy.html"
+index_template = "taxonomy.index.html"
+permalink = "/tags/{term}/"
+index_permalink = "/tags/"

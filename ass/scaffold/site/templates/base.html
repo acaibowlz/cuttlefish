@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ site.title }}{% endblock %}</title>
+  <link rel="stylesheet" href="/css/main.css">
+</head>
+<body>
+  <header class="site-header">
+    <a class="site-title" href="/">{{ site.title }}</a>
+    <nav>
+      <a href="/blog/">Blog</a>
+      <a href="/projects/">Projects</a>
+      <a href="/tags/">Tags</a>
+      <a href="/about/">About</a>
+    </nav>
+  </header>
+  <main>
+    {% block content %}{% endblock %}
+  </main>
+  <footer class="site-footer">
+    <p>Built with <a href="https://example.com">ass</a>.</p>
+  </footer>
+</body>
+</html>

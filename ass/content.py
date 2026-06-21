@@ -1,0 +1,247 @@
+"""Discover and parse Markdown content files.
+
+Each content file lives at ``content/<type>/<name>.md`` (or
+``content/pages/<name>.md``) and begins with a TOML front-matter block fenced
+by ``+++`` lines, followed by a Markdown body:
+
+    +++
+    title = "Hello"
+    date = 2026-06-21
+    tags = ["python"]
+    +++
+    # Body in Markdown
+
+Parsing yields :class:`ContentItem` objects with the body already rendered to
+HTML. Aggregates (indexes, taxonomy pages, home) receive a restricted
+:class:`ListingItem` view that deliberately omits ``body_html`` — this keeps
+incremental builds correct (a body-only edit cannot affect any listing).
+"""
+
+from __future__ import annotations
+
+import tomllib
+from dataclasses import dataclass, field
+from datetime import date, datetime
+from pathlib import Path
+
+import mistune
+
+from ass.config import SiteConfig
+from ass.permalink import resolve_permalink, slugify
+
+CONTENT_DIR = "content"
+FRONT_MATTER_FENCE = "+++"
+
+#: Front-matter fields exposed to listing templates. Everything an aggregate is
+#: allowed to render lives here; ``body_html`` is intentionally excluded.
+LISTING_FIELDS = ("title", "date", "summary", "slug", "url", "taxonomies", "draft")
+
+_markdown = mistune.create_markdown(
+    escape=False,
+    plugins=["table", "footnotes", "strikethrough", "task_lists", "url"],
+)
+
+
+class ContentError(Exception):
+    """Raised when a content file cannot be parsed."""
+
+
+@dataclass(frozen=True)
+class ListingItem:
+    """Summary-only view of an item, passed to listing/aggregate templates."""
+
+    title: str
+    date: date | None
+    summary: str
+    slug: str
+    url: str
+    taxonomies: dict[str, list[str]]
+    draft: bool
+
+
+@dataclass
+class ContentItem:
+    """A single parsed content file, with its body rendered to HTML."""
+
+    type: str
+    slug: str
+    meta: dict
+    body_html: str
+    taxonomies: dict[str, list[str]]
+    source_rel: str  # path relative to site root, e.g. "content/blog/post.md"
+    url: str
+    output_rel: str  # path relative to public/, e.g. "blog/post/index.html"
+
+    @property
+    def title(self) -> str:
+        return str(self.meta.get("title", self.slug))
+
+    @property
+    def summary(self) -> str:
+        return str(self.meta.get("summary", ""))
+
+    @property
+    def date(self) -> date | None:
+        value = self.meta.get("date")
+        if isinstance(value, datetime):
+            return value.date()
+        if isinstance(value, date):
+            return value
+        return None
+
+    @property
+    def draft(self) -> bool:
+        return bool(self.meta.get("draft", False))
+
+    @property
+    def meta_fingerprint(self) -> str:
+        """Hash of listing-relevant fields only (never the body).
+
+        Used by aggregates to decide whether a listing must be rebuilt: a
+        body-only edit leaves this unchanged, so indexes are correctly skipped.
+        """
+        import json
+
+        from ass.cache import hash_text
+
+        payload = {
+            "title": self.title,
+            "date": self.date.isoformat() if self.date else None,
+            "summary": self.summary,
+            "slug": self.slug,
+            "url": self.url,
+            "taxonomies": {k: sorted(v) for k, v in sorted(self.taxonomies.items())},
+            "draft": self.draft,
+        }
+        return hash_text(json.dumps(payload, sort_keys=True))
+
+    @property
+    def listing(self) -> ListingItem:
+        return ListingItem(
+            title=self.title,
+            date=self.date,
+            summary=self.summary,
+            slug=self.slug,
+            url=self.url,
+            taxonomies=self.taxonomies,
+            draft=self.draft,
+        )
+
+
+def split_front_matter(text: str) -> tuple[dict, str]:
+    """Split ``+++`` TOML front matter from the Markdown body."""
+    stripped = text.lstrip("﻿")  # tolerate a BOM
+    if not stripped.startswith(FRONT_MATTER_FENCE):
+        return {}, text
+    lines = stripped.splitlines(keepends=True)
+    # Find the closing fence after the opening one.
+    closing = None
+    for i in range(1, len(lines)):
+        if lines[i].strip() == FRONT_MATTER_FENCE:
+            closing = i
+            break
+    if closing is None:
+        raise ContentError("Front matter opened with '+++' but never closed.")
+    fm_text = "".join(lines[1:closing])
+    body = "".join(lines[closing + 1:])
+    try:
+        meta = tomllib.loads(fm_text)
+    except tomllib.TOMLDecodeError as exc:
+        raise ContentError(f"Invalid TOML front matter: {exc}") from exc
+    return meta, body
+
+
+def _extract_taxonomies(meta: dict, config: SiteConfig) -> dict[str, list[str]]:
+    """Pull configured-taxonomy terms out of the front matter."""
+    result: dict[str, list[str]] = {}
+    for name in config.taxonomies:
+        value = meta.get(name)
+        if value is None:
+            continue
+        if isinstance(value, str):
+            terms = [value]
+        elif isinstance(value, (list, tuple)):
+            terms = [str(v) for v in value]
+        else:
+            raise ContentError(
+                f"Taxonomy '{name}' must be a string or list of strings, got {type(value).__name__}."
+            )
+        result[name] = [t for t in terms if t]
+    return result
+
+
+def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
+    """Parse a single content file into a :class:`ContentItem`."""
+    text = path.read_text(encoding="utf-8")
+    try:
+        meta, body = split_front_matter(text)
+    except ContentError as exc:
+        raise ContentError(f"{path}: {exc}") from exc
+
+    slug = str(meta.get("slug") or slugify(path.stem))
+    body_html = _markdown(body)
+    taxonomies = _extract_taxonomies(meta, config)
+
+    content_type = config.content_types[type_name]
+    item_date = meta.get("date")
+    url = resolve_permalink(
+        content_type.permalink,
+        date=item_date,
+        slug=slug,
+        type=type_name,
+    )
+    output_rel = url.lstrip("/")
+    if url.endswith("/") or output_rel == "":
+        output_rel = output_rel + "index.html"
+
+    source_rel = _relative_to_root(path, config)
+    return ContentItem(
+        type=type_name,
+        slug=slug,
+        meta=meta,
+        body_html=body_html,
+        taxonomies=taxonomies,
+        source_rel=source_rel,
+        url=url,
+        output_rel=output_rel,
+    )
+
+
+def _relative_to_root(path: Path, config: SiteConfig) -> str:
+    # config.raw doesn't carry the root; callers pass absolute paths under root.
+    # We store a content-relative path that's stable for the manifest.
+    parts = path.parts
+    if CONTENT_DIR in parts:
+        idx = parts.index(CONTENT_DIR)
+        return "/".join(parts[idx:])
+    return path.name
+
+
+def discover(root: Path, config: SiteConfig, *, drafts: bool = False) -> list[ContentItem]:
+    """Find and parse all content files under ``<root>/content``."""
+    content_root = root / CONTENT_DIR
+    items: list[ContentItem] = []
+    if not content_root.is_dir():
+        return items
+
+    for type_name in config.content_types:
+        type_dir = content_root / type_name
+        if not type_dir.is_dir():
+            continue
+        for md in sorted(type_dir.rglob("*.md")):
+            item = parse_item(md, type_name, config)
+            if item.draft and not drafts:
+                continue
+            items.append(item)
+    return items
+
+
+def sort_items(items: list[ContentItem], *, sort_by: str = "date", reverse: bool = True) -> list[ContentItem]:
+    """Return *items* sorted by a front-matter field (missing values last)."""
+    def key(item: ContentItem):
+        if sort_by == "date":
+            return (item.date is not None, item.date or date.min)
+        value = item.meta.get(sort_by)
+        return (value is not None, value if value is not None else "")
+
+    return sorted(items, key=key, reverse=reverse)
