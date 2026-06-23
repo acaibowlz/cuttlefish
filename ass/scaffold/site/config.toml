@@ -5,6 +5,13 @@ base_url = "https://example.com"
 template = "home.html"
 recent = { type = "blog", count = 5 }
 
+# Navigation bar. `labels` and `links` are paired by position and must be the
+# same length. Set `enabled = false` to hide the nav without deleting entries.
+[nav]
+enabled = true
+labels = ["Blog", "Projects", "Tags", "About"]
+links  = ["/blog/", "/projects/", "/tags/", "/about/"]
+
 [content_types.blog]
 template = "blog.html"
 index_template = "blog.index.html"

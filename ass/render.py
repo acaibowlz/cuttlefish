@@ -18,7 +18,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoes
 from ass.config import ContentType, SiteConfig
 from ass.content import ContentItem, ListingItem
 from ass.permalink import output_path
-from ass.taxonomy import TaxonomyData, Term
+from ass.taxonomy import TaxonomyData, Term, term_links
 
 TEMPLATES_DIR = "templates"
 
@@ -85,10 +85,11 @@ class Renderer:
         )
 
     def set_site_context(self) -> None:
-        """Expose a stable ``site`` global (title, base_url, config) to templates."""
+        """Expose a stable ``site`` global (title, base_url, nav, config)."""
         self.env.globals["site"] = SimpleNamespace(
             title=self.config.title,
             base_url=self.config.base_url,
+            nav=self.config.nav,
             config=self.config.raw,
         )
 
@@ -106,7 +107,7 @@ class Renderer:
         """Render a single content page (full body available)."""
         content_type = self.config.content_types[item.type]
         html = self.env.get_template(content_type.template).render(
-            page=item, item=item, type=item.type
+            page=item, item=item, type=item.type, terms=term_links(item, self.config)
         )
         self._write(item.output_rel, html)
         return item.output_rel

@@ -77,3 +77,22 @@ def test_config_order_default_and_validation():
     bad = {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/", "order": "newest"}}}
     with pytest.raises(ConfigError):
         parse_config(bad)
+
+
+def test_nav_pairs_labels_and_links():
+    cfg = parse_config({
+        "nav": {"enabled": True, "labels": ["Blog", "About"], "links": ["/blog/", "/about/"]}
+    })
+    assert cfg.nav.enabled is True
+    assert [(i.label, i.link) for i in cfg.nav.items] == [("Blog", "/blog/"), ("About", "/about/")]
+
+
+def test_nav_length_mismatch_rejected():
+    with pytest.raises(ConfigError):
+        parse_config({"nav": {"labels": ["A", "B"], "links": ["/a/"]}})
+
+
+def test_nav_absent_defaults_disabled():
+    cfg = parse_config({})
+    assert cfg.nav.enabled is False
+    assert cfg.nav.items == ()

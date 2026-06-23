@@ -6,6 +6,13 @@
   <article class="project">
     <h1>{{ page.title }}</h1>
     {% if page.meta.url %}<p><a href="{{ page.meta.url }}">{{ page.meta.url }}</a></p>{% endif %}
+    {% if terms.get('tags') %}
+    <ul class="tags">
+      {% for term in terms['tags'] %}
+      <li><a href="{{ term.url }}">{{ term.name }}</a></li>
+      {% endfor %}
+    </ul>
+    {% endif %}
     <div class="body">{{ page.body_html | safe }}</div>
   </article>
 {% endblock %}

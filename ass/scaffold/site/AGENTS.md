@@ -64,6 +64,19 @@ template = "home.html"
 recent = { type = "blog", count = 5 }   # optional aggregation for the landing page
 ```
 
+### Navigation bar
+
+```toml
+[nav]
+enabled = true                          # set false to hide the nav
+labels = ["Blog", "Projects", "About"]  # display text
+links  = ["/blog/", "/projects/", "/about/"]  # hrefs (paired with labels by position)
+```
+
+`labels` and `links` must have the **same number of entries** (they are paired
+by position). Templates access them via `site.nav.enabled` and `site.nav.items`
+(each item has `.label` and `.link`).
+
 ## Authoring content
 
 Each file starts with a TOML front-matter block fenced by `+++`, then Markdown:
@@ -94,14 +107,14 @@ Usable in any `permalink`/`index_permalink`: `{slug}`, `{type}`, `{year}`,
 
 Templates are Jinja2 and live in `templates/`. `base.html` is the shared layout;
 others `{% extends "base.html" %}`. A global `site` object is available
-everywhere: `site.title`, `site.base_url`, and `site.config` (the raw parsed
-`config.toml`).
+everywhere: `site.title`, `site.base_url`, `site.nav`, and `site.config` (the
+raw parsed `config.toml`).
 
 Variables per template kind:
 
 | Template | Variables |
 |----------|-----------|
-| single content (`blog.html`) | `page` / `item` (full, incl. `page.body_html`), `type` |
+| single content (`blog.html`) | `page` / `item` (full, incl. `page.body_html`), `type`, `terms` |
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
 | taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |
@@ -113,6 +126,11 @@ Variables per template kind:
 > available **only** in single-content and page templates. This keeps
 > incremental builds correct: editing a post's body never forces listings to
 > rebuild.
+
+Single-content templates also receive `terms`: a mapping of taxonomy name to a
+list of `{name, url}` objects, so content can link each term to its term page —
+e.g. `{% for term in terms.get('tags') or [] %}<a href="{{ term.url }}">{{
+term.name }}</a>{% endfor %}`.
 
 Reference static assets by absolute path (e.g. `/css/main.css`); `static/` is
 copied to the site root, so `static/css/main.css` → `/css/main.css`.

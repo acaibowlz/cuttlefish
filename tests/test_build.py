@@ -40,6 +40,14 @@ def test_listing_is_summary_only(site: Path, build):
     assert body_marker not in read(site, "blog/index.html")
 
 
+def test_content_terms_link_to_term_pages(site: Path, build):
+    """A post's tags render as links to their term pages."""
+    build(site)
+    post = read(site, "blog/hello-world/index.html")  # tags = ["meta", "python"]
+    assert '<a href="/tags/meta/">meta</a>' in post
+    assert '<a href="/tags/python/">python</a>' in post
+
+
 def test_pages_have_no_index(site: Path, build):
     build(site)
     # 'pages' is standalone: no /pages/ index is generated.

@@ -14,6 +14,14 @@ from ass.content import ContentItem
 from ass.permalink import resolve_permalink, slugify
 
 
+@dataclass(frozen=True)
+class TermLink:
+    """A term resolved to its page URL, for linking from content templates."""
+
+    name: str
+    url: str
+
+
 @dataclass
 class Term:
     """A single taxonomy term (e.g. tag "python") and the items under it."""
@@ -48,6 +56,31 @@ def _output_rel(url: str) -> str:
     if url.endswith("/") or rel == "":
         rel += "index.html"
     return rel
+
+
+def term_links(item: ContentItem, config: SiteConfig) -> dict[str, list[TermLink]]:
+    """Resolve an item's taxonomy terms to ``{name, url}`` links.
+
+    Lets single-content templates render each term as a link to its term page
+    (e.g. ``/tags/python/``) without hard-coding permalink patterns. The URL is
+    derived purely from the taxonomy's configured permalink, so it matches the
+    page :func:`build_taxonomies` emits for that term.
+    """
+    links: dict[str, list[TermLink]] = {}
+    for tax_name, terms in item.taxonomies.items():
+        taxonomy = config.taxonomies.get(tax_name)
+        if taxonomy is None:
+            continue
+        links[tax_name] = [
+            TermLink(
+                name=term_name,
+                url=resolve_permalink(
+                    taxonomy.permalink, taxonomy=tax_name, term=slugify(term_name)
+                ),
+            )
+            for term_name in terms
+        ]
+    return links
 
 
 def build_taxonomies(items: list[ContentItem], config: SiteConfig) -> dict[str, TaxonomyData]:

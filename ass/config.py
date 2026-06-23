@@ -70,12 +70,29 @@ class HomeConfig:
 
 
 @dataclass(frozen=True)
+class NavItem:
+    """A single navigation entry (label + link), exposed to templates."""
+
+    label: str
+    link: str
+
+
+@dataclass(frozen=True)
+class NavConfig:
+    """Site navigation, paired from the ``labels`` and ``links`` arrays."""
+
+    enabled: bool = False
+    items: tuple[NavItem, ...] = ()
+
+
+@dataclass(frozen=True)
 class SiteConfig:
     """The whole site configuration, parsed from ``config.toml``."""
 
     title: str
     base_url: str
     home: HomeConfig | None
+    nav: NavConfig = field(default_factory=NavConfig)
     content_types: dict[str, ContentType] = field(default_factory=dict)
     taxonomies: dict[str, Taxonomy] = field(default_factory=dict)
     #: Raw config dict, exposed to templates as ``site.config``.
@@ -138,6 +155,23 @@ def _parse_home(data: dict) -> HomeConfig:
     )
 
 
+def _parse_nav(data: dict) -> NavConfig:
+    where = "[nav]"
+    if not isinstance(data, dict):
+        raise ConfigError(f"{where} must be a table.")
+    labels = data.get("labels", [])
+    links = data.get("links", [])
+    if not isinstance(labels, list) or not isinstance(links, list):
+        raise ConfigError(f"{where} 'labels' and 'links' must be arrays of strings.")
+    if len(labels) != len(links):
+        raise ConfigError(
+            f"{where} 'labels' ({len(labels)}) and 'links' ({len(links)}) "
+            "must have the same number of entries."
+        )
+    items = tuple(NavItem(label=str(label), link=str(link)) for label, link in zip(labels, links))
+    return NavConfig(enabled=bool(data.get("enabled", True)), items=items)
+
+
 def parse_config(raw: dict) -> SiteConfig:
     """Validate a raw config mapping into a :class:`SiteConfig`."""
     content_types = {
@@ -149,6 +183,7 @@ def parse_config(raw: dict) -> SiteConfig:
         for name, data in (raw.get("taxonomies") or {}).items()
     }
     home = _parse_home(raw["home"]) if "home" in raw else None
+    nav = _parse_nav(raw["nav"]) if "nav" in raw else NavConfig()
 
     # Cross-checks: taxonomy keys must not collide with reserved/front-matter
     # essentials, and the pages type (if present) must not declare an index.
@@ -163,6 +198,7 @@ def parse_config(raw: dict) -> SiteConfig:
         title=str(raw.get("title", "Untitled Site")),
         base_url=str(raw.get("base_url", "")).rstrip("/"),
         home=home,
+        nav=nav,
         content_types=content_types,
         taxonomies=taxonomies,
         raw=raw,
