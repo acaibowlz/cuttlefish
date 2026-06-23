@@ -152,12 +152,12 @@ def _watch_loop(
         try:
             stats = build_site(root, drafts=drafts, console=Console(quiet=True))
             console.print(
-                f"[green]rebuilt[/green] "
-                f"({stats.content} built, {stats.skipped} skipped, {stats.pruned} pruned)"
+                f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str} "
+                f"[dim]·[/dim] {stats.counts_str}"
             )
             server.broadcast("reload")
         except Exception as exc:  # keep the server alive on build errors
-            console.print(f"[red]build error:[/red] {exc}")
+            console.print(f"[red]✗[/red] Build failed: {exc}")
 
 
 def serve_site(
@@ -184,16 +184,16 @@ def serve_site(
         )
         watcher.start()
 
-    console.print(
-        f"[bold green]Serving[/bold green] {public_dir} at "
-        f"[link]http://127.0.0.1:{port}/[/link]"
-        + ("  (live reload on)" if reload else "")
-    )
-    console.print("Press Ctrl+C to stop.")
+    url = f"http://127.0.0.1:{port}/"
+    console.print(f"  Serving [bold]{PUBLIC_DIR}/[/bold]  →  [link={url}]{url}[/link]")
+    if reload:
+        watched = ", ".join(("content", "templates", STATIC_DIR, CONFIG_FILENAME))
+        console.print(f"  Watching {watched} [dim]·[/dim] live reload on")
+    console.print("  [dim]Press Ctrl+C to stop[/dim]")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
-        console.print("\nStopping…")
+        console.print("\n[dim]Stopped.[/dim]")
     finally:
         stop.set()
         server.shutdown()

@@ -10,11 +10,11 @@ deletions/renames are pruned via the manifest.
 from __future__ import annotations
 
 import shutil
+import time
 from dataclasses import dataclass
 from pathlib import Path
 
 from rich.console import Console
-from rich.table import Table
 
 from ass.cache import (
     Manifest,
@@ -46,6 +46,7 @@ class BuildStats:
     static: int = 0
     pruned: int = 0
     mode: str = "full"
+    elapsed_ms: float = 0.0
 
     def count_rendered(self, key: str) -> None:
         if key.startswith("index:"):
@@ -57,20 +58,40 @@ class BuildStats:
         elif key == "home":
             self.home = 1
 
-    def table(self, title: str) -> Table:
-        table = Table(title=title, show_header=True, header_style="bold")
-        table.add_column("Output")
-        table.add_column("Count", justify="right")
-        table.add_row("Content pages built", str(self.content))
-        table.add_row("Content pages skipped", str(self.skipped))
-        table.add_row("Type indexes", str(self.indexes))
-        table.add_row("Taxonomy terms", str(self.terms))
-        table.add_row("Taxonomy indexes", str(self.taxonomy_indexes))
-        table.add_row("Home", str(self.home))
-        table.add_row("Aggregates skipped", str(self.aggregates_skipped))
-        table.add_row("Static files", str(self.static))
-        table.add_row("Pruned (stale)", str(self.pruned))
-        return table
+    @property
+    def elapsed_str(self) -> str:
+        """Human-friendly build duration (``45ms`` / ``1.20s``)."""
+        if self.elapsed_ms < 1000:
+            return f"{self.elapsed_ms:.0f}ms"
+        return f"{self.elapsed_ms / 1000:.2f}s"
+
+    @property
+    def counts_str(self) -> str:
+        """Compact, zero-dropping breakdown of what this build produced."""
+        if self.mode == "incremental":
+            segs = [f"{self.content} changed", f"{self.skipped} unchanged"]
+            if self.pruned:
+                segs.append(f"{self.pruned} pruned")
+            return ", ".join(segs)
+        segs = [f"{self.content} pages"]
+        indexes = self.indexes + self.taxonomy_indexes
+        if indexes:
+            segs.append(f"{indexes} indexes")
+        if self.terms:
+            segs.append(f"{self.terms} terms")
+        if self.home:
+            segs.append("home")
+        if self.static:
+            segs.append(f"{self.static} static")
+        return ", ".join(segs)
+
+    def summary_line(self, title: str) -> str:
+        """One-line glyph summary printed after a build."""
+        verb = "Rebuilt" if self.mode == "incremental" else "Built"
+        return (
+            f"[green]✓[/green] {verb} [bold]{title}[/bold] in {self.elapsed_str} "
+            f"[dim]·[/dim] {self.counts_str}"
+        )
 
 
 # -- shared helpers --------------------------------------------------------
@@ -131,6 +152,7 @@ def build_site(
     console: Console | None = None,
 ) -> BuildStats:
     console = console or Console()
+    start = time.perf_counter()
     root = root.resolve()
     config = load_config(root)
     public_dir = root / PUBLIC_DIR
@@ -162,7 +184,8 @@ def build_site(
             taxonomies, renderer, graph,
         )
 
-    console.print(stats.table(f"Built {config.title} [{stats.mode}]"))
+    stats.elapsed_ms = (time.perf_counter() - start) * 1000
+    console.print(stats.summary_line(config.title))
     return stats
 
 
