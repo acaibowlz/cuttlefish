@@ -66,3 +66,14 @@ def test_config_missing_required_key():
     raw = {"content_types": {"blog": {"template": "blog.html"}}}  # no permalink
     with pytest.raises(ConfigError):
         parse_config(raw)
+
+
+def test_config_order_default_and_validation():
+    raw = {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/"}}}
+    cfg = parse_config(raw)
+    assert cfg.content_types["blog"].order == "desc"
+    assert cfg.content_types["blog"].descending is True
+
+    bad = {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/", "order": "newest"}}}
+    with pytest.raises(ConfigError):
+        parse_config(bad)

@@ -12,7 +12,7 @@ permalink = "/blog/{slug}/"
 index_permalink = "/blog/"
 paginate = 10
 sort_by = "date"
-reverse = true
+order = "desc"
 
 [content_types.project]
 template = "project.html"
@@ -20,7 +20,7 @@ index_template = "project.index.html"
 permalink = "/projects/{slug}/"
 index_permalink = "/projects/"
 sort_by = "title"
-reverse = false
+order = "asc"
 
 # Standalone pages: no index, no taxonomy. Do NOT add index_template here.
 [content_types.pages]

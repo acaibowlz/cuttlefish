@@ -82,7 +82,7 @@ def _items_by_type(items: list[ContentItem], config: SiteConfig) -> dict[str, li
         grouped.setdefault(item.type, []).append(item)
     for name, group in grouped.items():
         ct = config.content_types[name]
-        grouped[name] = sort_items(group, sort_by=ct.sort_by, reverse=ct.reverse)
+        grouped[name] = sort_items(group, sort_by=ct.sort_by, order=ct.order)
     return grouped
 
 

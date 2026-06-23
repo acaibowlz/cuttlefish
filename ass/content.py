@@ -236,7 +236,7 @@ def discover(root: Path, config: SiteConfig, *, drafts: bool = False) -> list[Co
     return items
 
 
-def sort_items(items: list[ContentItem], *, sort_by: str = "date", reverse: bool = True) -> list[ContentItem]:
+def sort_items(items: list[ContentItem], *, sort_by: str = "date", order: str = "desc") -> list[ContentItem]:
     """Return *items* sorted by a front-matter field (missing values last)."""
     def key(item: ContentItem):
         if sort_by == "date":
@@ -244,4 +244,4 @@ def sort_items(items: list[ContentItem], *, sort_by: str = "date", reverse: bool
         value = item.meta.get(sort_by)
         return (value is not None, value if value is not None else "")
 
-    return sorted(items, key=key, reverse=reverse)
+    return sorted(items, key=key, reverse=(order == "desc"))

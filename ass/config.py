@@ -33,7 +33,11 @@ class ContentType:
     index_permalink: str | None = None
     paginate: int = 0
     sort_by: str = "date"
-    reverse: bool = True
+    order: str = "desc"  # "desc" (newest/largest first) or "asc"
+
+    @property
+    def descending(self) -> bool:
+        return self.order == "desc"
 
     @property
     def has_index(self) -> bool:
@@ -92,6 +96,9 @@ def _parse_content_type(name: str, data: dict) -> ContentType:
     where = f"[content_types.{name}]"
     if not isinstance(data, dict):
         raise ConfigError(f"{where} must be a table.")
+    order = str(data.get("order", "desc")).lower()
+    if order not in ("asc", "desc"):
+        raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
     return ContentType(
         name=name,
         template=str(_require(data, "template", where)),
@@ -100,7 +107,7 @@ def _parse_content_type(name: str, data: dict) -> ContentType:
         index_permalink=data.get("index_permalink"),
         paginate=int(data.get("paginate", 0)),
         sort_by=str(data.get("sort_by", "date")),
-        reverse=bool(data.get("reverse", True)),
+        order=order,
     )
 
 

@@ -32,7 +32,7 @@ permalink = "/notes/{slug}/"      # required
 index_permalink = "/notes/"       # required if index_template is set
 paginate = 10                     # optional; 0/absent = no pagination
 sort_by = "date"                  # front-matter field to sort by
-reverse = true                    # newest/largest first
+order = "desc"                    # "desc" = newest/largest first, "asc" = oldest/smallest
 ```
 
 Then create `templates/note.html` and `templates/note.index.html`, and put
