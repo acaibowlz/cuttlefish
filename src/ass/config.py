@@ -120,13 +120,22 @@ def _parse_content_type(name: str, data: dict) -> ContentType:
     order = str(data.get("order", "desc")).lower()
     if order not in ("asc", "desc"):
         raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
+    # Only an omitted key or a non-negative integer is valid; 0 (or omitting it)
+    # disables pagination. Reject everything else — including bools, which TOML
+    # parses as a subclass of int — with a clear message instead of a traceback.
+    paginate = data.get("paginate", 0)
+    if isinstance(paginate, bool) or not isinstance(paginate, int) or paginate < 0:
+        raise ConfigError(
+            f"{where} 'paginate' must be a non-negative integer "
+            f"(omit it or use 0 to disable pagination), got {paginate!r}."
+        )
     return ContentType(
         name=name,
         template=str(_require(data, "template", where)),
         permalink=str(_require(data, "permalink", where)),
         index_template=data.get("index_template"),
         index_permalink=data.get("index_permalink"),
-        paginate=int(data.get("paginate", 0)),
+        paginate=paginate,
         sort_by=str(data.get("sort_by", "date")),
         order=order,
     )

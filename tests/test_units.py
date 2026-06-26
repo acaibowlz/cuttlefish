@@ -79,6 +79,20 @@ def test_config_order_default_and_validation():
         parse_config(bad)
 
 
+def test_config_paginate_default_and_validation():
+    def ct(**extra):
+        return {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/", **extra}}}
+
+    # Omitted disables pagination; a non-negative integer is taken as-is.
+    assert parse_config(ct()).content_types["blog"].paginate == 0
+    assert parse_config(ct(paginate=10)).content_types["blog"].paginate == 10
+
+    # Everything else is rejected with a clean ConfigError, not a traceback.
+    for bad in ("", -5, 1.5, True, "ten"):
+        with pytest.raises(ConfigError):
+            parse_config(ct(paginate=bad))
+
+
 def test_nav_pairs_labels_and_links():
     cfg = parse_config({
         "nav": {"enabled": True, "labels": ["Blog", "About"], "links": ["/blog/", "/about/"]}
