@@ -32,6 +32,28 @@ def test_markdown_code_highlighting(site: Path, build):
     assert 'class="language-python"' in post
 
 
+def test_sitemap_generated(site: Path, build):
+    stats = build(site)
+    assert stats.sitemap is True
+    sitemap = read(site, "sitemap.xml")
+    # Absolute URLs (scaffold base_url) for content, indexes, and term pages.
+    for loc in [
+        "https://example.com/",
+        "https://example.com/blog/hello-world/",
+        "https://example.com/tags/meta/",
+    ]:
+        assert f"<loc>{loc}</loc>" in sitemap
+
+
+def test_sitemap_skipped_without_base_url(site: Path, build):
+    cfg = site / "config.toml"
+    cfg.write_text(cfg.read_text().replace(
+        'base_url = "https://example.com"', 'base_url = ""'))
+    stats = build(site)
+    assert stats.sitemap is False
+    assert not (site / "public" / "sitemap.xml").exists()
+
+
 def test_listing_is_summary_only(site: Path, build):
     """The blog index must NOT contain a post's rendered body."""
     build(site)

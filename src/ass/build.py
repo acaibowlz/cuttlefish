@@ -27,6 +27,7 @@ from ass.config import CONFIG_FILENAME, ConfigError, SiteConfig, load_config
 from ass.content import ContentItem, discover, sort_items
 from ass.graph import AggregateSpec, aggregate_is_dirty, build_aggregate_specs
 from ass.render import Renderer
+from ass.sitemap import write_sitemap
 from ass.taxonomy import build_taxonomies
 from ass.template_deps import build_graph
 
@@ -45,6 +46,7 @@ class BuildStats:
     aggregates_skipped: int = 0
     static: int = 0
     pruned: int = 0
+    sitemap: bool = False
     mode: str = "full"
     elapsed_ms: float = 0.0
 
@@ -83,6 +85,8 @@ class BuildStats:
             segs.append("home")
         if self.static:
             segs.append(f"{self.static} static")
+        if self.sitemap:
+            segs.append("sitemap")
         return ", ".join(segs)
 
     def summary_line(self, title: str) -> str:
@@ -230,13 +234,15 @@ def _full_build(root, config, config_hash, public_dir, items, grouped, taxonomie
         new_static[src_rel] = {"hash": hash_file(src), "output": out_rel}
         stats.static += 1
 
-    save_manifest(root, Manifest(
+    manifest = Manifest(
         config_hash=config_hash,
         content=new_content,
         templates=_template_manifest(root, graph),
         static=new_static,
         aggregates=_aggregates_manifest(specs),
-    ))
+    )
+    stats.sitemap = write_sitemap(public_dir, manifest.page_outputs(), config.base_url)
+    save_manifest(root, manifest)
     return stats
 
 
@@ -312,6 +318,7 @@ def _incremental_build(root, config, config_hash, public_dir, items, grouped, ta
     # (deleted content, renamed slugs, removed terms, removed static files).
     stats.pruned = _prune(public_dir, manifest.all_outputs(), new_manifest.all_outputs())
 
+    stats.sitemap = write_sitemap(public_dir, new_manifest.page_outputs(), config.base_url)
     save_manifest(root, new_manifest)
     return stats
 

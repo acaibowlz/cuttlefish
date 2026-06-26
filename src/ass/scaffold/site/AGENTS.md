@@ -16,11 +16,14 @@ drive it by editing plain files. This document is the source of truth for how.
 | `.ass/` | **Generated** build cache. Never edit by hand. | ❌ |
 
 Build with `ass build`. Preview live with `ass serve` (watches files and
-reloads the browser).
+reloads the browser). A `public/sitemap.xml` of every page is generated
+automatically when `base_url` is set.
 
 ## Editing `config.toml`
 
-Top-level keys: `title`, `base_url`, and the tables below.
+Top-level keys: `title`, `base_url`, and the tables below. `base_url` is the
+site's absolute origin (e.g. `https://example.com`); it is used to build
+absolute URLs such as the `sitemap.xml` entries, so set it for production.
 
 ### Add a content type
 

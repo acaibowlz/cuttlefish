@@ -48,15 +48,20 @@ class Manifest:
 
     def all_outputs(self) -> set[str]:
         """Every output file this manifest knows about (for pruning)."""
+        outputs = self.page_outputs()
+        for entry in self.static.values():
+            out = entry.get("output")
+            if out:
+                outputs.add(out)
+        return outputs
+
+    def page_outputs(self) -> set[str]:
+        """HTML page outputs (content + aggregates), excluding static assets."""
         outputs: set[str] = set()
         for entry in self.aggregates.values():
             outputs.update(entry.get("outputs", []))
         for entry in self.content.values():
             outputs.update(entry.get("outputs", []))
-        for entry in self.static.values():
-            out = entry.get("output")
-            if out:
-                outputs.add(out)
         return outputs
 
     # -- serialisation -----------------------------------------------------
