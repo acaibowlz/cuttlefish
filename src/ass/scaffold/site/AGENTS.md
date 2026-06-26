@@ -134,3 +134,33 @@ term.name }}</a>{% endfor %}`.
 
 Reference static assets by absolute path (e.g. `/css/main.css`); `static/` is
 copied to the site root, so `static/css/main.css` → `/css/main.css`.
+
+### Styling
+
+Styling is **plain CSS** in `static/css/main.css`, linked once from `base.html`.
+There is no asset pipeline and no CSS framework: `static/` is copied verbatim,
+so whatever you write ships as-is. Follow these conventions so the site stays
+consistent as you edit it:
+
+- **Use the design tokens, don't hardcode.** Colors, fonts, and layout are CSS
+  custom properties on `:root`: surfaces (`--bg`, `--surface`, `--border`), text
+  (`--fg`, `--muted`), accent (`--accent`, `--accent-hover`), typography
+  (`--font-sans`, `--font-mono`), and shape/size (`--max-width`, `--radius`).
+  Reference them with `var(--accent)` rather than repeating raw values. Need a
+  new color or spacing value site-wide? Add a token to `:root` and use it
+  everywhere, instead of sprinkling literals.
+- **Respect dark mode.** The palette is themed via a `@media
+  (prefers-color-scheme: dark)` block that overrides the same tokens. Because
+  everything reads from tokens, you get light/dark for free — keep it that way by
+  styling through tokens, not fixed colors.
+- **Prefer semantic classes over utility soup or inline styles.** Style by
+  meaning (`.post-list`, `.site-header`, `.tags`), not by appearance
+  (`.mt-4`, `style="..."`). It keeps templates readable and changes localized to
+  one stylesheet.
+- **Keep markup and CSS in sync.** When you add a class in a template, add its
+  rule to `main.css` in the same edit; when you remove markup, drop the dead
+  rule. The two files are a pair.
+- **Don't reach for a CSS framework by default.** You write clean CSS as easily
+  as utility classes, and a framework (Tailwind, etc.) would mean a build step
+  this project deliberately doesn't have. If the user explicitly wants one, treat
+  it as an opt-in they've chosen — not the default.

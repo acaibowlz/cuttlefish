@@ -4,8 +4,6 @@ summary = "The agentic static site generator powering this site."
 url = "https://example.com/ass"
 +++
 
-# ass
-
 **ass** is an agentic static site generator. It builds sites from a single
 `config.toml`, Jinja2 templates, and Markdown content.
 

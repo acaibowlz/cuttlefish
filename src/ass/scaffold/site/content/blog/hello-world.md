@@ -6,8 +6,6 @@ tags = ["meta", "python"]
 draft = false
 +++
 
-# Hello, World
-
 Welcome to your new site. This post lives at `content/blog/hello-world.md`.
 
 Edit the front matter above (between the `+++` fences) to change the title,

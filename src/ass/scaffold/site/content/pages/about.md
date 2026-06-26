@@ -3,8 +3,6 @@ title = "About"
 slug = "about"
 +++
 
-# About
-
 This is a standalone **page**. It belongs to no content-type index and no
 taxonomy — it just exists at its permalink (`/about/`).
 
