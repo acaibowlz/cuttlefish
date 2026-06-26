@@ -23,7 +23,7 @@ from ass.cache import (
     load_manifest,
     save_manifest,
 )
-from ass.config import CONFIG_FILENAME, SiteConfig, load_config
+from ass.config import CONFIG_FILENAME, ConfigError, SiteConfig, load_config
 from ass.content import ContentItem, discover, sort_items
 from ass.graph import AggregateSpec, aggregate_is_dirty, build_aggregate_specs
 from ass.render import Renderer
@@ -103,6 +103,17 @@ def _items_by_type(items: list[ContentItem], config: SiteConfig) -> dict[str, li
         grouped.setdefault(item.type, []).append(item)
     for name, group in grouped.items():
         ct = config.content_types[name]
+        # 'sort_by' is open-ended (any front-matter field), so it can't be
+        # validated against a closed set at config-parse time the way 'order'
+        # is. Here we have the items, so a key that appears on *none* of them is
+        # almost certainly a typo (e.g. "dae" for "date") rather than a real but
+        # absent field — surface it instead of silently leaving them unsorted.
+        # Empty types are skipped: "absent everywhere" is vacuously true there.
+        if group and ct.sort_by != "date" and not any(ct.sort_by in item.meta for item in group):
+            raise ConfigError(
+                f"[content_types.{name}] 'sort_by' = {ct.sort_by!r} is not a field on any "
+                f"{name} content. Use \"date\" or a front-matter field present on your items."
+            )
         grouped[name] = sort_items(group, sort_by=ct.sort_by, order=ct.order)
     return grouped
 

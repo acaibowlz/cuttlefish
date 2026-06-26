@@ -16,7 +16,10 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
 from rich.console import Console
+from rich.markup import escape
 from watchfiles import watch
+
+from ass.errors import AssError
 
 from ass.build import PUBLIC_DIR, STATIC_DIR, build_site
 from ass.config import CONFIG_FILENAME
@@ -156,8 +159,13 @@ def _watch_loop(
                 f"[dim]·[/dim] {stats.counts_str}"
             )
             server.broadcast("reload")
-        except Exception as exc:  # keep the server alive on build errors
-            console.print(f"[red]✗[/red] Build failed: {exc}")
+        except AssError as exc:  # keep the server alive on build errors
+            console.print(
+                f"[red]✗[/red] {escape(exc.summary)} "
+                f"[dim]·[/dim] {escape(exc.detail)}"
+            )
+        except Exception as exc:  # unexpected bug: still don't kill the server
+            console.print(f"[red]✗[/red] Build failed: {escape(str(exc))}")
 
 
 def serve_site(

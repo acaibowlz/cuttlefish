@@ -27,6 +27,7 @@ from pathlib import Path
 import mistune
 
 from ass.config import SiteConfig
+from ass.errors import AssError
 from ass.permalink import resolve_permalink, slugify
 
 CONTENT_DIR = "content"
@@ -42,8 +43,10 @@ _markdown = mistune.create_markdown(
 )
 
 
-class ContentError(Exception):
+class ContentError(AssError):
     """Raised when a content file cannot be parsed."""
+
+    default_summary = "Failed to parse content"
 
 
 @dataclass(frozen=True)
@@ -173,10 +176,11 @@ def _extract_taxonomies(meta: dict, config: SiteConfig) -> dict[str, list[str]]:
 def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
     """Parse a single content file into a :class:`ContentItem`."""
     text = path.read_text(encoding="utf-8")
+    summary = f"Failed to parse {_relative_to_root(path, config)}"
     try:
         meta, body = split_front_matter(text)
     except ContentError as exc:
-        raise ContentError(f"{path}: {exc}") from exc
+        raise ContentError(exc.detail, summary=summary) from exc
 
     slug = str(meta.get("slug") or slugify(path.stem))
     body_html = _markdown(body)

@@ -14,11 +14,15 @@ import re
 from datetime import date, datetime
 from pathlib import Path
 
+from ass.errors import AssError
+
 _TOKEN_RE = re.compile(r"\{(\w+)\}")
 
 
-class PermalinkError(Exception):
+class PermalinkError(AssError):
     """Raised when a permalink pattern references an unknown/missing token."""
+
+    default_summary = "Failed to resolve permalink"
 
 
 def _date_tokens(value: object) -> dict[str, str]:

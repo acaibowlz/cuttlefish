@@ -9,18 +9,47 @@ page templates receive the full :class:`ContentItem`.
 from __future__ import annotations
 
 import math
+from collections.abc import Iterator
+from contextlib import contextmanager
 from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
+from jinja2 import TemplateSyntaxError
 
 from ass.config import ContentType, SiteConfig
 from ass.content import ContentItem, ListingItem
+from ass.errors import AssError
 from ass.permalink import output_path
 from ass.taxonomy import TaxonomyData, Term, term_links
 
 TEMPLATES_DIR = "templates"
+
+
+class RenderError(AssError):
+    """Raised when a template fails to render."""
+
+    default_summary = "Failed to render template"
+
+
+def _jinja_detail(exc: Exception) -> str:
+    """Turn a Jinja exception into a one-line reason with location where known."""
+    if isinstance(exc, TemplateSyntaxError):
+        where = exc.filename or exc.name or "template"
+        return f"{where}:{exc.lineno}: {exc.message}"
+    return f"{type(exc).__name__}: {exc}"
+
+
+@contextmanager
+def _render_step(target: str) -> Iterator[None]:
+    """Wrap a render so any template error becomes a 'Failed to render <target>'."""
+    try:
+        yield
+    except RenderError:
+        raise
+    except Exception as exc:
+        raise RenderError(_jinja_detail(exc), summary=f"Failed to render {target}") from exc
 
 
 @dataclass
@@ -106,10 +135,11 @@ class Renderer:
     def render_content(self, item: ContentItem) -> str:
         """Render a single content page (full body available)."""
         content_type = self.config.content_types[item.type]
-        html = self.env.get_template(content_type.template).render(
-            page=item, item=item, type=item.type, terms=term_links(item, self.config)
-        )
-        self._write(item.output_rel, html)
+        with _render_step(item.source_rel):
+            html = self.env.get_template(content_type.template).render(
+                page=item, item=item, type=item.type, terms=term_links(item, self.config)
+            )
+            self._write(item.output_rel, html)
         return item.output_rel
 
     def render_index(self, content_type: ContentType, items: list[ContentItem]) -> list[str]:
@@ -122,23 +152,25 @@ class Renderer:
         outputs = []
         for page in pages:
             url = _page_url(base, page.number)
-            html = self.env.get_template(content_type.index_template).render(
-                page=page, items=page.items, type=content_type.name
-            )
             rel = self._output_rel(url)
-            self._write(rel, html)
+            with _render_step(rel):
+                html = self.env.get_template(content_type.index_template).render(
+                    page=page, items=page.items, type=content_type.name
+                )
+                self._write(rel, html)
             outputs.append(rel)
         return outputs
 
     def render_term(self, data: TaxonomyData, term: Term) -> str:
         """Render one taxonomy term page (summary-only listing)."""
         listings = [i.listing for i in term.items]
-        html = self.env.get_template(data.taxonomy.template).render(
-            taxonomy=data.taxonomy.name,
-            term=SimpleNamespace(name=term.name, url=term.url, count=term.count),
-            items=listings,
-        )
-        self._write(term.output_rel, html)
+        with _render_step(term.output_rel):
+            html = self.env.get_template(data.taxonomy.template).render(
+                taxonomy=data.taxonomy.name,
+                term=SimpleNamespace(name=term.name, url=term.url, count=term.count),
+                items=listings,
+            )
+            self._write(term.output_rel, html)
         return term.output_rel
 
     def render_taxonomy_index(self, data: TaxonomyData) -> str | None:
@@ -149,10 +181,11 @@ class Renderer:
             SimpleNamespace(name=t.name, url=t.url, count=t.count)
             for t in data.sorted_terms
         ]
-        html = self.env.get_template(data.taxonomy.index_template).render(
-            taxonomy=data.taxonomy.name, terms=terms
-        )
-        self._write(data.index_output_rel, html)
+        with _render_step(data.index_output_rel):
+            html = self.env.get_template(data.taxonomy.index_template).render(
+                taxonomy=data.taxonomy.name, terms=terms
+            )
+            self._write(data.index_output_rel, html)
         return data.index_output_rel
 
     def render_home(self, recent: list[ContentItem]) -> str | None:
@@ -160,10 +193,11 @@ class Renderer:
         home = self.config.home
         if home is None:
             return None
-        html = self.env.get_template(home.template).render(
-            recent=[i.listing for i in recent]
-        )
-        self._write("index.html", html)
+        with _render_step("index.html"):
+            html = self.env.get_template(home.template).render(
+                recent=[i.listing for i in recent]
+            )
+            self._write("index.html", html)
         return "index.html"
 
     def index_output_rels(self, content_type: ContentType, count: int) -> list[str]:

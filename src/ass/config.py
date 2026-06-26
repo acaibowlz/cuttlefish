@@ -12,14 +12,18 @@ import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
 
+from ass.errors import AssError
+
 #: The content type name reserved for standalone pages (no index, no taxonomy).
 PAGES_TYPE = "pages"
 
 CONFIG_FILENAME = "config.toml"
 
 
-class ConfigError(Exception):
+class ConfigError(AssError):
     """Raised when ``config.toml`` is missing or invalid."""
+
+    default_summary = "Failed to load config"
 
 
 @dataclass(frozen=True)
