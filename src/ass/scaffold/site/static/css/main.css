@@ -114,6 +114,50 @@ main {
 .site-header nav a { color: var(--muted); }
 .site-header nav a:hover { color: var(--fg); }
 
+/* Burger menu — pure CSS via a visually-hidden checkbox (no JavaScript).
+   Hidden on desktop; on small screens it toggles the nav into a dropdown. */
+.nav-toggle { position: absolute; width: 1px; height: 1px; opacity: 0; }
+.nav-burger { display: none; }
+
+@media (max-width: 40rem) {
+  .nav-burger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    width: 2.25rem;
+    height: 2.25rem;
+    padding: 0.5rem;
+    cursor: pointer;
+    border-radius: var(--radius-sm);
+  }
+  .nav-burger span {
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: var(--fg);
+    border-radius: 2px;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .site-header nav {
+    display: none;            /* collapsed by default */
+    flex-direction: column;
+    gap: 0.25rem;
+    width: 100%;             /* drops to a full-width row under the header */
+    padding-block: 0.5rem;
+  }
+  .site-header nav a { padding: 0.4rem 0; }
+
+  .nav-toggle:checked ~ nav { display: flex; }
+  .nav-toggle:focus-visible ~ .nav-burger { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+  /* Morph the three bars into an X when open. */
+  .nav-toggle:checked ~ .nav-burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+  .nav-toggle:checked ~ .nav-burger span:nth-child(2) { opacity: 0; }
+  .nav-toggle:checked ~ .nav-burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+}
+
 /* -- typography ---------------------------------------------------------- */
 
 h1, h2, h3, h4 {

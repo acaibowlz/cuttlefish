@@ -10,6 +10,9 @@
   <header class="site-header">
     <a class="site-title" href="/">{{ site.title }}</a>
     {% if site.nav.enabled %}
+    {# CSS-only burger: the hidden checkbox toggles the nav on small screens. #}
+    <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation menu">
+    <label for="nav-toggle" class="nav-burger" aria-hidden="true"><span></span><span></span><span></span></label>
     <nav>
       {% for item in site.nav.items %}
       <a href="{{ item.link }}">{{ item.label }}</a>
