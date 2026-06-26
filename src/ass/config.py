@@ -8,6 +8,7 @@ message an agent can act on.
 
 from __future__ import annotations
 
+import difflib
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -19,11 +20,40 @@ PAGES_TYPE = "pages"
 
 CONFIG_FILENAME = "config.toml"
 
+#: Where config errors point users for the full key reference.
+#: TODO: update to the published Configuration docs page once it is hosted.
+CONFIG_DOCS_URL = "https://example.com/ass/configuration"
+
+#: Allowed keys for each strictly-validated config scope. Unknown keys are
+#: rejected — they are almost always typos that would otherwise be silently
+#: ignored. Custom/free-form values are not supported at the moment.
+_TOP_LEVEL_KEYS = frozenset({"title", "base_url", "content_types", "taxonomies", "home", "nav"})
+_CONTENT_TYPE_KEYS = frozenset(
+    {"template", "permalink", "index_template", "index_permalink", "paginate", "sort_by", "order"}
+)
+_TAXONOMY_KEYS = frozenset({"template", "permalink", "index_template", "index_permalink"})
+_HOME_KEYS = frozenset({"template", "recent"})
+_HOME_RECENT_KEYS = frozenset({"type", "count"})
+_NAV_KEYS = frozenset({"enabled", "labels", "links"})
+
 
 class ConfigError(AssError):
     """Raised when ``config.toml`` is missing or invalid."""
 
     default_summary = "Failed to load config"
+
+
+def _reject_unknown_keys(data: dict, allowed: frozenset[str], where: str) -> None:
+    """Raise on the first key in *data* that is not in *allowed* (file order)."""
+    for key in data:
+        if key not in allowed:
+            match = difflib.get_close_matches(key, sorted(allowed), n=1)
+            # Put the docs pointer on its own line only when there's also a
+            # suggestion; otherwise keep the whole message on one line.
+            suffix = f" Did you mean {match[0]!r}?\n" if match else " "
+            raise ConfigError(
+                f"{where} unknown key {key!r}.{suffix}See {CONFIG_DOCS_URL} for valid keys."
+            )
 
 
 @dataclass(frozen=True)
@@ -117,6 +147,7 @@ def _parse_content_type(name: str, data: dict) -> ContentType:
     where = f"[content_types.{name}]"
     if not isinstance(data, dict):
         raise ConfigError(f"{where} must be a table.")
+    _reject_unknown_keys(data, _CONTENT_TYPE_KEYS, where)
     order = str(data.get("order", "desc")).lower()
     if order not in ("asc", "desc"):
         raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
@@ -145,6 +176,7 @@ def _parse_taxonomy(name: str, data: dict) -> Taxonomy:
     where = f"[taxonomies.{name}]"
     if not isinstance(data, dict):
         raise ConfigError(f"{where} must be a table.")
+    _reject_unknown_keys(data, _TAXONOMY_KEYS, where)
     return Taxonomy(
         name=name,
         template=str(_require(data, "template", where)),
@@ -158,9 +190,11 @@ def _parse_home(data: dict) -> HomeConfig:
     where = "[home]"
     if not isinstance(data, dict):
         raise ConfigError(f"{where} must be a table.")
+    _reject_unknown_keys(data, _HOME_KEYS, where)
     recent = data.get("recent") or {}
     if recent and not isinstance(recent, dict):
         raise ConfigError(f"{where} 'recent' must be a table like {{ type = ..., count = ... }}.")
+    _reject_unknown_keys(recent, _HOME_RECENT_KEYS, f"{where} 'recent'")
     return HomeConfig(
         template=str(_require(data, "template", where)),
         recent_type=recent.get("type"),
@@ -172,6 +206,7 @@ def _parse_nav(data: dict) -> NavConfig:
     where = "[nav]"
     if not isinstance(data, dict):
         raise ConfigError(f"{where} must be a table.")
+    _reject_unknown_keys(data, _NAV_KEYS, where)
     labels = data.get("labels", [])
     links = data.get("links", [])
     if not isinstance(labels, list) or not isinstance(links, list):
@@ -187,6 +222,7 @@ def _parse_nav(data: dict) -> NavConfig:
 
 def parse_config(raw: dict) -> SiteConfig:
     """Validate a raw config mapping into a :class:`SiteConfig`."""
+    _reject_unknown_keys(raw, _TOP_LEVEL_KEYS, CONFIG_FILENAME)
     content_types = {
         name: _parse_content_type(name, data)
         for name, data in (raw.get("content_types") or {}).items()

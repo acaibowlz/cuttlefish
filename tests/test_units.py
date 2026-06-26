@@ -93,6 +93,26 @@ def test_config_paginate_default_and_validation():
             parse_config(ct(paginate=bad))
 
 
+def test_config_unknown_keys_rejected():
+    ct = {"template": "b.html", "permalink": "/b/{slug}/"}
+
+    # A valid config with only known keys parses.
+    parse_config({"title": "X", "content_types": {"blog": dict(ct)}})
+
+    # Unknown keys are rejected in every strict scope (top level + each table).
+    bad_configs = [
+        {"titel": "X"},                                                  # top level
+        {"content_types": {"blog": {**ct, "index_tempalte": "i.html"}}}, # content type
+        {"taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/", "paginate": 5}}},
+        {"home": {"template": "h.html", "recnt": {}}},                   # home
+        {"home": {"template": "h.html", "recent": {"type": "blog", "cnt": 5}}},  # nested recent
+        {"nav": {"enabledd": True}},                                     # nav
+    ]
+    for raw in bad_configs:
+        with pytest.raises(ConfigError):
+            parse_config(raw)
+
+
 def test_nav_pairs_labels_and_links():
     cfg = parse_config({
         "nav": {"enabled": True, "labels": ["Blog", "About"], "links": ["/blog/", "/about/"]}
