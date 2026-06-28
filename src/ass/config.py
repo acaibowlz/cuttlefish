@@ -12,6 +12,7 @@ import difflib
 import tomllib
 from dataclasses import dataclass, field
 from pathlib import Path
+from urllib.parse import urlsplit
 
 from ass.errors import AssError
 
@@ -129,6 +130,9 @@ class SiteConfig:
     nav: NavConfig = field(default_factory=NavConfig)
     content_types: dict[str, ContentType] = field(default_factory=dict)
     taxonomies: dict[str, Taxonomy] = field(default_factory=dict)
+    #: URL path prefix the site is served under, derived from ``base_url`` (e.g.
+    #: ``/repo`` for a GitHub Pages project site). Empty for a root deploy.
+    base_path: str = ""
     #: Raw config dict, exposed to templates as ``site.config``.
     raw: dict = field(default_factory=dict)
 
@@ -243,9 +247,13 @@ def parse_config(raw: dict) -> SiteConfig:
             "declare 'index_template'/'index_permalink'."
         )
 
+    base_url = str(raw.get("base_url", "")).rstrip("/")
     return SiteConfig(
         title=str(raw.get("title", "Untitled Site")),
-        base_url=str(raw.get("base_url", "")).rstrip("/"),
+        base_url=base_url,
+        # base_url's path component is the subpath the site is served under;
+        # internal links get prefixed with it so subpath hosting works.
+        base_path=urlsplit(base_url).path.rstrip("/"),
         home=home,
         nav=nav,
         content_types=content_types,

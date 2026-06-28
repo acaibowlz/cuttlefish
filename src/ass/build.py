@@ -164,6 +164,7 @@ def build_site(
     *,
     force: bool = False,
     drafts: bool = False,
+    base_path: str | None = None,
     console: Console | None = None,
 ) -> BuildStats:
     console = console or Console()
@@ -184,7 +185,10 @@ def build_site(
     grouped = _items_by_type(items, config)
     taxonomies = build_taxonomies(items, config)
 
-    renderer = Renderer(root, config, public_dir)
+    # base_path defaults to the one derived from base_url, but callers (the dev
+    # server) can force "" to preview at the local root without the prefix.
+    effective_base_path = config.base_path if base_path is None else base_path
+    renderer = Renderer(root, config, public_dir, base_path=effective_base_path)
     renderer.set_site_context()
     graph = build_graph(root, renderer.env)
 

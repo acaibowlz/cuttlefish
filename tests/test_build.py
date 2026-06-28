@@ -45,6 +45,34 @@ def test_sitemap_generated(site: Path, build):
         assert f"<loc>{loc}</loc>" in sitemap
 
 
+def _set_subpath(site: Path) -> None:
+    cfg = site / "config.toml"
+    cfg.write_text(cfg.read_text().replace(
+        'base_url = "https://example.com"', 'base_url = "https://you.github.io/repo"'))
+
+
+def test_subpath_base_url_prefixes_links(site: Path, build):
+    _set_subpath(site)
+    build(site)
+    home = read(site, "index.html")
+    assert 'href="/repo/css/main.css"' in home   # asset prefixed
+    assert 'href="/repo/blog/"' in home          # nav/link prefixed
+    # Output file paths on disk are NOT prefixed.
+    assert (site / "public" / "blog" / "hello-world" / "index.html").is_file()
+    assert not (site / "public" / "repo").exists()
+    # Sitemap uses the full base_url (incl. subpath) with no double prefix.
+    assert "<loc>https://you.github.io/repo/blog/</loc>" in read(site, "sitemap.xml")
+
+
+def test_base_path_override_disables_prefix(site: Path, build):
+    """How the dev server builds: preview at the local root, no prefix."""
+    _set_subpath(site)
+    build(site, base_path="")
+    home = read(site, "index.html")
+    assert 'href="/css/main.css"' in home
+    assert "/repo" not in home
+
+
 def test_sitemap_skipped_without_base_url(site: Path, build):
     cfg = site / "config.toml"
     cfg.write_text(cfg.read_text().replace(

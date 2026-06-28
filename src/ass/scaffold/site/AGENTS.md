@@ -22,8 +22,12 @@ automatically when `base_url` is set.
 ## Editing `config.toml`
 
 Top-level keys: `title`, `base_url`, and the tables below. `base_url` is the
-site's absolute origin (e.g. `https://example.com`); it is used to build
-absolute URLs such as the `sitemap.xml` entries, so set it for production.
+site's absolute origin (e.g. `https://example.com`); it builds absolute URLs
+such as the `sitemap.xml` entries, so set it for production. If it includes a
+**subpath** (e.g. `https://you.github.io/repo`), that path (`/repo`) is
+prefixed to every internal link and asset automatically, so the site works when
+served under a subfolder — a GitHub Pages project site, for example. `ass serve`
+ignores the subpath and previews at the local root.
 
 ### Add a content type
 

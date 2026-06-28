@@ -9,6 +9,7 @@ page templates receive the full :class:`ContentItem`.
 from __future__ import annotations
 
 import math
+import re
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -50,6 +51,23 @@ def _render_step(target: str) -> Iterator[None]:
         raise
     except Exception as exc:
         raise RenderError(_jinja_detail(exc), summary=f"Failed to render {target}") from exc
+
+
+#: A root-absolute URL inside an href/src attribute (but not a protocol-relative
+#: "//host" URL, and not data-href etc. — the leading space anchors a real attr).
+_ABS_URL_ATTR = re.compile(r'(\s(?:href|src)=")(/(?!/)[^"]*)')
+
+
+def _prefix_links(html: str, base_path: str) -> str:
+    """Prepend *base_path* to every root-absolute href/src in *html*.
+
+    This is how subpath hosting works: links and assets are emitted root-absolute
+    (``/blog/``, ``/css/main.css``), and here we rewrite them to ``/repo/blog/``
+    etc. Doing it on the final HTML covers template links, nav, permalinks and
+    author-written links in Markdown bodies in one place. Output *file* paths are
+    untouched — only the URLs published in the HTML.
+    """
+    return _ABS_URL_ATTR.sub(lambda m: f"{m.group(1)}{base_path}{m.group(2)}", html)
 
 
 @dataclass
@@ -101,10 +119,11 @@ def _page_url(base_url: str, number: int) -> str:
 class Renderer:
     """Renders templates against a site context and writes output files."""
 
-    def __init__(self, root: Path, config: SiteConfig, public_dir: Path):
+    def __init__(self, root: Path, config: SiteConfig, public_dir: Path, base_path: str = ""):
         self.root = root
         self.config = config
         self.public_dir = public_dir
+        self.base_path = base_path
         self.env = Environment(
             loader=FileSystemLoader(str(root / TEMPLATES_DIR)),
             autoescape=select_autoescape(["html", "xml"]),
@@ -125,6 +144,8 @@ class Renderer:
     # -- writing -----------------------------------------------------------
 
     def _write(self, output_rel: str, html: str) -> Path:
+        if self.base_path:
+            html = _prefix_links(html, self.base_path)
         dest = self.public_dir / output_rel
         dest.parent.mkdir(parents=True, exist_ok=True)
         dest.write_text(html, encoding="utf-8")

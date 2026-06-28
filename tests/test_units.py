@@ -7,6 +7,7 @@ import pytest
 from ass.config import ConfigError, parse_config
 from ass.content import split_front_matter
 from ass.permalink import PermalinkError, resolve_permalink, slugify
+from ass.render import _prefix_links
 from ass.sitemap import _output_to_url, render_sitemap
 
 
@@ -128,6 +129,25 @@ def test_sitemap_render_is_sorted_and_absolute():
     assert "<loc>https://example.com/blog/</loc>" in xml
     # Ampersands in URLs are XML-escaped.
     assert "&amp;" in render_sitemap(["/?a=1&b=2"], base_url="https://x.com")
+
+
+def test_config_base_path_derived_from_base_url():
+    assert parse_config({"base_url": "https://you.github.io/repo"}).base_path == "/repo"
+    assert parse_config({"base_url": "https://example.com"}).base_path == ""
+    assert parse_config({"base_url": "https://example.com/"}).base_path == ""
+    assert parse_config({}).base_path == ""
+
+
+def test_prefix_links():
+    html = '<a href="/blog/">x</a> <link href="/css/m.css"> <img src="/i.png">'
+    out = _prefix_links(html, "/repo")
+    assert 'href="/repo/blog/"' in out
+    assert 'href="/repo/css/m.css"' in out
+    assert 'src="/repo/i.png"' in out
+
+    # External, protocol-relative, and anchor links are left alone.
+    keep = '<a href="https://x.com/">e</a> <a href="//cdn/x">p</a> <a href="#top">a</a>'
+    assert _prefix_links(keep, "/repo") == keep
 
 
 def test_nav_pairs_labels_and_links():

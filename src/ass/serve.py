@@ -153,7 +153,7 @@ def _watch_loop(
 ) -> None:
     for _changes in watch(root, watch_filter=_watch_filter, stop_event=stop):
         try:
-            stats = build_site(root, drafts=drafts, console=Console(quiet=True))
+            stats = build_site(root, drafts=drafts, base_path="", console=Console(quiet=True))
             console.print(
                 f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str} "
                 f"[dim]·[/dim] {stats.counts_str}"
@@ -180,7 +180,9 @@ def serve_site(
     root = root.resolve()
     public_dir = root / PUBLIC_DIR
 
-    build_site(root, drafts=drafts, console=console)
+    # Preview at the local root: ignore base_url's subpath so links resolve
+    # against http://127.0.0.1:<port>/ rather than a deploy prefix like /repo.
+    build_site(root, drafts=drafts, base_path="", console=console)
 
     server = _DevServer(("127.0.0.1", port), _Handler, public_dir)
     stop = threading.Event()
