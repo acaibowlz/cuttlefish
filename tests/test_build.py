@@ -73,6 +73,19 @@ def test_base_path_override_disables_prefix(site: Path, build):
     assert "/repo" not in home
 
 
+def test_base_path_change_invalidates_cache(site: Path, build):
+    """Switching prefix (e.g. build vs serve) must not reuse stale prefixed output."""
+    _set_subpath(site)
+    build(site)                                  # full, prefix /repo
+    assert 'href="/repo/blog/"' in read(site, "index.html")
+
+    stats = build(site, base_path="")            # how `ass serve` builds
+    assert stats.mode == "full"                  # prefix change busts the cache
+    home = read(site, "index.html")
+    assert 'href="/blog/"' in home
+    assert "/repo" not in home
+
+
 def test_sitemap_skipped_without_base_url(site: Path, build):
     cfg = site / "config.toml"
     cfg.write_text(cfg.read_text().replace(

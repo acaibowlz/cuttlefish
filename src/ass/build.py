@@ -172,7 +172,17 @@ def build_site(
     root = root.resolve()
     config = load_config(root)
     public_dir = root / PUBLIC_DIR
-    config_hash = hash_text((root / CONFIG_FILENAME).read_text(encoding="utf-8"))
+
+    # base_path defaults to the one derived from base_url, but callers (the dev
+    # server) can force "" to preview at the local root without the prefix. It
+    # changes every emitted link, so it is part of config_hash: switching it
+    # (e.g. between `ass build` and `ass serve`) must invalidate the incremental
+    # cache, or unchanged pages would keep the previous build's prefix.
+    effective_base_path = config.base_path if base_path is None else base_path
+    config_hash = hash_text(
+        (root / CONFIG_FILENAME).read_text(encoding="utf-8")
+        + f"\nbase_path={effective_base_path}"
+    )
 
     manifest = None if force else load_manifest(root)
     incremental = (
@@ -185,9 +195,6 @@ def build_site(
     grouped = _items_by_type(items, config)
     taxonomies = build_taxonomies(items, config)
 
-    # base_path defaults to the one derived from base_url, but callers (the dev
-    # server) can force "" to preview at the local root without the prefix.
-    effective_base_path = config.base_path if base_path is None else base_path
     renderer = Renderer(root, config, public_dir, base_path=effective_base_path)
     renderer.set_site_context()
     graph = build_graph(root, renderer.env)
