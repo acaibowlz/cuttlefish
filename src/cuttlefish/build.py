@@ -16,20 +16,20 @@ from pathlib import Path
 
 from rich.console import Console
 
-from ass.cache import (
+from cuttlefish.cache import (
     Manifest,
     hash_file,
     hash_text,
     load_manifest,
     save_manifest,
 )
-from ass.config import CONFIG_FILENAME, ConfigError, SiteConfig, load_config
-from ass.content import ContentItem, discover, sort_items
-from ass.graph import AggregateSpec, aggregate_is_dirty, build_aggregate_specs
-from ass.render import Renderer
-from ass.sitemap import write_sitemap
-from ass.taxonomy import build_taxonomies
-from ass.template_deps import build_graph
+from cuttlefish.config import CONFIG_FILENAME, ConfigError, SiteConfig, load_config
+from cuttlefish.content import ContentItem, discover, sort_items
+from cuttlefish.graph import AggregateSpec, aggregate_is_dirty, build_aggregate_specs
+from cuttlefish.render import Renderer
+from cuttlefish.sitemap import write_sitemap
+from cuttlefish.taxonomy import build_taxonomies
+from cuttlefish.template_deps import build_graph
 
 PUBLIC_DIR = "public"
 STATIC_DIR = "static"
@@ -176,7 +176,7 @@ def build_site(
     # base_path defaults to the one derived from base_url, but callers (the dev
     # server) can force "" to preview at the local root without the prefix. It
     # changes every emitted link, so it is part of config_hash: switching it
-    # (e.g. between `ass build` and `ass serve`) must invalidate the incremental
+    # (e.g. between `ctf build` and `ctf serve`) must invalidate the incremental
     # cache, or unchanged pages would keep the previous build's prefix.
     effective_base_path = config.base_path if base_path is None else base_path
     config_hash = hash_text(

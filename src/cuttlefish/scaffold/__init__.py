@@ -17,7 +17,7 @@ def scaffold_site(directory: Path, *, force: bool = False, console: Console | No
 
     if directory.exists() and any(directory.iterdir()) and not force:
         console.print(
-            f"[red]✗[/red] Refusing to scaffold: {directory} is not empty. "
+            f"[bold red]error:[/bold red] Refusing to scaffold: {directory} is not empty. "
             "Pass [bold]--force[/bold] to override."
         )
         raise SystemExit(1)
@@ -34,12 +34,12 @@ def scaffold_site(directory: Path, *, force: bool = False, console: Console | No
     _link_claude_md(directory)
 
     url = "http://127.0.0.1:8000/"
-    console.print(f"[green]✓[/green] Created a new ass site in [bold]{directory}[/bold]")
+    console.print(f"[green]✓[/green] Created a new cuttlefish site in [bold]{directory}[/bold]")
     console.print()
     console.print("  To get started, run:")
     console.print()
     console.print(f"    [bold cyan]cd {directory}[/bold cyan]")
-    console.print("    [bold cyan]ass serve[/bold cyan]")
+    console.print("    [bold cyan]ctf serve[/bold cyan]")
     console.print()
     console.print(f"  Your site will be live at [link={url}]{url}[/link] with live reload.")
     console.print("  [dim]Customize it in config.toml, or read AGENTS.md for the full guide.[/dim]")

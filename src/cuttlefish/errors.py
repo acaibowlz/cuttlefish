@@ -1,9 +1,9 @@
 """Shared base for user-facing errors.
 
-Errors that subclass :class:`AssError` describe a problem the user can fix
+Errors that subclass :class:`CuttlefishError` describe a problem the user can fix
 (a bad config, an unparseable content file, a failed render). The CLI catches
 them and prints a concise, styled message instead of a traceback; anything that
-is *not* an ``AssError`` is a bug and should surface in full.
+is *not* an ``CuttlefishError`` is a bug and should surface in full.
 
 Each error carries two tiers, Zola-style: a ``summary`` naming the operation
 that failed ("Failed to load config", "Failed to render blog/index.md") and a
@@ -14,7 +14,7 @@ and the detail beneath it.
 from __future__ import annotations
 
 
-class AssError(Exception):
+class CuttlefishError(Exception):
     """Base class for user-facing errors, shown as headline + detail, not a traceback.
 
     Pass ``detail`` positionally (the specific reason). ``summary`` names the

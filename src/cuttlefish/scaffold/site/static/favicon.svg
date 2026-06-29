@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#5b3d9e"/>
+      <stop offset="1" stop-color="#321f63"/>
+    </linearGradient>
+    <radialGradient id="bgglow" cx="0.5" cy="0.30" r="0.72">
+      <stop offset="0" stop-color="#8a63d8" stop-opacity="0.40"/>
+      <stop offset="1" stop-color="#8a63d8" stop-opacity="0"/>
+    </radialGradient>
+    <linearGradient id="body" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#cf8cfa"/>
+      <stop offset="0.6" stop-color="#b56ff4"/>
+      <stop offset="1" stop-color="#9d59ef"/>
+    </linearGradient>
+    <radialGradient id="shadow" cx="0.5" cy="0.5" r="0.5">
+      <stop offset="0" stop-color="#3a1d7a" stop-opacity="0.35"/>
+      <stop offset="1" stop-color="#3a1d7a" stop-opacity="0"/>
+    </radialGradient>
+  </defs>
+
+  <!-- app-icon background -->
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bg)"/>
+  <rect x="0" y="0" width="512" height="512" rx="112" fill="url(#bgglow)"/>
+
+  <!-- soft contact shadow -->
+  <ellipse cx="256" cy="398" rx="146" ry="28" fill="url(#shadow)"/>
+
+  <!-- body: domed head + fat tentacle skirt -->
+  <path fill="url(#body)" d="M256 82
+    C 352 82 418 142 418 224
+    C 418 268 414 300 408 314
+    C 402 378 360 378 348 340
+    C 336 380 298 380 286 340
+    C 274 386 238 386 226 340
+    C 214 380 176 380 164 340
+    C 152 378 110 378 104 314
+    C 98 300 94 268 94 224
+    C 94 142 160 82 256 82 Z"/>
+
+  <!-- glossy highlights on the dome -->
+  <ellipse cx="224" cy="152" rx="94" ry="52" fill="#ffffff" opacity="0.28"/>
+  <ellipse cx="202" cy="134" rx="42" ry="22" fill="#ffffff" opacity="0.45"/>
+
+  <!-- blush cheeks -->
+  <ellipse cx="168" cy="250" rx="23" ry="13" fill="#f49fd2" opacity="0.55"/>
+  <ellipse cx="344" cy="250" rx="23" ry="13" fill="#f49fd2" opacity="0.55"/>
+
+  <!-- eyes -->
+  <ellipse cx="206" cy="206" rx="17" ry="22" fill="#1b1430"/>
+  <ellipse cx="306" cy="206" rx="17" ry="22" fill="#1b1430"/>
+  <circle cx="200" cy="197" r="5.5" fill="#ffffff"/>
+  <circle cx="300" cy="197" r="5.5" fill="#ffffff"/>
+
+  <!-- smile -->
+  <path d="M212 244 Q256 286 300 244" fill="none" stroke="#1b1430"
+        stroke-width="9" stroke-linecap="round"/>
+</svg>

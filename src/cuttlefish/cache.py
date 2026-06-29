@@ -1,4 +1,4 @@
-"""Build manifest: hashing and load/save of ``.ass/cache.json``.
+"""Build manifest: hashing and load/save of ``.ctf/cache.json``.
 
 The manifest records what was built last time so the next build can skip work.
 Milestone 1 (hybrid) uses ``config_hash``, per-content hashes, template hashes,
@@ -12,7 +12,7 @@ import json
 from dataclasses import dataclass, field
 from pathlib import Path
 
-CACHE_DIR = ".ass"
+CACHE_DIR = ".ctf"
 CACHE_FILE = "cache.json"
 MANIFEST_VERSION = 2
 

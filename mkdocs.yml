@@ -1,4 +1,4 @@
-site_name: ass
+site_name: cuttlefish
 site_description: Agentic static site generator — agent-driven sites from config, templates, and Markdown
 docs_dir: docs
 

@@ -9,9 +9,9 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from ass.config import SiteConfig, Taxonomy
-from ass.content import ContentItem
-from ass.permalink import resolve_permalink, slugify
+from cuttlefish.config import SiteConfig, Taxonomy
+from cuttlefish.content import ContentItem
+from cuttlefish.permalink import resolve_permalink, slugify
 
 
 @dataclass(frozen=True)

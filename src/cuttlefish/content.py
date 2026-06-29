@@ -26,9 +26,9 @@ from pathlib import Path
 
 import mistune
 
-from ass.config import SiteConfig
-from ass.errors import AssError
-from ass.permalink import resolve_permalink, slugify
+from cuttlefish.config import SiteConfig
+from cuttlefish.errors import CuttlefishError
+from cuttlefish.permalink import resolve_permalink, slugify
 
 CONTENT_DIR = "content"
 FRONT_MATTER_FENCE = "+++"
@@ -43,7 +43,7 @@ _markdown = mistune.create_markdown(
 )
 
 
-class ContentError(AssError):
+class ContentError(CuttlefishError):
     """Raised when a content file cannot be parsed."""
 
     default_summary = "Failed to parse content"
@@ -105,7 +105,7 @@ class ContentItem:
         """
         import json
 
-        from ass.cache import hash_text
+        from cuttlefish.cache import hash_text
 
         payload = {
             "title": self.title,

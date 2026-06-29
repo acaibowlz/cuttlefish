@@ -1,7 +1,7 @@
 +++
 title = "Hello, World"
 date = 2026-06-01
-summary = "The first post on this ass-powered site."
+summary = "The first post on this cuttlefish-powered site."
 tags = ["meta", "python"]
 draft = false
 +++
@@ -12,7 +12,7 @@ Edit the front matter above (between the `+++` fences) to change the title,
 date, summary, or tags. Everything below the fences is **Markdown**.
 
 ```python
-print("ass builds this with mistune")
+print("cuttlefish builds this with mistune")
 ```
 
 - Lists work

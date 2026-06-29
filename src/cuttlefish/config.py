@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from ass.errors import AssError
+from cuttlefish.errors import CuttlefishError
 
 #: The content type name reserved for standalone pages (no index, no taxonomy).
 PAGES_TYPE = "pages"
@@ -23,7 +23,7 @@ CONFIG_FILENAME = "config.toml"
 
 #: Where config errors point users for the full key reference.
 #: TODO: update to the published Configuration docs page once it is hosted.
-CONFIG_DOCS_URL = "https://example.com/ass/configuration"
+CONFIG_DOCS_URL = "https://example.com/cuttlefish/configuration"
 
 #: Allowed keys for each strictly-validated config scope. Unknown keys are
 #: rejected — they are almost always typos that would otherwise be silently
@@ -37,7 +37,7 @@ _HOME_KEYS = frozenset({"template", "recent"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
 
-class ConfigError(AssError):
+class ConfigError(CuttlefishError):
     """Raised when ``config.toml`` is missing or invalid."""
 
     default_summary = "Failed to load config"

@@ -15,7 +15,7 @@ def test_full_build_outputs(site: Path, build):
         "blog/index.html",
         "blog/hello-world/index.html",
         "projects/index.html",
-        "projects/ass/index.html",
+        "projects/cuttlefish/index.html",
         "about/index.html",
         "tags/index.html",
         "tags/meta/index.html",
@@ -79,7 +79,7 @@ def test_base_path_change_invalidates_cache(site: Path, build):
     build(site)                                  # full, prefix /repo
     assert 'href="/repo/blog/"' in read(site, "index.html")
 
-    stats = build(site, base_path="")            # how `ass serve` builds
+    stats = build(site, base_path="")            # how `ctf serve` builds
     assert stats.mode == "full"                  # prefix change busts the cache
     home = read(site, "index.html")
     assert 'href="/blog/"' in home
@@ -98,7 +98,7 @@ def test_sitemap_skipped_without_base_url(site: Path, build):
 def test_listing_is_summary_only(site: Path, build):
     """The blog index must NOT contain a post's rendered body."""
     build(site)
-    body_marker = "ass builds this with mistune"  # appears in hello-world body
+    body_marker = "cuttlefish builds this with mistune"  # appears in hello-world body
     assert body_marker in read(site, "blog/hello-world/index.html")
     assert body_marker not in read(site, "blog/index.html")
 

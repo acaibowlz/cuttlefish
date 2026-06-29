@@ -7,8 +7,8 @@ from pathlib import Path
 import pytest
 from rich.console import Console
 
-from ass.build import build_site
-from ass.scaffold import scaffold_site
+from cuttlefish.build import build_site
+from cuttlefish.scaffold import scaffold_site
 
 
 @pytest.fixture

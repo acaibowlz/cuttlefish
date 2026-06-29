@@ -19,11 +19,11 @@ import json
 from collections.abc import Callable
 from dataclasses import dataclass
 
-from ass.cache import hash_text
-from ass.config import SiteConfig
-from ass.content import ContentItem
-from ass.render import Renderer
-from ass.taxonomy import TaxonomyData
+from cuttlefish.cache import hash_text
+from cuttlefish.config import SiteConfig
+from cuttlefish.content import ContentItem
+from cuttlefish.render import Renderer
+from cuttlefish.taxonomy import TaxonomyData
 
 
 @dataclass

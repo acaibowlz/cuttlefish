@@ -14,12 +14,12 @@ import re
 from datetime import date, datetime
 from pathlib import Path
 
-from ass.errors import AssError
+from cuttlefish.errors import CuttlefishError
 
 _TOKEN_RE = re.compile(r"\{(\w+)\}")
 
 
-class PermalinkError(AssError):
+class PermalinkError(CuttlefishError):
     """Raised when a permalink pattern references an unknown/missing token."""
 
     default_summary = "Failed to resolve permalink"

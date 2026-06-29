@@ -1,6 +1,6 @@
-# Agent guide for this `ass` site
+# Agent guide for this `cuttlefish` site
 
-This site is built by **ass** (agentic static site generator). You (the agent)
+This site is built by **cuttlefish** (agentic static site generator). You (the agent)
 drive it by editing plain files. This document is the source of truth for how.
 
 ## Project map
@@ -13,9 +13,9 @@ drive it by editing plain files. This document is the source of truth for how.
 | `templates/*.html` | Jinja2 templates (theming & layout). | ✅ |
 | `static/**` | CSS/JS/images copied verbatim to the site root. | ✅ |
 | `public/` | **Generated** output. Never edit by hand. | ❌ |
-| `.ass/` | **Generated** build cache. Never edit by hand. | ❌ |
+| `.ctf/` | **Generated** build cache. Never edit by hand. | ❌ |
 
-Build with `ass build`. Preview live with `ass serve` (watches files and
+Build with `ctf build`. Preview live with `ctf serve` (watches files and
 reloads the browser). A `public/sitemap.xml` of every page is generated
 automatically when `base_url` is set.
 
@@ -26,7 +26,7 @@ site's absolute origin (e.g. `https://example.com`); it builds absolute URLs
 such as the `sitemap.xml` entries, so set it for production. If it includes a
 **subpath** (e.g. `https://you.github.io/repo`), that path (`/repo`) is
 prefixed to every internal link and asset automatically, so the site works when
-served under a subfolder — a GitHub Pages project site, for example. `ass serve`
+served under a subfolder — a GitHub Pages project site, for example. `ctf serve`
 ignores the subpath and previews at the local root.
 
 ### Add a content type
@@ -108,7 +108,7 @@ slug = "my-post"           # optional; defaults to the filename
 
 - A file's **content type** is its folder under `content/` (e.g.
   `content/blog/x.md` → type `blog`).
-- `draft = true` hides a page from `ass build` (shown by `ass serve`).
+- `draft = true` hides a page from `ctf build` (shown by `ctf serve`).
 
 ## Permalink tokens
 

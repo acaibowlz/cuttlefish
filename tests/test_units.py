@@ -4,11 +4,11 @@ from __future__ import annotations
 
 import pytest
 
-from ass.config import ConfigError, parse_config
-from ass.content import split_front_matter
-from ass.permalink import PermalinkError, resolve_permalink, slugify
-from ass.render import _prefix_links
-from ass.sitemap import _output_to_url, render_sitemap
+from cuttlefish.config import ConfigError, parse_config
+from cuttlefish.content import split_front_matter
+from cuttlefish.permalink import PermalinkError, resolve_permalink, slugify
+from cuttlefish.render import _prefix_links
+from cuttlefish.sitemap import _output_to_url, render_sitemap
 
 
 def test_split_front_matter_basic():
@@ -24,7 +24,7 @@ def test_split_front_matter_none():
 
 
 def test_split_front_matter_unclosed():
-    from ass.content import ContentError
+    from cuttlefish.content import ContentError
 
     with pytest.raises(ContentError):
         split_front_matter('+++\ntitle = "Hi"\n# never closed\n')

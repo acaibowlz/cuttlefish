@@ -1,4 +1,4 @@
-/* Default theme for ass — a clean reading-first look inspired by minimalist
+/* Default theme for cuttlefish — a clean reading-first look inspired by minimalist
    SSG themes (Hugo PaperMod, Astro Paper). Light + dark via prefers-color-scheme.
    All colors/spacing flow from the tokens in :root; prefer var(--token) over
    hardcoded values, and add a token rather than sprinkling literals. */

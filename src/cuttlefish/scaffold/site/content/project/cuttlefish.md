@@ -1,10 +1,10 @@
 +++
-title = "ass"
+title = "cuttlefish"
 summary = "The agentic static site generator powering this site."
-url = "https://example.com/ass"
+url = "https://example.com/cuttlefish"
 +++
 
-**ass** is an agentic static site generator. It builds sites from a single
+**cuttlefish** is an agentic static site generator. It builds sites from a single
 `config.toml`, Jinja2 templates, and Markdown content.
 
 Projects are a separate content type from blog posts — defined under

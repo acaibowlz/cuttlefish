@@ -19,10 +19,10 @@ from rich.console import Console
 from rich.markup import escape
 from watchfiles import watch
 
-from ass.errors import AssError
+from cuttlefish.errors import CuttlefishError
 
-from ass.build import PUBLIC_DIR, STATIC_DIR, build_site
-from ass.config import CONFIG_FILENAME
+from cuttlefish.build import PUBLIC_DIR, STATIC_DIR, build_site
+from cuttlefish.config import CONFIG_FILENAME
 
 RELOAD_PATH = "/__reload"
 
@@ -41,7 +41,7 @@ _WATCH_DIRS = (STATIC_DIR, "content", "templates")
 def _watch_filter(_change, path: str) -> bool:
     """Include only inputs; ignore generated output and the cache."""
     parts = Path(path).parts
-    if PUBLIC_DIR in parts or ".ass" in parts:
+    if PUBLIC_DIR in parts or ".ctf" in parts:
         return False
     if path.endswith(CONFIG_FILENAME):
         return True
@@ -49,7 +49,7 @@ def _watch_filter(_change, path: str) -> bool:
 
 
 class _Handler(BaseHTTPRequestHandler):
-    server_version = "ass-dev"
+    server_version = "cuttlefish-dev"
 
     def log_message(self, *_args) -> None:  # quiet by default
         pass
@@ -159,13 +159,13 @@ def _watch_loop(
                 f"[dim]·[/dim] {stats.counts_str}"
             )
             server.broadcast("reload")
-        except AssError as exc:  # keep the server alive on build errors
+        except CuttlefishError as exc:  # keep the server alive on build errors
             console.print(
-                f"[red]✗[/red] {escape(exc.summary)} "
+                f"[bold red]error:[/bold red] {escape(exc.summary)} "
                 f"[dim]·[/dim] {escape(exc.detail)}"
             )
         except Exception as exc:  # unexpected bug: still don't kill the server
-            console.print(f"[red]✗[/red] Build failed: {escape(str(exc))}")
+            console.print(f"[bold red]error:[/bold red] Build failed: {escape(str(exc))}")
 
 
 def serve_site(

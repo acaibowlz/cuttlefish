@@ -19,16 +19,16 @@ from types import SimpleNamespace
 from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
 from jinja2 import TemplateSyntaxError
 
-from ass.config import ContentType, SiteConfig
-from ass.content import ContentItem, ListingItem
-from ass.errors import AssError
-from ass.permalink import output_path
-from ass.taxonomy import TaxonomyData, Term, term_links
+from cuttlefish.config import ContentType, SiteConfig
+from cuttlefish.content import ContentItem, ListingItem
+from cuttlefish.errors import CuttlefishError
+from cuttlefish.permalink import output_path
+from cuttlefish.taxonomy import TaxonomyData, Term, term_links
 
 TEMPLATES_DIR = "templates"
 
 
-class RenderError(AssError):
+class RenderError(CuttlefishError):
     """Raised when a template fails to render."""
 
     default_summary = "Failed to render template"
