@@ -34,7 +34,6 @@ _CONTENT_TYPE_KEYS = frozenset(
 )
 _TAXONOMY_KEYS = frozenset({"template", "permalink", "index_template", "index_permalink"})
 _HOME_KEYS = frozenset({"template", "recent"})
-_HOME_RECENT_KEYS = frozenset({"type", "count"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
 
@@ -99,9 +98,9 @@ class HomeConfig:
     """The landing page configuration."""
 
     template: str
-    #: Optional aggregation: {"type": "blog", "count": 5} -> recent items.
-    recent_type: str | None = None
-    recent_count: int = 5
+    #: Landing-page sections: content-type name -> number of recent items to
+    #: pass to the template (exposed as ``recent.<type>``).
+    recent: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -195,15 +194,20 @@ def _parse_home(data: dict) -> HomeConfig:
     if not isinstance(data, dict):
         raise ConfigError(f"{where} must be a table.")
     _reject_unknown_keys(data, _HOME_KEYS, where)
-    recent = data.get("recent") or {}
-    if recent and not isinstance(recent, dict):
-        raise ConfigError(f"{where} 'recent' must be a table like {{ type = ..., count = ... }}.")
-    _reject_unknown_keys(recent, _HOME_RECENT_KEYS, f"{where} 'recent'")
-    return HomeConfig(
-        template=str(_require(data, "template", where)),
-        recent_type=recent.get("type"),
-        recent_count=int(recent.get("count", 5)),
-    )
+    raw_recent = data.get("recent") or {}
+    if not isinstance(raw_recent, dict):
+        raise ConfigError(
+            f"{where} 'recent' must be a table of content-type = count, "
+            "e.g. {{ blog = 5, project = 3 }}."
+        )
+    recent: dict[str, int] = {}
+    for type_name, count in raw_recent.items():
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise ConfigError(
+                f"{where} 'recent.{type_name}' must be a non-negative integer, got {count!r}."
+            )
+        recent[type_name] = count
+    return HomeConfig(template=str(_require(data, "template", where)), recent=recent)
 
 
 def _parse_nav(data: dict) -> NavConfig:
@@ -246,6 +250,12 @@ def parse_config(raw: dict) -> SiteConfig:
             f"[content_types.{PAGES_TYPE}] is for standalone pages and must not "
             "declare 'index_template'/'index_permalink'."
         )
+    if home is not None:
+        for type_name in home.recent:
+            if type_name not in content_types:
+                raise ConfigError(
+                    f"[home] 'recent' references unknown content type {type_name!r}."
+                )
 
     base_url = str(raw.get("base_url", "")).rstrip("/")
     return SiteConfig(

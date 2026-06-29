@@ -107,12 +107,34 @@ def test_config_unknown_keys_rejected():
         {"content_types": {"blog": {**ct, "index_tempalte": "i.html"}}}, # content type
         {"taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/", "paginate": 5}}},
         {"home": {"template": "h.html", "recnt": {}}},                   # home
-        {"home": {"template": "h.html", "recent": {"type": "blog", "cnt": 5}}},  # nested recent
         {"nav": {"enabledd": True}},                                     # nav
     ]
     for raw in bad_configs:
         with pytest.raises(ConfigError):
             parse_config(raw)
+
+
+def test_home_recent_multiple_sections():
+    cfg = parse_config({
+        "content_types": {
+            "blog": {"template": "b.html", "permalink": "/b/{slug}/"},
+            "project": {"template": "p.html", "permalink": "/p/{slug}/"},
+        },
+        "home": {"template": "home.html", "recent": {"blog": 5, "project": 3}},
+    })
+    assert cfg.home.recent == {"blog": 5, "project": 3}
+
+
+def test_home_recent_validation():
+    base = {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/"}}}
+
+    def home(recent):
+        return {**base, "home": {"template": "home.html", "recent": recent}}
+
+    # Unknown content type, bad counts.
+    for recent in ({"blgo": 5}, {"blog": -1}, {"blog": "five"}, {"blog": True}):
+        with pytest.raises(ConfigError):
+            parse_config(home(recent))
 
 
 def test_sitemap_output_to_url():

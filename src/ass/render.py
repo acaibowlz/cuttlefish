@@ -209,15 +209,19 @@ class Renderer:
             self._write(data.index_output_rel, html)
         return data.index_output_rel
 
-    def render_home(self, recent: list[ContentItem]) -> str | None:
-        """Render the landing page (recent items as summary-only listings)."""
+    def render_home(self, recent: dict[str, list[ContentItem]]) -> str | None:
+        """Render the landing page (recent items per type, summary-only).
+
+        ``recent`` is exposed to the template as a mapping of content-type name
+        to its listings, so the template addresses sections by key
+        (``recent.blog``) rather than being forced to loop over them.
+        """
         home = self.config.home
         if home is None:
             return None
+        sections = {name: [i.listing for i in items] for name, items in recent.items()}
         with _render_step("index.html"):
-            html = self.env.get_template(home.template).render(
-                recent=[i.listing for i in recent]
-            )
+            html = self.env.get_template(home.template).render(recent=sections)
             self._write("index.html", html)
         return "index.html"
 

@@ -97,14 +97,18 @@ def build_aggregate_specs(
     # Home.
     home = config.home
     if home is not None:
-        recent: list[ContentItem] = []
-        if home.recent_type is not None:
-            recent = grouped.get(home.recent_type, [])[: home.recent_count]
+        recent = {
+            type_name: grouped.get(type_name, [])[:count]
+            for type_name, count in home.recent.items()
+        }
+        # Fingerprint over every section's items, salted with the section names
+        # (and their order), so adding/reordering a section also rebuilds home.
+        members = [item for items in recent.values() for item in items]
         specs.append(
             AggregateSpec(
                 key="home",
                 template=home.template,
-                fingerprint=_members_fingerprint(recent, "home"),
+                fingerprint=_members_fingerprint(members, "home:" + ",".join(recent)),
                 outputs=["index.html"],
                 render=(lambda r=recent: [x for x in [renderer.render_home(r)] if x]),
             )

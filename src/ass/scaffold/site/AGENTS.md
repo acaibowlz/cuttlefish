@@ -68,8 +68,13 @@ taxonomy participation. Do **not** give it `index_template`/`index_permalink`.
 ```toml
 [home]
 template = "home.html"
-recent = { type = "blog", count = 5 }   # optional aggregation for the landing page
+recent = { blog = 5, project = 3 }   # sections: content-type = how many recent items
 ```
+
+`recent` is a table of `content-type = count`. Each becomes a section the home
+template reads by key as `recent.<type>` (e.g. `recent.blog`) — a list of
+summary-only items — so you can show several types and order/title them freely.
+Every key must name a declared content type.
 
 ### Navigation bar
 
@@ -125,7 +130,7 @@ Variables per template kind:
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
 | taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |
-| home (`home.html`) | `recent` (summary only) |
+| home (`home.html`) | `recent` — map of content-type → summary-only items (`recent.blog`) |
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
 > home) may use only **summary fields** — `title`, `date`, `summary`, `slug`,
