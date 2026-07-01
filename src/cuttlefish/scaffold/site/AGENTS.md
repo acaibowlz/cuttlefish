@@ -168,6 +168,15 @@ consistent as you edit it:
   (prefers-color-scheme: dark)` block that overrides the same tokens. Because
   everything reads from tokens, you get light/dark for free — keep it that way by
   styling through tokens, not fixed colors.
+- **Keep it responsive.** Responsive, mobile-first layout is the goal on any
+  screen — however you build, size layout in relative units (`rem`/`%`/`ch`) or
+  `clamp()` rather than fixed pixel widths, let content reflow, and make images
+  scale (`max-width: 100%`); `base.html` sets the `viewport` meta tag. The
+  starter theme only *demonstrates* one way (you're free to restyle or replace
+  it): a fluid column capped at `--max-width`, `flex`/`flex-wrap` rows, and a
+  `@media (max-width: 40rem)` block that collapses the nav into a CSS-only burger
+  menu. Mirror that pattern if you keep it — or roll your own. Either way,
+  sanity-check narrow widths before calling a change done.
 - **Prefer semantic classes over utility soup or inline styles.** Style by
   meaning (`.post-list`, `.site-header`, `.tags`), not by appearance
   (`.mt-4`, `style="..."`). It keeps templates readable and changes localized to
