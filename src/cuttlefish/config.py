@@ -35,7 +35,8 @@ _CONTENT_TYPE_KEYS = frozenset(
 _TAXONOMY_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "multiple"}
 )
-_HOME_KEYS = frozenset({"template", "recent"})
+_HOME_KEYS = frozenset({"template", "recent", "taxonomies"})
+_HOME_TAXONOMY_KEYS = frozenset({"sort_by", "order"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
 
@@ -100,6 +101,24 @@ class Taxonomy:
 
 
 @dataclass(frozen=True)
+class HomeTaxonomy:
+    """A taxonomy surfaced on the landing page as a list of its terms.
+
+    Each term is exposed to the home template with ``name``, ``count`` and
+    ``url`` (e.g. a tag cloud or a category list). All terms are passed; the
+    template does any slicing.
+    """
+
+    name: str
+    sort_by: str = "count"  # "count" (most-used first) or "name" (the term text)
+    order: str = "desc"  # "desc" or "asc"
+
+    @property
+    def descending(self) -> bool:
+        return self.order == "desc"
+
+
+@dataclass(frozen=True)
 class HomeConfig:
     """The landing page configuration."""
 
@@ -107,6 +126,9 @@ class HomeConfig:
     #: Landing-page sections: content-type name -> number of recent items to
     #: pass to the template (exposed as ``recent.<type>``).
     recent: dict[str, int] = field(default_factory=dict)
+    #: Taxonomies to surface as term lists, keyed by taxonomy name (exposed as
+    #: ``taxonomies.<name>``).
+    taxonomies: dict[str, HomeTaxonomy] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -217,7 +239,34 @@ def _parse_home(data: dict) -> HomeConfig:
                 f"{where} 'recent.{type_name}' must be a non-negative integer, got {count!r}."
             )
         recent[type_name] = count
-    return HomeConfig(template=str(_require(data, "template", where)), recent=recent)
+    raw_taxonomies = data.get("taxonomies") or {}
+    if not isinstance(raw_taxonomies, dict):
+        raise ConfigError(
+            f"{where} 'taxonomies' must be a table of taxonomy-name = "
+            "{{ sort_by, order }}."
+        )
+    taxonomies = {
+        name: _parse_home_taxonomy(name, opts) for name, opts in raw_taxonomies.items()
+    }
+    return HomeConfig(
+        template=str(_require(data, "template", where)),
+        recent=recent,
+        taxonomies=taxonomies,
+    )
+
+
+def _parse_home_taxonomy(name: str, data: dict) -> HomeTaxonomy:
+    where = f"[home.taxonomies.{name}]"
+    if not isinstance(data, dict):
+        raise ConfigError(f"{where} must be a table.")
+    _reject_unknown_keys(data, _HOME_TAXONOMY_KEYS, where)
+    sort_by = str(data.get("sort_by", "count")).lower()
+    if sort_by not in ("count", "name"):
+        raise ConfigError(f"{where} 'sort_by' must be \"count\" or \"name\", got {sort_by!r}.")
+    order = str(data.get("order", "desc")).lower()
+    if order not in ("asc", "desc"):
+        raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
+    return HomeTaxonomy(name=name, sort_by=sort_by, order=order)
 
 
 def _parse_nav(data: dict) -> NavConfig:
@@ -265,6 +314,11 @@ def parse_config(raw: dict) -> SiteConfig:
             if type_name not in content_types:
                 raise ConfigError(
                     f"[home] 'recent' references unknown content type {type_name!r}."
+                )
+        for tax_name in home.taxonomies:
+            if tax_name not in taxonomies:
+                raise ConfigError(
+                    f"[home] 'taxonomies' references unknown taxonomy {tax_name!r}."
                 )
 
     base_url = str(raw.get("base_url", "")).rstrip("/")

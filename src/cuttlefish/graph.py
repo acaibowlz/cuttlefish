@@ -23,7 +23,7 @@ from cuttlefish.cache import hash_text
 from cuttlefish.config import SiteConfig
 from cuttlefish.content import ContentItem
 from cuttlefish.render import Renderer
-from cuttlefish.taxonomy import TaxonomyData
+from cuttlefish.taxonomy import TaxonomyData, home_taxonomy_terms
 
 
 @dataclass
@@ -101,16 +101,32 @@ def build_aggregate_specs(
             type_name: grouped.get(type_name, [])[:count]
             for type_name, count in home.recent.items()
         }
+        home_taxonomies = {
+            name: home_taxonomy_terms(taxonomies[name], spec)
+            for name, spec in home.taxonomies.items()
+            if name in taxonomies
+        }
         # Fingerprint over every section's items, salted with the section names
-        # (and their order), so adding/reordering a section also rebuilds home.
+        # (and their order) plus each surfaced taxonomy's terms and counts, so
+        # adding/reordering a section or changing a term's usage rebuilds home.
         members = [item for items in recent.values() for item in items]
+        tax_salt = json.dumps(
+            {name: [(t.name, t.count) for t in terms] for name, terms in home_taxonomies.items()},
+            sort_keys=True,
+        )
         specs.append(
             AggregateSpec(
                 key="home",
                 template=home.template,
-                fingerprint=_members_fingerprint(members, "home:" + ",".join(recent)),
+                fingerprint=_members_fingerprint(
+                    members, "home:" + ",".join(recent) + "|tax:" + tax_salt
+                ),
                 outputs=["index.html"],
-                render=(lambda r=recent: [x for x in [renderer.render_home(r)] if x]),
+                render=(
+                    lambda r=recent, t=home_taxonomies: [
+                        x for x in [renderer.render_home(r, t)] if x
+                    ]
+                ),
             )
         )
 

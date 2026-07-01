@@ -7,6 +7,14 @@ template = "home.html"
 # `recent.<type>` (e.g. recent.blog), so add/remove types freely.
 recent = { blog = 5, project = 3 }
 
+# Taxonomy term lists on the home page. The template reads each as
+# `taxonomies.<name>` — a list of terms with `name`, `count`, `url` (all terms
+# are passed; slice in the template if you want fewer). sort_by is "count"
+# (default) or "name"; order is "desc" (default) or "asc".
+[home.taxonomies.tags]
+sort_by = "count"
+order = "desc"
+
 # Navigation bar. `labels` and `links` are paired by position and must be the
 # same length. Set `enabled = false` to hide the nav without deleting entries.
 [nav]

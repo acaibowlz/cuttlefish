@@ -72,12 +72,22 @@ taxonomy participation. Do **not** give it `index_template`/`index_permalink`.
 [home]
 template = "home.html"
 recent = { blog = 5, project = 3 }   # sections: content-type = how many recent items
+
+[home.taxonomies.tags]               # term lists: one table per taxonomy
+sort_by = "count"                    # "count" (default) or "name"
+order   = "desc"                     # "desc" (default) or "asc"
 ```
 
 `recent` is a table of `content-type = count`. Each becomes a section the home
 template reads by key as `recent.<type>` (e.g. `recent.blog`) — a list of
 summary-only items — so you can show several types and order/title them freely.
 Every key must name a declared content type.
+
+`[home.taxonomies.<name>]` surfaces a taxonomy's terms on the home page, read
+by key as `taxonomies.<name>` (e.g. `taxonomies.tags`) — a list of terms, each
+with `name`, `count` and `url`. Use it for a tag cloud (`sort_by = "count"`) or
+a category list (`sort_by = "name"`). All terms are passed; slice in the
+template if you want fewer. Every key must name a declared taxonomy.
 
 ### Navigation bar
 
@@ -133,7 +143,7 @@ Variables per template kind:
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
 | taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |
-| home (`home.html`) | `recent` — map of content-type → summary-only items (`recent.blog`) |
+| home (`home.html`) | `recent` — map of content-type → summary-only items (`recent.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`) |
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
 > home) may use only **summary fields** — `title`, `date`, `summary`, `slug`,

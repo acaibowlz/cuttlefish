@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from cuttlefish.config import SiteConfig, Taxonomy
+from cuttlefish.config import HomeTaxonomy, SiteConfig, Taxonomy
 from cuttlefish.content import ContentItem
 from cuttlefish.permalink import resolve_permalink, slugify
 
@@ -19,6 +19,15 @@ class TermLink:
     """A term resolved to its page URL, for linking from content templates."""
 
     name: str
+    url: str
+
+
+@dataclass(frozen=True)
+class HomeTerm:
+    """A taxonomy term exposed on the landing page (name, item count, URL)."""
+
+    name: str
+    count: int
     url: str
 
 
@@ -81,6 +90,20 @@ def term_links(item: ContentItem, config: SiteConfig) -> dict[str, list[TermLink
             for term_name in terms
         ]
     return links
+
+
+def home_taxonomy_terms(data: TaxonomyData, spec: HomeTaxonomy) -> list[HomeTerm]:
+    """Sort a taxonomy's terms per the home config into ``HomeTerm`` views.
+
+    Name is always the tiebreaker (ascending), so equal-count terms stay in a
+    stable, readable order regardless of the primary sort.
+    """
+    terms = sorted(data.terms.values(), key=lambda t: t.name.lower())
+    if spec.sort_by == "count":
+        terms.sort(key=lambda t: t.count, reverse=spec.descending)
+    elif spec.descending:
+        terms.reverse()
+    return [HomeTerm(name=t.name, count=t.count, url=t.url) for t in terms]
 
 
 def build_taxonomies(items: list[ContentItem], config: SiteConfig) -> dict[str, TaxonomyData]:

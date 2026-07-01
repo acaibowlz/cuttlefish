@@ -202,6 +202,51 @@ time { color: var(--muted); font-size: 0.85rem; }
 .hero p { font-size: 1.15rem; color: var(--muted); margin-bottom: 0; }
 
 .recent h2 { margin-top: 0; }
+.home-main > .recent + .recent h2 { margin-top: 2.5rem; }
+
+/* Home layout: a genuine two-column landing page. The home page widens the
+   shared container (via --max-width on body.home) so the reading column and
+   the sidebar both get real room; the header and footer widen with it and
+   stay aligned. Collapses to a single column on narrow screens. */
+body.home { --max-width: 64rem; }
+
+.home-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 17rem;
+  gap: 3rem;
+  align-items: start;
+}
+.home-aside {
+  position: sticky;
+  top: 5rem;   /* clear the sticky header */
+}
+
+/* Sidebar widgets: a subtle card so the sidebar reads as a distinct column. */
+.widget {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.1rem 1.25rem 1.25rem;
+}
+.widget + .widget { margin-top: 1.5rem; }
+.widget-title {
+  margin: 0 0 0.9rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+}
+.widget .tags { margin: 0; }
+/* Pills sit on the card, so give them the page background to stand out against
+   the card's surface fill (the two share var(--surface) otherwise). */
+.widget .tags li a { background: var(--bg); }
+.tag-count { color: var(--muted); font-size: 0.75em; }
+
+@media (max-width: 48rem) {
+  .home-grid { grid-template-columns: 1fr; gap: 2rem; }
+  .home-aside { position: static; }
+}
 
 /* -- listings ------------------------------------------------------------ */
 

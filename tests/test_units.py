@@ -169,6 +169,60 @@ def test_home_recent_validation():
             parse_config(home(recent))
 
 
+def test_home_taxonomies_parsed_with_defaults():
+    cfg = parse_config({
+        "taxonomies": {
+            "tags": {"template": "t.html", "permalink": "/t/{term}/"},
+            "category": {"template": "c.html", "permalink": "/c/{term}/", "multiple": False},
+        },
+        "home": {
+            "template": "home.html",
+            "taxonomies": {"tags": {}, "category": {"sort_by": "name", "order": "asc"}},
+        },
+    })
+    tags = cfg.home.taxonomies["tags"]
+    assert (tags.sort_by, tags.order) == ("count", "desc")  # defaults
+    category = cfg.home.taxonomies["category"]
+    assert (category.sort_by, category.order) == ("name", "asc")
+
+
+def test_home_taxonomies_validation():
+    tax = {"tags": {"template": "t.html", "permalink": "/t/{term}/"}}
+
+    def home(taxonomies):
+        return {"taxonomies": tax, "home": {"template": "home.html", "taxonomies": taxonomies}}
+
+    bad = [
+        {"tages": {}},                       # unknown taxonomy name
+        {"tags": {"sort_by": "date"}},       # bad sort_by
+        {"tags": {"order": "up"}},           # bad order
+        {"tags": {"limit": 5}},              # unknown key
+    ]
+    for taxonomies in bad:
+        with pytest.raises(ConfigError):
+            parse_config(home(taxonomies))
+
+
+def test_home_taxonomy_terms_sorting():
+    from cuttlefish.config import HomeTaxonomy
+    from cuttlefish.taxonomy import Term, TaxonomyData, home_taxonomy_terms
+
+    cfg = parse_config({"taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/"}}})
+    data = TaxonomyData(taxonomy=cfg.taxonomies["tags"])
+    for name, n in [("python", 3), ("meta", 3), ("ssg", 7)]:
+        term = Term(taxonomy="tags", name=name, url=f"/t/{name}/", output_rel=f"t/{name}/index.html")
+        term.items = list(range(n))
+        data.terms[name] = term
+
+    def names(sort_by, order):
+        return [t.name for t in home_taxonomy_terms(data, HomeTaxonomy("tags", sort_by, order))]
+
+    # count/desc: most-used first, alphabetical tiebreak for the two 3s.
+    assert names("count", "desc") == ["ssg", "meta", "python"]
+    assert names("name", "asc") == ["meta", "python", "ssg"]
+    assert names("name", "desc") == ["ssg", "python", "meta"]
+
+
 def test_sitemap_output_to_url():
     assert _output_to_url("index.html") == "/"
     assert _output_to_url("blog/index.html") == "/blog/"
