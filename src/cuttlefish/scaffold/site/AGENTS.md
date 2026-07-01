@@ -53,10 +53,13 @@ template = "taxonomy.html"            # term page (required)
 index_template = "taxonomy.index.html"  # all-terms page (optional)
 permalink = "/categories/{term}/"     # required
 index_permalink = "/categories/"      # required if index_template is set
+multiple = false                      # single term (default true = list)
 ```
 
-Apply it by adding the key to a content file's front matter:
-`category = ["tutorials"]`.
+Apply it by adding the key to a content file's front matter. `multiple`
+decides the front-matter shape: `true` (default) requires a list
+(`tags = ["python", "ssg"]`); `false` requires a single string
+(`category = "AI"`). The wrong shape is a build error.
 
 ### The `pages` type
 

@@ -157,18 +157,24 @@ def split_front_matter(text: str) -> tuple[dict, str]:
 def _extract_taxonomies(meta: dict, config: SiteConfig) -> dict[str, list[str]]:
     """Pull configured-taxonomy terms out of the front matter."""
     result: dict[str, list[str]] = {}
-    for name in config.taxonomies:
+    for name, taxonomy in config.taxonomies.items():
         value = meta.get(name)
         if value is None:
             continue
-        if isinstance(value, str):
-            terms = [value]
-        elif isinstance(value, (list, tuple)):
+        if taxonomy.multiple:
+            if not isinstance(value, (list, tuple)):
+                raise ContentError(
+                    f"Taxonomy '{name}' expects a list of terms (multiple = true), "
+                    f"got {type(value).__name__}."
+                )
             terms = [str(v) for v in value]
         else:
-            raise ContentError(
-                f"Taxonomy '{name}' must be a string or list of strings, got {type(value).__name__}."
-            )
+            if not isinstance(value, str):
+                raise ContentError(
+                    f"Taxonomy '{name}' expects a single term (multiple = false), "
+                    f"got {type(value).__name__}."
+                )
+            terms = [value]
         result[name] = [t for t in terms if t]
     return result
 

@@ -5,7 +5,7 @@ from __future__ import annotations
 import pytest
 
 from cuttlefish.config import ConfigError, parse_config
-from cuttlefish.content import split_front_matter
+from cuttlefish.content import ContentError, _extract_taxonomies, split_front_matter
 from cuttlefish.permalink import PermalinkError, resolve_permalink, slugify
 from cuttlefish.render import _prefix_links
 from cuttlefish.sitemap import _output_to_url, render_sitemap
@@ -112,6 +112,38 @@ def test_config_unknown_keys_rejected():
     for raw in bad_configs:
         with pytest.raises(ConfigError):
             parse_config(raw)
+
+
+def _tax_config(**taxonomy_extra):
+    tax = {"template": "t.html", "permalink": "/t/{term}/", **taxonomy_extra}
+    return parse_config({"taxonomies": {"tags": tax}})
+
+
+def test_taxonomy_multiple_defaults_true():
+    assert _tax_config().taxonomies["tags"].multiple is True
+
+
+def test_taxonomy_multiple_must_be_bool():
+    with pytest.raises(ConfigError):
+        _tax_config(multiple="yes")
+
+
+def test_extract_taxonomies_multiple_requires_list():
+    config = _tax_config(multiple=True)
+    assert _extract_taxonomies({"tags": ["travel", "japan"]}, config) == {
+        "tags": ["travel", "japan"]
+    }
+    # A bare string is rejected when the taxonomy expects multiple terms.
+    with pytest.raises(ContentError):
+        _extract_taxonomies({"tags": "travel"}, config)
+
+
+def test_extract_taxonomies_single_requires_string():
+    config = _tax_config(multiple=False)
+    assert _extract_taxonomies({"tags": "AI"}, config) == {"tags": ["AI"]}
+    # A list is rejected when the taxonomy expects a single term.
+    with pytest.raises(ContentError):
+        _extract_taxonomies({"tags": ["AI", "ML"]}, config)
 
 
 def test_home_recent_multiple_sections():

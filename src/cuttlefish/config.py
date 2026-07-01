@@ -32,7 +32,9 @@ _TOP_LEVEL_KEYS = frozenset({"title", "base_url", "content_types", "taxonomies",
 _CONTENT_TYPE_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "paginate", "sort_by", "order"}
 )
-_TAXONOMY_KEYS = frozenset({"template", "permalink", "index_template", "index_permalink"})
+_TAXONOMY_KEYS = frozenset(
+    {"template", "permalink", "index_template", "index_permalink", "multiple"}
+)
 _HOME_KEYS = frozenset({"template", "recent"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
@@ -87,6 +89,10 @@ class Taxonomy:
     permalink: str
     index_template: str | None = None
     index_permalink: str | None = None
+    #: Term cardinality expected in front matter. ``True`` requires a list of
+    #: terms (e.g. ``tags = ["travel", "japan"]``); ``False`` requires a single
+    #: string term (e.g. ``category = "AI"``). Enforced when parsing content.
+    multiple: bool = True
 
     @property
     def has_index(self) -> bool:
@@ -180,12 +186,16 @@ def _parse_taxonomy(name: str, data: dict) -> Taxonomy:
     if not isinstance(data, dict):
         raise ConfigError(f"{where} must be a table.")
     _reject_unknown_keys(data, _TAXONOMY_KEYS, where)
+    multiple = data.get("multiple", True)
+    if not isinstance(multiple, bool):
+        raise ConfigError(f"{where} 'multiple' must be a boolean, got {multiple!r}.")
     return Taxonomy(
         name=name,
         template=str(_require(data, "template", where)),
         permalink=str(_require(data, "permalink", where)),
         index_template=data.get("index_template"),
         index_permalink=data.get("index_permalink"),
+        multiple=multiple,
     )
 
 

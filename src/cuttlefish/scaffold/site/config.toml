@@ -41,3 +41,5 @@ template = "taxonomy.html"
 index_template = "taxonomy.index.html"
 permalink = "/tags/{term}/"
 index_permalink = "/tags/"
+# multiple = true  (default) expects a list in front matter: tags = ["a", "b"].
+# Set multiple = false for single-term taxonomies, e.g. category = "AI".
