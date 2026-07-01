@@ -132,7 +132,7 @@ Each file starts with a TOML front-matter block fenced by `+++`, then Markdown:
 +++
 title = "My Post"
 date = 2026-06-21
-summary = "One-line summary used in listings."
+description = "One-line description used in listings."
 draft = false
 tags = ["python", "ssg"]   # any configured taxonomy name
 slug = "my-post"           # optional; defaults to the filename
@@ -143,6 +143,14 @@ slug = "my-post"           # optional; defaults to the filename
 
 - A file's **content type** is its folder under `content/` (e.g.
   `content/blog/x.md` → type `blog`).
+- **Required for every non-`pages` type:** `title`, `description`, and `date`.
+  A missing one fails the build with the offending file named.
+- `date` **must be a plain `YYYY-MM-DD` date** — an unquoted TOML date
+  (`date = 2026-06-21`). A quoted string (`"2026-06-21"`) and a date-time with a
+  time component (`2026-06-21T09:30:00Z`) are both rejected; the parser also
+  validates the calendar date, so an impossible date fails too.
+- The **`pages`** type is exempt — a standalone page needs none of these; its
+  slug defaults to the filename.
 - `draft = true` hides a page from `ctf build` (shown by `ctf serve`).
 
 ## Permalink tokens
@@ -168,8 +176,8 @@ Variables per template kind:
 | home (`home.html`) | `recent` — map of content-type → summary-only items (`recent.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`); `profile` — the `[profile]` block or `None` (also on every page as `site.profile`) |
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
-> home) may use only **summary fields** — `title`, `date`, `summary`, `slug`,
-> `url`, `taxonomies`, `draft`. The full rendered body (`body_html`) is
+> home) may use only **listing fields** — `title`, `date`, `description`,
+> `slug`, `url`, `taxonomies`, `draft`. The full rendered body (`body_html`) is
 > available **only** in single-content and page templates. This keeps
 > incremental builds correct: editing a post's body never forces listings to
 > rebuild.

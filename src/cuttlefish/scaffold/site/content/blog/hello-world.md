@@ -1,7 +1,7 @@
 +++
 title = "Hello, World"
 date = 2026-06-01
-summary = "The first post on this cuttlefish-powered site."
+description = "The first post on this cuttlefish-powered site."
 tags = ["meta", "python"]
 draft = false
 +++
@@ -9,7 +9,7 @@ draft = false
 Welcome to your new site. This post lives at `content/blog/hello-world.md`.
 
 Edit the front matter above (between the `+++` fences) to change the title,
-date, summary, or tags. Everything below the fences is **Markdown**.
+date, description, or tags. Everything below the fences is **Markdown**.
 
 ```python
 print("cuttlefish builds this with mistune")

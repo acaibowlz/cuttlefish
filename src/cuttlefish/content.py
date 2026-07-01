@@ -26,7 +26,7 @@ from pathlib import Path
 
 import mistune
 
-from cuttlefish.config import SiteConfig
+from cuttlefish.config import PAGES_TYPE, SiteConfig
 from cuttlefish.errors import CuttlefishError
 from cuttlefish.permalink import resolve_permalink, slugify
 
@@ -35,7 +35,7 @@ FRONT_MATTER_FENCE = "+++"
 
 #: Front-matter fields exposed to listing templates. Everything an aggregate is
 #: allowed to render lives here; ``body_html`` is intentionally excluded.
-LISTING_FIELDS = ("title", "date", "summary", "slug", "url", "taxonomies", "draft")
+LISTING_FIELDS = ("title", "date", "description", "slug", "url", "taxonomies", "draft")
 
 _markdown = mistune.create_markdown(
     escape=False,
@@ -55,7 +55,7 @@ class ListingItem:
 
     title: str
     date: date | None
-    summary: str
+    description: str
     slug: str
     url: str
     taxonomies: dict[str, list[str]]
@@ -80,8 +80,8 @@ class ContentItem:
         return str(self.meta.get("title", self.slug))
 
     @property
-    def summary(self) -> str:
-        return str(self.meta.get("summary", ""))
+    def description(self) -> str:
+        return str(self.meta.get("description", ""))
 
     @property
     def date(self) -> date | None:
@@ -110,7 +110,7 @@ class ContentItem:
         payload = {
             "title": self.title,
             "date": self.date.isoformat() if self.date else None,
-            "summary": self.summary,
+            "description": self.description,
             "slug": self.slug,
             "url": self.url,
             "taxonomies": {k: sorted(v) for k, v in sorted(self.taxonomies.items())},
@@ -123,7 +123,7 @@ class ContentItem:
         return ListingItem(
             title=self.title,
             date=self.date,
-            summary=self.summary,
+            description=self.description,
             slug=self.slug,
             url=self.url,
             taxonomies=self.taxonomies,
@@ -152,6 +152,43 @@ def split_front_matter(text: str) -> tuple[dict, str]:
     except tomllib.TOMLDecodeError as exc:
         raise ContentError(f"Invalid TOML front matter: {exc}") from exc
     return meta, body
+
+
+def _require_front_matter(meta: dict, type_name: str, err_summary: str) -> None:
+    """Enforce required front matter for dated content types.
+
+    Regular content (blog, project, …) must declare ``title``, ``description``
+    and a ``date``. The standalone ``pages`` type is exempt — a page carries no
+    date and needs only its filename-derived slug.
+
+    ``date`` must be a plain ``YYYY-MM-DD`` value: an unquoted TOML *local date*
+    (``date = 2026-07-02``), not a quoted string and not a date-time. The TOML
+    parser validates the calendar date for us, this avoids the silent trap where
+    a quoted date is ignored entirely, and rejecting a time component keeps every
+    post's date to a single, sortable day.
+    """
+    if type_name == PAGES_TYPE:
+        return
+    for key in ("title", "description"):
+        if not str(meta.get(key, "")).strip():
+            raise ContentError(f"Missing required front-matter '{key}'.", summary=err_summary)
+    if "date" not in meta:
+        raise ContentError("Missing required front-matter 'date'.", summary=err_summary)
+    value = meta["date"]
+    # datetime is a subclass of date, so check it first: a date-time has a time
+    # component we don't want. What remains must be a plain date (not a string).
+    if isinstance(value, datetime):
+        raise ContentError(
+            "Front-matter 'date' must be a plain YYYY-MM-DD date (e.g. 2026-07-02), "
+            "without a time component.",
+            summary=err_summary,
+        )
+    if not isinstance(value, date):
+        raise ContentError(
+            "Front-matter 'date' must be an unquoted YYYY-MM-DD date "
+            f"(e.g. 2026-07-02), got {type(value).__name__}.",
+            summary=err_summary,
+        )
 
 
 def _extract_taxonomies(meta: dict, config: SiteConfig) -> dict[str, list[str]]:
@@ -187,6 +224,8 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
         meta, body = split_front_matter(text)
     except ContentError as exc:
         raise ContentError(exc.detail, summary=summary) from exc
+
+    _require_front_matter(meta, type_name, summary)
 
     slug = str(meta.get("slug") or slugify(path.stem))
     body_html = _markdown(body)

@@ -1,7 +1,7 @@
 +++
 title = "Taxonomies and Tags"
 date = 2026-06-15
-summary = "How tags connect posts together."
+description = "How tags connect posts together."
 tags = ["meta"]
 +++
 

@@ -1,6 +1,7 @@
 +++
 title = "cuttlefish"
-summary = "The agentic static site generator powering this site."
+date = 2026-06-10
+description = "The agentic static site generator powering this site."
 url = "https://example.com/cuttlefish"
 +++
 

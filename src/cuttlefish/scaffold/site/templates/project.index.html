@@ -8,7 +8,7 @@
     {% for item in items %}
     <li>
       <a href="{{ item.url }}">{{ item.title }}</a>
-      {% if item.summary %}<p>{{ item.summary }}</p>{% endif %}
+      {% if item.description %}<p>{{ item.description }}</p>{% endif %}
     </li>
     {% endfor %}
   </ul>

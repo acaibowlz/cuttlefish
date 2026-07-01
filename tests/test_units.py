@@ -4,8 +4,13 @@ from __future__ import annotations
 
 import pytest
 
-from cuttlefish.config import ConfigError, parse_config
-from cuttlefish.content import ContentError, _extract_taxonomies, split_front_matter
+from cuttlefish.config import PAGES_TYPE, ConfigError, parse_config
+from cuttlefish.content import (
+    ContentError,
+    _extract_taxonomies,
+    _require_front_matter,
+    split_front_matter,
+)
 from cuttlefish.permalink import PermalinkError, resolve_permalink, slugify
 from cuttlefish.render import _prefix_links
 from cuttlefish.sitemap import _output_to_url, render_sitemap
@@ -28,6 +33,44 @@ def test_split_front_matter_unclosed():
 
     with pytest.raises(ContentError):
         split_front_matter('+++\ntitle = "Hi"\n# never closed\n')
+
+
+def test_required_front_matter_ok():
+    import datetime
+
+    meta = {"title": "T", "description": "D", "date": datetime.date(2026, 7, 2)}
+    _require_front_matter(meta, "blog", "err")  # must not raise
+
+
+def test_required_front_matter_missing_fields():
+    import datetime
+
+    good_date = datetime.date(2026, 7, 2)
+    bad = [
+        {"description": "D", "date": good_date},   # no title
+        {"title": "T", "date": good_date},         # no description
+        {"title": "T", "description": "D"},        # no date
+        {"title": " ", "description": "D", "date": good_date},  # blank title
+    ]
+    for meta in bad:
+        with pytest.raises(ContentError):
+            _require_front_matter(meta, "blog", "err")
+
+
+def test_required_front_matter_date_must_be_plain_date():
+    import datetime
+
+    base = {"title": "T", "description": "D"}
+    # A quoted date is a string, not a TOML date — rejected (not silently ignored).
+    # A date-time carries a time component — also rejected; must be plain YYYY-MM-DD.
+    for bad_date in ("2026-07-02", datetime.datetime(2026, 7, 2, 9, 30)):
+        with pytest.raises(ContentError):
+            _require_front_matter({**base, "date": bad_date}, "blog", "err")
+
+
+def test_required_front_matter_pages_exempt():
+    # The standalone pages type needs none of title/description/date.
+    _require_front_matter({}, PAGES_TYPE, "err")  # must not raise
 
 
 def test_resolve_permalink_tokens():

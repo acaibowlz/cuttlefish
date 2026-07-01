@@ -22,7 +22,7 @@
           <li>
             <a href="{{ item.url }}">{{ item.title }}</a>
             {% if item.date %}<time>{{ item.date }}</time>{% endif %}
-            {% if item.summary %}<p>{{ item.summary }}</p>{% endif %}
+            {% if item.description %}<p>{{ item.description }}</p>{% endif %}
           </li>
           {% endfor %}
         </ul>
@@ -34,7 +34,7 @@
           {% for item in recent.project %}
           <li>
             <a href="{{ item.url }}">{{ item.title }}</a>
-            {% if item.summary %}<p>{{ item.summary }}</p>{% endif %}
+            {% if item.description %}<p>{{ item.description }}</p>{% endif %}
           </li>
           {% endfor %}
         </ul>
