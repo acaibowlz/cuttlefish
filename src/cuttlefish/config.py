@@ -28,14 +28,17 @@ CONFIG_DOCS_URL = "https://example.com/cuttlefish/configuration"
 #: Allowed keys for each strictly-validated config scope. Unknown keys are
 #: rejected — they are almost always typos that would otherwise be silently
 #: ignored. Custom/free-form values are not supported at the moment.
-_TOP_LEVEL_KEYS = frozenset({"title", "base_url", "content_types", "taxonomies", "home", "nav"})
+_TOP_LEVEL_KEYS = frozenset(
+    {"title", "base_url", "content_types", "taxonomies", "home", "nav", "profile"}
+)
+_PROFILE_KEYS = frozenset({"name", "bio", "avatar", "email", "socials"})
 _CONTENT_TYPE_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "paginate", "sort_by", "order"}
 )
 _TAXONOMY_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "multiple"}
 )
-_HOME_KEYS = frozenset({"template", "recent", "taxonomies"})
+_HOME_KEYS = frozenset({"template", "recent", "taxonomies", "profile"})
 _HOME_TAXONOMY_KEYS = frozenset({"sort_by", "order"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
@@ -129,6 +132,25 @@ class HomeConfig:
     #: Taxonomies to surface as term lists, keyed by taxonomy name (exposed as
     #: ``taxonomies.<name>``).
     taxonomies: dict[str, HomeTaxonomy] = field(default_factory=dict)
+    #: Whether to render the site ``[profile]`` block on the landing page (the
+    #: home template receives ``profile`` only when this is true).
+    profile: bool = False
+
+
+@dataclass(frozen=True)
+class Profile:
+    """Site author/owner details, exposed to every template as ``site.profile``.
+
+    ``socials`` maps a platform key (e.g. ``github``) to its URL; keys keep
+    config order, so links render in the order they are written and the key is
+    available to templates for icon/label lookup.
+    """
+
+    name: str = ""
+    bio: str = ""
+    avatar: str = ""  # path under static/, e.g. "/img/avatar.png"
+    email: str = ""
+    socials: dict[str, str] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -155,6 +177,7 @@ class SiteConfig:
     base_url: str
     home: HomeConfig | None
     nav: NavConfig = field(default_factory=NavConfig)
+    profile: Profile | None = None
     content_types: dict[str, ContentType] = field(default_factory=dict)
     taxonomies: dict[str, Taxonomy] = field(default_factory=dict)
     #: URL path prefix the site is served under, derived from ``base_url`` (e.g.
@@ -248,10 +271,14 @@ def _parse_home(data: dict) -> HomeConfig:
     taxonomies = {
         name: _parse_home_taxonomy(name, opts) for name, opts in raw_taxonomies.items()
     }
+    profile = data.get("profile", False)
+    if not isinstance(profile, bool):
+        raise ConfigError(f"{where} 'profile' must be a boolean, got {profile!r}.")
     return HomeConfig(
         template=str(_require(data, "template", where)),
         recent=recent,
         taxonomies=taxonomies,
+        profile=profile,
     )
 
 
@@ -287,6 +314,27 @@ def _parse_nav(data: dict) -> NavConfig:
     return NavConfig(enabled=bool(data.get("enabled", True)), items=items)
 
 
+def _parse_profile(data: dict) -> Profile:
+    where = "[profile]"
+    if not isinstance(data, dict):
+        raise ConfigError(f"{where} must be a table.")
+    _reject_unknown_keys(data, _PROFILE_KEYS, where)
+    raw_socials = data.get("socials") or {}
+    if not isinstance(raw_socials, dict):
+        raise ConfigError(
+            f"{where} 'socials' must be a table of platform = url, "
+            'e.g. {{ github = "https://github.com/you" }}.'
+        )
+    socials = {str(key): str(url) for key, url in raw_socials.items()}
+    return Profile(
+        name=str(data.get("name", "")),
+        bio=str(data.get("bio", "")),
+        avatar=str(data.get("avatar", "")),
+        email=str(data.get("email", "")),
+        socials=socials,
+    )
+
+
 def parse_config(raw: dict) -> SiteConfig:
     """Validate a raw config mapping into a :class:`SiteConfig`."""
     _reject_unknown_keys(raw, _TOP_LEVEL_KEYS, CONFIG_FILENAME)
@@ -300,6 +348,7 @@ def parse_config(raw: dict) -> SiteConfig:
     }
     home = _parse_home(raw["home"]) if "home" in raw else None
     nav = _parse_nav(raw["nav"]) if "nav" in raw else NavConfig()
+    profile = _parse_profile(raw["profile"]) if "profile" in raw else None
 
     # Cross-checks: taxonomy keys must not collide with reserved/front-matter
     # essentials, and the pages type (if present) must not declare an index.
@@ -320,6 +369,10 @@ def parse_config(raw: dict) -> SiteConfig:
                 raise ConfigError(
                     f"[home] 'taxonomies' references unknown taxonomy {tax_name!r}."
                 )
+        if home.profile and profile is None:
+            raise ConfigError(
+                "[home] 'profile' is true but there is no [profile] section to render."
+            )
 
     base_url = str(raw.get("base_url", "")).rstrip("/")
     return SiteConfig(
@@ -330,6 +383,7 @@ def parse_config(raw: dict) -> SiteConfig:
         base_path=urlsplit(base_url).path.rstrip("/"),
         home=home,
         nav=nav,
+        profile=profile,
         content_types=content_types,
         taxonomies=taxonomies,
         raw=raw,

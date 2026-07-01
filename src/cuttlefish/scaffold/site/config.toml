@@ -6,6 +6,8 @@ template = "home.html"
 # Recent-items sections: content-type = count. The template reads each as
 # `recent.<type>` (e.g. recent.blog), so add/remove types freely.
 recent = { blog = 5, project = 3 }
+# Render the [profile] block on the landing page (see below).
+profile = true
 
 # Taxonomy term lists on the home page. The template reads each as
 # `taxonomies.<name>` — a list of terms with `name`, `count`, `url` (all terms
@@ -14,6 +16,17 @@ recent = { blog = 5, project = 3 }
 [home.taxonomies.tags]
 sort_by = "count"
 order = "desc"
+
+# Site author/owner details, exposed to every template as `site.profile`
+# (name, bio, avatar, email, socials). `socials` maps a platform key to its
+# URL and keeps this order. Set `[home] profile = true` to show it on the home
+# page. Avatar is a path under static/.
+[profile]
+name = "Your Name"
+bio = "A short bio. Static-site enthusiast writing about things I build."
+avatar = "/img/avatar.svg"
+email = "you@example.com"
+socials = { github = "https://github.com/you", mastodon = "https://mastodon.social/@you" }
 
 # Navigation bar. `labels` and `links` are paired by position and must be the
 # same length. Set `enabled = false` to hide the nav without deleting entries.

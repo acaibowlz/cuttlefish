@@ -223,6 +223,43 @@ def test_home_taxonomy_terms_sorting():
     assert names("name", "desc") == ["ssg", "python", "meta"]
 
 
+def test_profile_parsed():
+    cfg = parse_config({
+        "profile": {
+            "name": "Jane",
+            "bio": "Hi there.",
+            "avatar": "/img/a.svg",
+            "email": "jane@example.com",
+            "socials": {"github": "https://github.com/jane", "mastodon": "https://m/@jane"},
+        },
+        "home": {"template": "home.html", "profile": True},
+    })
+    assert cfg.profile.name == "Jane"
+    assert cfg.profile.email == "jane@example.com"
+    # socials keep config order (github before mastodon).
+    assert list(cfg.profile.socials) == ["github", "mastodon"]
+    assert cfg.home.profile is True
+
+
+def test_profile_defaults_absent():
+    cfg = parse_config({"title": "X"})
+    assert cfg.profile is None
+
+
+def test_profile_validation():
+    # home.profile true with no [profile] section is an error.
+    with pytest.raises(ConfigError):
+        parse_config({"home": {"template": "h.html", "profile": True}})
+    # Unknown key, non-bool home.profile, and bad socials type are rejected.
+    for raw in (
+        {"profile": {"nam": "x"}},
+        {"profile": {"name": "x"}, "home": {"template": "h.html", "profile": "yes"}},
+        {"profile": {"socials": "nope"}},
+    ):
+        with pytest.raises(ConfigError):
+            parse_config(raw)
+
+
 def test_sitemap_output_to_url():
     assert _output_to_url("index.html") == "/"
     assert _output_to_url("blog/index.html") == "/blog/"

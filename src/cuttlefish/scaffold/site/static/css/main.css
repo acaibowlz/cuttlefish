@@ -243,6 +243,32 @@ body.home { --max-width: 64rem; }
 .widget .tags li a { background: var(--bg); }
 .tag-count { color: var(--muted); font-size: 0.75em; }
 
+/* Profile / author card — [profile] rendered when [home] profile = true. */
+.profile-card { text-align: center; }
+.profile-card .avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  object-fit: cover;
+  margin: 0 auto 0.75rem;
+  display: block;
+  background: var(--bg);
+}
+.profile-name { margin: 0 0 0.35rem; font-size: 1.05rem; }
+.profile-bio { margin: 0; color: var(--muted); font-size: 0.9rem; line-height: 1.5; }
+.socials {
+  list-style: none;
+  margin: 0.9rem 0 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.35rem 0.9rem;
+  font-size: 0.85rem;
+}
+.socials a { color: var(--muted); }
+.socials a:hover { color: var(--accent); }
+
 @media (max-width: 48rem) {
   .home-grid { grid-template-columns: 1fr; gap: 2rem; }
   .home-aside { position: static; }

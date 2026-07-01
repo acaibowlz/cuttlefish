@@ -41,11 +41,33 @@
       </section>
     </div>
 
-    {# Taxonomy term lists come from [home.taxonomies], addressed by name. Each
-       term has `name`, `count` and `url`. This renders `tags` as a pill cloud;
-       slice with `[:20]` if you want to cap it. #}
-    {% if taxonomies.tags %}
+    {% if profile or taxonomies.tags %}
     <aside class="home-aside">
+      {# Author card from [profile], passed only when [home] profile = true.
+         `profile` has name, bio, avatar, email and socials (platform -> url).
+         The same data is on every page as `site.profile`. #}
+      {% if profile %}
+      <section class="widget profile-card">
+        {% if profile.avatar %}
+        <img class="avatar" src="{{ profile.avatar }}" alt="{{ profile.name }}" width="72" height="72">
+        {% endif %}
+        {% if profile.name %}<h2 class="profile-name">{{ profile.name }}</h2>{% endif %}
+        {% if profile.bio %}<p class="profile-bio">{{ profile.bio }}</p>{% endif %}
+        {% if profile.email or profile.socials %}
+        <ul class="socials">
+          {% if profile.email %}<li><a href="mailto:{{ profile.email }}">Email</a></li>{% endif %}
+          {% for name, url in profile.socials.items() %}
+          <li><a href="{{ url }}">{{ name }}</a></li>
+          {% endfor %}
+        </ul>
+        {% endif %}
+      </section>
+      {% endif %}
+
+      {# Taxonomy term lists come from [home.taxonomies], addressed by name. Each
+         term has `name`, `count` and `url`. This renders `tags` as a pill cloud;
+         slice with `[:20]` if you want to cap it. #}
+      {% if taxonomies.tags %}
       <section class="widget">
         <h2 class="widget-title">Tags</h2>
         <ul class="tags">
@@ -54,6 +76,7 @@
           {% endfor %}
         </ul>
       </section>
+      {% endif %}
     </aside>
     {% endif %}
   </div>

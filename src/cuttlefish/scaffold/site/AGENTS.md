@@ -89,6 +89,28 @@ with `name`, `count` and `url`. Use it for a tag cloud (`sort_by = "count"`) or
 a category list (`sort_by = "name"`). All terms are passed; slice in the
 template if you want fewer. Every key must name a declared taxonomy.
 
+`[home] profile = true` renders the site author block on the home page (see
+`[profile]` below). The home template then receives a `profile` variable; it is
+`None` when the toggle is off, so gate the block on `{% if profile %}`.
+
+### Author profile
+
+```toml
+[profile]
+name   = "Your Name"
+bio    = "A short bio."
+avatar = "/img/avatar.svg"                     # path under static/
+email  = "you@example.com"
+socials = { github = "https://github.com/you", mastodon = "https://…" }
+```
+
+Site-wide author details, available on **every** page as `site.profile`
+(`.name`, `.bio`, `.avatar`, `.email`, `.socials`). `socials` is a
+`platform → url` table and keeps config order, so links render in the order you
+write them and the key is the platform name (handy for icon classes). Avatar's
+`alt` should default to the name. Turn the home-page block on with
+`[home] profile = true`.
+
 ### Navigation bar
 
 ```toml
@@ -143,7 +165,7 @@ Variables per template kind:
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
 | taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |
-| home (`home.html`) | `recent` — map of content-type → summary-only items (`recent.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`) |
+| home (`home.html`) | `recent` — map of content-type → summary-only items (`recent.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`); `profile` — the `[profile]` block or `None` (also on every page as `site.profile`) |
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
 > home) may use only **summary fields** — `title`, `date`, `summary`, `slug`,

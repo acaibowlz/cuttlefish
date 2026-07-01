@@ -133,11 +133,12 @@ class Renderer:
         )
 
     def set_site_context(self) -> None:
-        """Expose a stable ``site`` global (title, base_url, nav, config)."""
+        """Expose a stable ``site`` global (title, base_url, nav, profile, config)."""
         self.env.globals["site"] = SimpleNamespace(
             title=self.config.title,
             base_url=self.config.base_url,
             nav=self.config.nav,
+            profile=self.config.profile,
             config=self.config.raw,
         )
 
@@ -221,15 +222,17 @@ class Renderer:
         (``recent.blog``) rather than being forced to loop over them.
         ``taxonomies`` is a parallel mapping of taxonomy name to its sorted
         terms (each with ``name``, ``count`` and ``url``), addressed the same
-        way (``taxonomies.tags``).
+        way (``taxonomies.tags``). ``profile`` is passed only when
+        ``[home] profile = true``, so the template gates the block on it.
         """
         home = self.config.home
         if home is None:
             return None
         sections = {name: [i.listing for i in items] for name, items in recent.items()}
+        profile = self.config.profile if home.profile else None
         with _render_step("index.html"):
             html = self.env.get_template(home.template).render(
-                recent=sections, taxonomies=taxonomies or {}
+                recent=sections, taxonomies=taxonomies or {}, profile=profile
             )
             self._write("index.html", html)
         return "index.html"
