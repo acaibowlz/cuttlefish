@@ -214,25 +214,33 @@ class Renderer:
         self,
         recent: dict[str, list[ContentItem]],
         taxonomies: dict[str, list[HomeTerm]] | None = None,
+        featured: dict[str, list[ContentItem]] | None = None,
     ) -> str | None:
         """Render the landing page (recent items per type, summary-only).
 
         ``recent`` is exposed to the template as a mapping of content-type name
         to its listings, so the template addresses sections by key
         (``recent.blog``) rather than being forced to loop over them.
-        ``taxonomies`` is a parallel mapping of taxonomy name to its sorted
-        terms (each with ``name``, ``count`` and ``url``), addressed the same
-        way (``taxonomies.tags``). ``profile`` is passed only when
+        ``featured`` is the parallel mapping of curated (``featured = true``)
+        items, addressed as ``featured.<type>``. ``taxonomies`` maps a taxonomy
+        name to its sorted terms (each with ``name``, ``count`` and ``url``),
+        addressed as ``taxonomies.tags``. ``profile`` is passed only when
         ``[home] profile = true``, so the template gates the block on it.
         """
         home = self.config.home
         if home is None:
             return None
         sections = {name: [i.listing for i in items] for name, items in recent.items()}
+        featured_sections = {
+            name: [i.listing for i in items] for name, items in (featured or {}).items()
+        }
         profile = self.config.profile if home.profile else None
         with _render_step("index.html"):
             html = self.env.get_template(home.template).render(
-                recent=sections, taxonomies=taxonomies or {}, profile=profile
+                recent=sections,
+                featured=featured_sections,
+                taxonomies=taxonomies or {},
+                profile=profile,
             )
             self._write("index.html", html)
         return "index.html"

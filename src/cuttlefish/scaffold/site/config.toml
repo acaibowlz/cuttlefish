@@ -6,6 +6,10 @@ template = "home.html"
 # Recent-items sections: content-type = count. The template reads each as
 # `recent.<type>` (e.g. recent.blog), so add/remove types freely.
 recent = { blog = 5, project = 3 }
+# Curated sections: content-type = count, drawn from items with `featured = true`
+# in their front matter (newest first). Read as `featured.<type>`. Independent
+# of `recent` — use either, both, or neither.
+featured = { blog = 2 }
 # Render the [profile] block on the landing page (see below).
 profile = true
 

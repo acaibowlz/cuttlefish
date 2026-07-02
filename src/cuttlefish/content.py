@@ -97,6 +97,10 @@ class ContentItem:
         return bool(self.meta.get("draft", False))
 
     @property
+    def featured(self) -> bool:
+        return bool(self.meta.get("featured", False))
+
+    @property
     def meta_fingerprint(self) -> str:
         """Hash of listing-relevant fields only (never the body).
 

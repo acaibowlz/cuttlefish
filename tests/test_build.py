@@ -111,6 +111,16 @@ def test_content_terms_link_to_term_pages(site: Path, build):
     assert '<a href="/tags/python/">python</a>' in post
 
 
+def test_home_featured_section(site: Path, build):
+    """The Featured section shows only `featured = true` posts."""
+    build(site)
+    index = read(site, "index.html")
+    assert '<section class="featured">' in index
+    block = index.split('<section class="featured">')[1].split("</section>")[0]
+    assert "Taxonomies and Tags" in block   # flagged featured = true
+    assert "Hello, World" not in block       # not featured
+
+
 def test_pages_have_no_index(site: Path, build):
     build(site)
     # 'pages' is standalone: no /pages/ index is generated.

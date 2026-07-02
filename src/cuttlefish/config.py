@@ -38,7 +38,7 @@ _CONTENT_TYPE_KEYS = frozenset(
 _TAXONOMY_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "multiple"}
 )
-_HOME_KEYS = frozenset({"template", "recent", "taxonomies", "profile"})
+_HOME_KEYS = frozenset({"template", "recent", "featured", "taxonomies", "profile"})
 _HOME_TAXONOMY_KEYS = frozenset({"sort_by", "order"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
@@ -129,6 +129,9 @@ class HomeConfig:
     #: Landing-page sections: content-type name -> number of recent items to
     #: pass to the template (exposed as ``recent.<type>``).
     recent: dict[str, int] = field(default_factory=dict)
+    #: Curated sections: content-type name -> number of ``featured = true``
+    #: items to pass (exposed as ``featured.<type>``). Newest first, like recent.
+    featured: dict[str, int] = field(default_factory=dict)
     #: Taxonomies to surface as term lists, keyed by taxonomy name (exposed as
     #: ``taxonomies.<name>``).
     taxonomies: dict[str, HomeTaxonomy] = field(default_factory=dict)
@@ -249,19 +252,8 @@ def _parse_home(data: dict) -> HomeConfig:
     if not isinstance(data, dict):
         raise ConfigError(f"{where} must be a table.")
     _reject_unknown_keys(data, _HOME_KEYS, where)
-    raw_recent = data.get("recent") or {}
-    if not isinstance(raw_recent, dict):
-        raise ConfigError(
-            f"{where} 'recent' must be a table of content-type = count, "
-            "e.g. {{ blog = 5, project = 3 }}."
-        )
-    recent: dict[str, int] = {}
-    for type_name, count in raw_recent.items():
-        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
-            raise ConfigError(
-                f"{where} 'recent.{type_name}' must be a non-negative integer, got {count!r}."
-            )
-        recent[type_name] = count
+    recent = _parse_count_table(data, "recent", where)
+    featured = _parse_count_table(data, "featured", where)
     raw_taxonomies = data.get("taxonomies") or {}
     if not isinstance(raw_taxonomies, dict):
         raise ConfigError(
@@ -277,9 +269,28 @@ def _parse_home(data: dict) -> HomeConfig:
     return HomeConfig(
         template=str(_require(data, "template", where)),
         recent=recent,
+        featured=featured,
         taxonomies=taxonomies,
         profile=profile,
     )
+
+
+def _parse_count_table(data: dict, key: str, where: str) -> dict[str, int]:
+    """Parse a ``content-type = count`` table (recent/featured); count >= 0."""
+    raw = data.get(key) or {}
+    if not isinstance(raw, dict):
+        raise ConfigError(
+            f"{where} '{key}' must be a table of content-type = count, "
+            "e.g. {{ blog = 5, project = 3 }}."
+        )
+    result: dict[str, int] = {}
+    for type_name, count in raw.items():
+        if isinstance(count, bool) or not isinstance(count, int) or count < 0:
+            raise ConfigError(
+                f"{where} '{key}.{type_name}' must be a non-negative integer, got {count!r}."
+            )
+        result[type_name] = count
+    return result
 
 
 def _parse_home_taxonomy(name: str, data: dict) -> HomeTaxonomy:
@@ -359,11 +370,12 @@ def parse_config(raw: dict) -> SiteConfig:
             "declare 'index_template'/'index_permalink'."
         )
     if home is not None:
-        for type_name in home.recent:
-            if type_name not in content_types:
-                raise ConfigError(
-                    f"[home] 'recent' references unknown content type {type_name!r}."
-                )
+        for key, section in (("recent", home.recent), ("featured", home.featured)):
+            for type_name in section:
+                if type_name not in content_types:
+                    raise ConfigError(
+                        f"[home] {key!r} references unknown content type {type_name!r}."
+                    )
         for tax_name in home.taxonomies:
             if tax_name not in taxonomies:
                 raise ConfigError(

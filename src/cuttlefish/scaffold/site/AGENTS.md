@@ -71,7 +71,8 @@ taxonomy participation. Do **not** give it `index_template`/`index_permalink`.
 ```toml
 [home]
 template = "home.html"
-recent = { blog = 5, project = 3 }   # sections: content-type = how many recent items
+recent   = { blog = 5, project = 3 }  # sections: content-type = how many recent items
+featured = { blog = 2 }               # curated: content-type = how many featured items
 
 [home.taxonomies.tags]               # term lists: one table per taxonomy
 sort_by = "count"                    # "count" (default) or "name"
@@ -82,6 +83,11 @@ order   = "desc"                     # "desc" (default) or "asc"
 template reads by key as `recent.<type>` (e.g. `recent.blog`) — a list of
 summary-only items — so you can show several types and order/title them freely.
 Every key must name a declared content type.
+
+`featured` has the **same shape** and is read as `featured.<type>`, but is drawn
+only from items with `featured = true` in their front matter (newest first). It
+is independent of `recent` — use either, both, or neither. Every key must name a
+declared content type.
 
 `[home.taxonomies.<name>]` surfaces a taxonomy's terms on the home page, read
 by key as `taxonomies.<name>` (e.g. `taxonomies.tags`) — a list of terms, each
@@ -134,6 +140,7 @@ title = "My Post"
 date = 2026-06-21
 description = "One-line description used in listings."
 draft = false
+featured = true            # optional; include in the home [home].featured sections
 tags = ["python", "ssg"]   # any configured taxonomy name
 slug = "my-post"           # optional; defaults to the filename
 +++
@@ -173,7 +180,7 @@ Variables per template kind:
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
 | taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |
-| home (`home.html`) | `recent` — map of content-type → summary-only items (`recent.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`); `profile` — the `[profile]` block or `None` (also on every page as `site.profile`) |
+| home (`home.html`) | `recent` and `featured` — maps of content-type → summary-only items (`recent.blog`, `featured.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`); `profile` — the `[profile]` block or `None` (also on every page as `site.profile`) |
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
 > home) may use only **listing fields** — `title`, `date`, `description`,

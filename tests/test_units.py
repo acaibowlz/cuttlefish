@@ -212,6 +212,30 @@ def test_home_recent_validation():
             parse_config(home(recent))
 
 
+def test_home_featured_parsed_and_validated():
+    base = {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/"}}}
+    cfg = parse_config({**base, "home": {"template": "home.html", "featured": {"blog": 2}}})
+    assert cfg.home.featured == {"blog": 2}
+
+    # Same rules as recent: unknown type and bad counts are rejected.
+    for featured in ({"blgo": 2}, {"blog": -1}, {"blog": True}):
+        with pytest.raises(ConfigError):
+            parse_config({**base, "home": {"template": "home.html", "featured": featured}})
+
+
+def test_content_item_featured_flag():
+    from cuttlefish.content import ContentItem
+
+    def make(meta):
+        return ContentItem(
+            type="blog", slug="s", meta=meta, body_html="", taxonomies={},
+            source_rel="content/blog/s.md", url="/b/s/", output_rel="b/s/index.html",
+        )
+
+    assert make({"featured": True}).featured is True
+    assert make({}).featured is False
+
+
 def test_home_taxonomies_parsed_with_defaults():
     cfg = parse_config({
         "taxonomies": {

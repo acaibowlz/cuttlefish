@@ -201,8 +201,9 @@ time { color: var(--muted); font-size: 0.85rem; }
 .hero h1 { font-size: 2.5rem; }
 .hero p { font-size: 1.15rem; color: var(--muted); margin-bottom: 0; }
 
-.recent h2 { margin-top: 0; }
-.home-main > .recent + .recent h2 { margin-top: 2.5rem; }
+.featured h2, .recent h2 { margin-top: 0; }
+/* Space every home section after the first (featured, recent, projects, …). */
+.home-main > section + section h2 { margin-top: 2.5rem; }
 
 /* Home layout: a genuine two-column landing page. The home page widens the
    shared container (via --max-width on body.home) so the reading column and

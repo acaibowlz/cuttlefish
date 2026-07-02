@@ -3,6 +3,7 @@ title = "Taxonomies and Tags"
 date = 2026-06-15
 description = "How tags connect posts together."
 tags = ["meta"]
+featured = true
 +++
 
 This post is tagged `meta`. Visit the [tags index](/tags/) to see every term,
