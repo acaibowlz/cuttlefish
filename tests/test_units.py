@@ -9,6 +9,7 @@ from cuttlefish.content import (
     ContentError,
     _extract_taxonomies,
     _require_front_matter,
+    render_markdown,
     split_front_matter,
 )
 from cuttlefish.permalink import PermalinkError, resolve_permalink, slugify
@@ -221,6 +222,31 @@ def test_home_featured_parsed_and_validated():
     for featured in ({"blgo": 2}, {"blog": -1}, {"blog": True}):
         with pytest.raises(ConfigError):
             parse_config({**base, "home": {"template": "home.html", "featured": featured}})
+
+
+def test_render_markdown_builds_toc_with_anchors():
+    html, toc = render_markdown(
+        "## Getting Started\n\ntext\n\n### Install *now*\n\nmore\n"
+    )
+    # Each heading gets a slug id in the HTML, matching its TOC entry.
+    assert '<h2 id="getting-started">' in html
+    assert '<h3 id="install-now">' in html
+    assert [(e.level, e.id, e.text, e.url) for e in toc] == [
+        (2, "getting-started", "Getting Started", "#getting-started"),
+        (3, "install-now", "Install now", "#install-now"),
+    ]
+
+
+def test_render_markdown_dedupes_repeated_headings():
+    html, toc = render_markdown("# Notes\n\n# Notes\n")
+    assert [e.id for e in toc] == ["notes", "notes-1"]
+    assert '<h1 id="notes">' in html and '<h1 id="notes-1">' in html
+
+
+def test_render_markdown_no_headings_gives_empty_toc():
+    html, toc = render_markdown("just a paragraph\n")
+    assert toc == []
+    assert "<p>just a paragraph</p>" in html
 
 
 def test_content_item_featured_flag():

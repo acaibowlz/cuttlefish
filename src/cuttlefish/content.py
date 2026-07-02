@@ -25,6 +25,7 @@ from datetime import date, datetime
 from pathlib import Path
 
 import mistune
+from mistune.toc import normalize_toc_item
 
 from cuttlefish.config import PAGES_TYPE, SiteConfig
 from cuttlefish.errors import CuttlefishError
@@ -37,10 +38,56 @@ FRONT_MATTER_FENCE = "+++"
 #: allowed to render lives here; ``body_html`` is intentionally excluded.
 LISTING_FIELDS = ("title", "date", "description", "slug", "url", "taxonomies", "draft")
 
+
+@dataclass(frozen=True)
+class TocEntry:
+    """One heading in a body's table of contents, ready to link to."""
+
+    level: int  # 1-6, matching the heading tag (h1..h6)
+    id: str  # slug set as the heading's ``id`` attribute in ``body_html``
+    text: str  # plain-text heading label (inline markup stripped)
+
+    @property
+    def url(self) -> str:
+        """In-page anchor to the heading, e.g. ``#getting-started``."""
+        return f"#{self.id}"
+
+
+def _toc_hook(md: mistune.Markdown, state: mistune.core.BlockState) -> None:
+    """Give every heading a stable slug ``id`` and collect the TOC.
+
+    Runs before rendering so the ``id`` we assign lands in ``body_html`` *and*
+    in the collected entries, keeping anchor links and TOC targets in lockstep.
+    Slugs come from the heading text (not an opaque counter) so anchors stay
+    readable and stable across edits; duplicates get a ``-1``, ``-2`` suffix so
+    every ``id`` is unique within a page. ``seen`` is local to this call, so the
+    numbering resets per document even though the hook is shared.
+    """
+    seen: dict[str, int] = {}
+    entries: list[TocEntry] = []
+    for tok in state.tokens:
+        if tok["type"] != "heading":
+            continue
+        base = slugify(tok["text"])
+        n = seen.get(base, 0)
+        seen[base] = n + 1
+        tok["attrs"]["id"] = base if n == 0 else f"{base}-{n}"
+        level, hid, text = normalize_toc_item(md, tok, parent=state)
+        entries.append(TocEntry(level=level, id=hid, text=text))
+    state.env["toc"] = entries
+
+
 _markdown = mistune.create_markdown(
     escape=False,
     plugins=["table", "footnotes", "strikethrough", "task_lists", "url"],
 )
+_markdown.before_render_hooks.append(_toc_hook)
+
+
+def render_markdown(body: str) -> tuple[str, list[TocEntry]]:
+    """Render a Markdown body to HTML plus its table of contents."""
+    html, state = _markdown.parse(body)
+    return html, state.env.get("toc", [])
 
 
 class ContentError(CuttlefishError):
@@ -74,6 +121,9 @@ class ContentItem:
     source_rel: str  # path relative to site root, e.g. "content/blog/post.md"
     url: str
     output_rel: str  # path relative to public/, e.g. "blog/post/index.html"
+    #: Body headings as a flat, in-order list; single-content templates read it
+    #: to build a table of contents. Empty for bodies with no headings.
+    toc: list[TocEntry] = field(default_factory=list)
 
     @property
     def title(self) -> str:
@@ -232,7 +282,7 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
     _require_front_matter(meta, type_name, summary)
 
     slug = str(meta.get("slug") or slugify(path.stem))
-    body_html = _markdown(body)
+    body_html, toc = render_markdown(body)
     taxonomies = _extract_taxonomies(meta, config)
 
     content_type = config.content_types[type_name]
@@ -257,6 +307,7 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
         source_rel=source_rel,
         url=url,
         output_rel=output_rel,
+        toc=toc,
     )
 
 

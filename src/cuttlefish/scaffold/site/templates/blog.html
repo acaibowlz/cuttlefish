@@ -15,6 +15,16 @@
       </ul>
       {% endif %}
     </header>
+    {# page.toc is a flat, in-order list of body headings; indent by level. #}
+    {% if page.toc %}
+    <nav class="toc" aria-label="Table of contents">
+      <ul>
+        {% for heading in page.toc %}
+        <li class="toc-h{{ heading.level }}"><a href="{{ heading.url }}">{{ heading.text }}</a></li>
+        {% endfor %}
+      </ul>
+    </nav>
+    {% endif %}
     {# Single-content templates may use the full rendered body. #}
     <div class="body">{{ page.body_html | safe }}</div>
   </article>

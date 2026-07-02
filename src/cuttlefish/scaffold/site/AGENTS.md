@@ -176,7 +176,7 @@ Variables per template kind:
 
 | Template | Variables |
 |----------|-----------|
-| single content (`blog.html`) | `page` / `item` (full, incl. `page.body_html`), `type`, `terms` |
+| single content (`blog.html`) | `page` / `item` (full, incl. `page.body_html` and `page.toc`), `type`, `terms` |
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
 | taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |
@@ -193,6 +193,14 @@ Single-content templates also receive `terms`: a mapping of taxonomy name to a
 list of `{name, url}` objects, so content can link each term to its term page —
 e.g. `{% for term in terms.get('tags') or [] %}<a href="{{ term.url }}">{{
 term.name }}</a>{% endfor %}`.
+
+`page.toc` is a flat, in-order list of the body's headings, one entry per
+heading, each with `level` (1–6), `text` (plain-text label), `id` (the slug set
+as the heading's `id` in `body_html`), and `url` (the `#id` anchor). It is empty
+when the body has no headings. Build a table of contents by looping over it and
+indenting on `level` — e.g. `{% for h in page.toc %}<a href="{{ h.url }}">{{
+h.text }}</a>{% endfor %}`. The matching `id` attributes are already present in
+`page.body_html`, so the anchors resolve without extra work.
 
 Reference static assets by absolute path (e.g. `/css/main.css`); `static/` is
 copied to the site root, so `static/css/main.css` → `/css/main.css`.
