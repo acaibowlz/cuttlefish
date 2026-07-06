@@ -338,6 +338,37 @@ body.home { --max-width: 64rem; }
 .post header h1, .page h1, .project h1 { margin-bottom: 0.5rem; }
 .body { margin-top: 1.5rem; }
 
+/* Table of contents: a full-width "band" between the post header and body,
+   fenced by thin hairline rules top and bottom and open on the sides. The
+   outline runs as a single column; the uppercase eyebrow matches the sidebar
+   and home sections, and entries indent by heading level. */
+.toc {
+  margin: 0 0 2.75rem;
+  padding: 1.2rem 0 1.3rem;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+  font-size: 0.9rem;
+}
+.toc::before {
+  content: "In this post";
+  display: block;
+  margin-bottom: 0.85rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.toc ul { list-style: none; margin: 0; padding: 0; }
+.toc li + li { margin-top: 0.5rem; }
+.toc a { color: var(--muted); }
+.toc a:hover { color: var(--fg); }
+/* Indent nested headings so the outline reads at a glance. */
+.toc-h3 { padding-left: 1.1rem; }
+.toc-h4 { padding-left: 2.2rem; }
+.toc-h5 { padding-left: 3.3rem; }
+.toc-h6 { padding-left: 4.4rem; }
+
 /* -- code ---------------------------------------------------------------- */
 
 code { font-family: var(--font-mono); font-size: 0.9em; }
