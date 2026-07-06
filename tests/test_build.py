@@ -117,7 +117,7 @@ def test_home_featured_section(site: Path, build):
     index = read(site, "index.html")
     assert '<section class="featured">' in index
     block = index.split('<section class="featured">')[1].split("</section>")[0]
-    assert "A Second Post" in block         # flagged featured = true
+    assert "Front Matter" in block          # flagged featured = true
     assert "Hello, World" not in block       # not featured
 
 

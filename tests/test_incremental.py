@@ -70,11 +70,11 @@ def test_e_config_change_forces_full(site: Path, build):
 
 def test_f_delete_prunes_output(site: Path, build):
     build(site)
-    assert (site / "public/blog/second-post/index.html").is_file()
+    assert (site / "public/blog/front-matter/index.html").is_file()
     (site / "content/blog/second-post.md").unlink()
     stats = build(site)
     assert stats.pruned >= 1
-    assert not (site / "public/blog/second-post/index.html").exists()
+    assert not (site / "public/blog/front-matter/index.html").exists()
 
 
 def test_g_slug_rename_prunes_old_writes_new(site: Path, build):
