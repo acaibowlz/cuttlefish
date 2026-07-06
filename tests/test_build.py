@@ -15,7 +15,7 @@ def test_full_build_outputs(site: Path, build):
         "blog/index.html",
         "blog/hello-world/index.html",
         "projects/index.html",
-        "projects/cuttlefish/index.html",
+        "projects/example-project/index.html",
         "about/index.html",
         "tags/index.html",
         "tags/meta/index.html",
@@ -98,7 +98,7 @@ def test_sitemap_skipped_without_base_url(site: Path, build):
 def test_listing_is_summary_only(site: Path, build):
     """The blog index must NOT contain a post's rendered body."""
     build(site)
-    body_marker = "cuttlefish builds this with mistune"  # appears in hello-world body
+    body_marker = "this page was built from a plain text file"  # appears in hello-world body
     assert body_marker in read(site, "blog/hello-world/index.html")
     assert body_marker not in read(site, "blog/index.html")
 
@@ -117,7 +117,7 @@ def test_home_featured_section(site: Path, build):
     index = read(site, "index.html")
     assert '<section class="featured">' in index
     block = index.split('<section class="featured">')[1].split("</section>")[0]
-    assert "Taxonomies and Tags" in block   # flagged featured = true
+    assert "A Second Post" in block         # flagged featured = true
     assert "Hello, World" not in block       # not featured
 
 

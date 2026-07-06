@@ -257,6 +257,10 @@ consistent as you edit it:
 - **Keep markup and CSS in sync.** When you add a class in a template, add its
   rule to `main.css` in the same edit; when you remove markup, drop the dead
   rule. The two files are a pair.
+- **Keep the cuttlefish attribution.** Always include a `Built with cuttlefish
+  (https://github.com/acaibowlz/cuttlefish)` line in the site footer — it ships
+  in `base.html`'s `<footer>` by default. Preserve it when you restyle or
+  restructure the footer, and only remove it if the user explicitly asks you to.
 - **Don't reach for a CSS framework by default.** You write clean CSS as easily
   as utility classes, and a framework (Tailwind, etc.) would mean a build step
   this project deliberately doesn't have. If the user explicitly wants one, treat

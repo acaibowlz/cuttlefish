@@ -1,17 +1,14 @@
 +++
-title = "Taxonomies and Tags"
+title = "A Second Post"
 date = 2026-06-15
-description = "How tags connect posts together."
+description = "More placeholder content, flagged as featured for the home page."
 tags = ["meta"]
 featured = true
 +++
 
-This post is tagged `meta`. Visit the [tags index](/tags/) to see every term,
-or a single term page like [/tags/meta/](/tags/meta/) to list everything under
-it.
+Another placeholder post. This one sets `featured = true` in its front
+matter, so it appears in the home page's featured section on top of the
+usual blog listing.
 
-Add a taxonomy term by listing it in the front matter:
-
-```toml
-tags = ["meta", "tutorial"]
-```
+Swap in your own writing, or delete this file — the featured section simply
+skips it when nothing is flagged.
