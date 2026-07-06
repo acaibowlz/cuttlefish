@@ -1,4 +1,4 @@
-title = "My Cuttlefish Site"
+title = "Demo Site"
 base_url = "https://example.com"
 
 [home]
@@ -18,8 +18,8 @@ profile = true
 # URL and keeps this order. Set `[home] profile = true` to show it on the home
 # page. Avatar is a path under static/.
 [profile]
-name = "Your Name"
-bio = "A short bio. Static-site enthusiast writing about things I build."
+name = "Demo User"
+bio = "Placeholder bio — a line or two about who you are. Swap in your own."
 avatar = "/img/avatar.svg"
 email = "you@example.com"
 socials = { github = "https://github.com/you", mastodon = "https://mastodon.social/@you" }
