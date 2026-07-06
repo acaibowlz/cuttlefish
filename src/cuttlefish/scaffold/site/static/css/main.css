@@ -201,9 +201,23 @@ time { color: var(--muted); font-size: 0.85rem; }
 .hero h1 { font-size: 2.5rem; }
 .hero p { font-size: 1.15rem; color: var(--muted); margin-bottom: 0; }
 
-.featured h2, .recent h2 { margin-top: 0; }
-/* Space every home section after the first (featured, recent, projects, …). */
-.home-main > section + section h2 { margin-top: 2.5rem; }
+/* Home main sections (Featured, Recent posts, Projects). Without help these
+   read as one continuous ruled column, because the section headings look like
+   the list below and the list rows carry their own rules. Give each heading a
+   small uppercase "eyebrow" on a divider rule — the same section-label language
+   as the sidebar's .widget-title — and a clear gap between sections, so the
+   three blocks separate at a glance. */
+.home-main > section + section { margin-top: 3rem; }
+.home-main > section > h2 {
+  margin: 0 0 0.75rem;
+  padding-bottom: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--muted);
+  border-bottom: 1px solid var(--border);
+}
 
 /* Home layout: a genuine two-column landing page. The home page widens the
    shared container (via --max-width on body.home) so the reading column and
