@@ -108,9 +108,9 @@ def build_aggregate_specs(
             for type_name, count in home.featured.items()
         }
         home_taxonomies = {
-            name: home_taxonomy_terms(taxonomies[name], spec)
-            for name, spec in home.taxonomies.items()
-            if name in taxonomies
+            name: home_taxonomy_terms(taxonomies[name])
+            for name, tax in config.taxonomies.items()
+            if tax.home and name in taxonomies
         }
         # Fingerprint over every section's items, salted with the section names
         # (and their order) plus each surfaced taxonomy's terms and counts, so

@@ -262,58 +262,58 @@ def test_content_item_featured_flag():
     assert make({}).featured is False
 
 
-def test_home_taxonomies_parsed_with_defaults():
+def test_taxonomy_sort_parsed_with_defaults():
     cfg = parse_config({
         "taxonomies": {
             "tags": {"template": "t.html", "permalink": "/t/{term}/"},
-            "category": {"template": "c.html", "permalink": "/c/{term}/", "multiple": False},
-        },
-        "home": {
-            "template": "home.html",
-            "taxonomies": {"tags": {}, "category": {"sort_by": "name", "order": "asc"}},
+            "category": {
+                "template": "c.html", "permalink": "/c/{term}/", "multiple": False,
+                "sort_by": "count", "order": "desc", "home": True,
+            },
         },
     })
-    tags = cfg.home.taxonomies["tags"]
-    assert (tags.sort_by, tags.order) == ("count", "desc")  # defaults
-    category = cfg.home.taxonomies["category"]
-    assert (category.sort_by, category.order) == ("name", "asc")
+    tags = cfg.taxonomies["tags"]
+    assert (tags.sort_by, tags.order, tags.home) == ("name", "asc", False)  # defaults
+    category = cfg.taxonomies["category"]
+    assert (category.sort_by, category.order, category.home) == ("count", "desc", True)
 
 
-def test_home_taxonomies_validation():
-    tax = {"tags": {"template": "t.html", "permalink": "/t/{term}/"}}
-
-    def home(taxonomies):
-        return {"taxonomies": tax, "home": {"template": "home.html", "taxonomies": taxonomies}}
+def test_taxonomy_sort_validation():
+    def tax(opts):
+        return {"taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/", **opts}}}
 
     bad = [
-        {"tages": {}},                       # unknown taxonomy name
-        {"tags": {"sort_by": "date"}},       # bad sort_by
-        {"tags": {"order": "up"}},           # bad order
-        {"tags": {"limit": 5}},              # unknown key
+        {"sort_by": "date"},   # bad sort_by
+        {"order": "up"},       # bad order
+        {"home": "yes"},       # home must be a boolean
+        {"limit": 5},          # unknown key
     ]
-    for taxonomies in bad:
+    for opts in bad:
         with pytest.raises(ConfigError):
-            parse_config(home(taxonomies))
+            parse_config(tax(opts))
 
 
-def test_home_taxonomy_terms_sorting():
-    from cuttlefish.config import HomeTaxonomy
+def test_taxonomy_term_ordering():
     from cuttlefish.taxonomy import Term, TaxonomyData, home_taxonomy_terms
 
-    cfg = parse_config({"taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/"}}})
-    data = TaxonomyData(taxonomy=cfg.taxonomies["tags"])
-    for name, n in [("python", 3), ("meta", 3), ("ssg", 7)]:
-        term = Term(taxonomy="tags", name=name, url=f"/t/{name}/", output_rel=f"t/{name}/index.html")
-        term.items = list(range(n))
-        data.terms[name] = term
-
-    def names(sort_by, order):
-        return [t.name for t in home_taxonomy_terms(data, HomeTaxonomy("tags", sort_by, order))]
+    def ordered(sort_by, order):
+        cfg = parse_config({"taxonomies": {"tags": {
+            "template": "t.html", "permalink": "/t/{term}/",
+            "sort_by": sort_by, "order": order,
+        }}})
+        data = TaxonomyData(taxonomy=cfg.taxonomies["tags"])
+        for name, n in [("python", 3), ("meta", 3), ("ssg", 7)]:
+            term = Term(taxonomy="tags", name=name, url=f"/t/{name}/", output_rel=f"t/{name}/index.html")
+            term.items = list(range(n))
+            data.terms[name] = term
+        # sorted_terms (index page) and home_taxonomy_terms (home list) agree.
+        assert [t.name for t in data.sorted_terms] == [t.name for t in home_taxonomy_terms(data)]
+        return [t.name for t in data.sorted_terms]
 
     # count/desc: most-used first, alphabetical tiebreak for the two 3s.
-    assert names("count", "desc") == ["ssg", "meta", "python"]
-    assert names("name", "asc") == ["meta", "python", "ssg"]
-    assert names("name", "desc") == ["ssg", "python", "meta"]
+    assert ordered("count", "desc") == ["ssg", "meta", "python"]
+    assert ordered("name", "asc") == ["meta", "python", "ssg"]
+    assert ordered("name", "desc") == ["ssg", "python", "meta"]
 
 
 def test_profile_parsed():

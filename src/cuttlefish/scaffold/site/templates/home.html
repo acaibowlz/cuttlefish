@@ -81,9 +81,10 @@
       </section>
       {% endif %}
 
-      {# Taxonomy term lists come from [home.taxonomies], addressed by name. Each
-         term has `name`, `count` and `url`. This renders `tags` as a pill cloud;
-         slice with `[:20]` if you want to cap it. #}
+      {# Term lists for taxonomies with `home = true`, addressed by name. Each
+         term has `name`, `count` and `url`, ordered by the taxonomy's
+         sort_by/order. This renders `tags` as a pill cloud; slice with `[:20]`
+         if you want to cap it. #}
       {% if taxonomies.tags %}
       <section class="widget">
         <h2 class="widget-title">Tags</h2>

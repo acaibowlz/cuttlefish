@@ -13,14 +13,6 @@ featured = { blog = 2 }
 # Render the [profile] block on the landing page (see below).
 profile = true
 
-# Taxonomy term lists on the home page. The template reads each as
-# `taxonomies.<name>` — a list of terms with `name`, `count`, `url` (all terms
-# are passed; slice in the template if you want fewer). sort_by is "count"
-# (default) or "name"; order is "desc" (default) or "asc".
-[home.taxonomies.tags]
-sort_by = "count"
-order = "desc"
-
 # Site author/owner details, exposed to every template as `site.profile`
 # (name, bio, avatar, email, socials). `socials` maps a platform key to its
 # URL and keeps this order. Set `[home] profile = true` to show it on the home
@@ -68,3 +60,11 @@ permalink = "/tags/{term}/"
 index_permalink = "/tags/"
 # multiple = true  (default) expects a list in front matter: tags = ["a", "b"].
 # Set multiple = false for single-term taxonomies, e.g. category = "AI".
+# Term ordering, used on BOTH the term index page and the home list below.
+# sort_by is "name" (default) or "count"; order is "asc" (default) or "desc".
+sort_by = "count"
+order = "desc"
+# Surface this taxonomy's terms on the home page, read as `taxonomies.tags`
+# (a list of terms with `name`, `count`, `url`; all terms passed, slice in the
+# template). Omit or set false to keep it off the home page.
+home = true

@@ -36,10 +36,10 @@ _CONTENT_TYPE_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "paginate", "sort_by", "order"}
 )
 _TAXONOMY_KEYS = frozenset(
-    {"template", "permalink", "index_template", "index_permalink", "multiple"}
+    {"template", "permalink", "index_template", "index_permalink", "multiple",
+     "sort_by", "order", "home"}
 )
-_HOME_KEYS = frozenset({"template", "recent", "featured", "taxonomies", "profile"})
-_HOME_TAXONOMY_KEYS = frozenset({"sort_by", "order"})
+_HOME_KEYS = frozenset({"template", "recent", "featured", "profile"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
 
@@ -97,28 +97,23 @@ class Taxonomy:
     #: terms (e.g. ``tags = ["travel", "japan"]``); ``False`` requires a single
     #: string term (e.g. ``category = "AI"``). Enforced when parsing content.
     multiple: bool = True
-
-    @property
-    def has_index(self) -> bool:
-        return self.index_template is not None and self.index_permalink is not None
-
-
-@dataclass(frozen=True)
-class HomeTaxonomy:
-    """A taxonomy surfaced on the landing page as a list of its terms.
-
-    Each term is exposed to the home template with ``name``, ``count`` and
-    ``url`` (e.g. a tag cloud or a category list). All terms are passed; the
-    template does any slicing.
-    """
-
-    name: str
-    sort_by: str = "count"  # "count" (most-used first) or "name" (the term text)
-    order: str = "desc"  # "desc" or "asc"
+    #: How this taxonomy's terms are ordered wherever they are listed (the term
+    #: index page and, if surfaced, the home list): ``"name"`` (the term text) or
+    #: ``"count"`` (most-used first), each ``"asc"``/``"desc"``.
+    sort_by: str = "name"
+    order: str = "asc"
+    #: Surface this taxonomy's terms on the landing page. When ``True`` the home
+    #: template receives its terms as ``taxonomies.<name>`` (each with ``name``,
+    #: ``count`` and ``url``), ordered by ``sort_by``/``order`` above.
+    home: bool = False
 
     @property
     def descending(self) -> bool:
         return self.order == "desc"
+
+    @property
+    def has_index(self) -> bool:
+        return self.index_template is not None and self.index_permalink is not None
 
 
 @dataclass(frozen=True)
@@ -132,9 +127,6 @@ class HomeConfig:
     #: Curated sections: content-type name -> number of ``featured = true``
     #: items to pass (exposed as ``featured.<type>``). Newest first, like recent.
     featured: dict[str, int] = field(default_factory=dict)
-    #: Taxonomies to surface as term lists, keyed by taxonomy name (exposed as
-    #: ``taxonomies.<name>``).
-    taxonomies: dict[str, HomeTaxonomy] = field(default_factory=dict)
     #: Whether to render the site ``[profile]`` block on the landing page (the
     #: home template receives ``profile`` only when this is true).
     profile: bool = False
@@ -237,6 +229,15 @@ def _parse_taxonomy(name: str, data: dict) -> Taxonomy:
     multiple = data.get("multiple", True)
     if not isinstance(multiple, bool):
         raise ConfigError(f"{where} 'multiple' must be a boolean, got {multiple!r}.")
+    sort_by = str(data.get("sort_by", "name")).lower()
+    if sort_by not in ("count", "name"):
+        raise ConfigError(f"{where} 'sort_by' must be \"count\" or \"name\", got {sort_by!r}.")
+    order = str(data.get("order", "asc")).lower()
+    if order not in ("asc", "desc"):
+        raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
+    home = data.get("home", False)
+    if not isinstance(home, bool):
+        raise ConfigError(f"{where} 'home' must be a boolean, got {home!r}.")
     return Taxonomy(
         name=name,
         template=str(_require(data, "template", where)),
@@ -244,6 +245,9 @@ def _parse_taxonomy(name: str, data: dict) -> Taxonomy:
         index_template=data.get("index_template"),
         index_permalink=data.get("index_permalink"),
         multiple=multiple,
+        sort_by=sort_by,
+        order=order,
+        home=home,
     )
 
 
@@ -254,15 +258,6 @@ def _parse_home(data: dict) -> HomeConfig:
     _reject_unknown_keys(data, _HOME_KEYS, where)
     recent = _parse_count_table(data, "recent", where)
     featured = _parse_count_table(data, "featured", where)
-    raw_taxonomies = data.get("taxonomies") or {}
-    if not isinstance(raw_taxonomies, dict):
-        raise ConfigError(
-            f"{where} 'taxonomies' must be a table of taxonomy-name = "
-            "{{ sort_by, order }}."
-        )
-    taxonomies = {
-        name: _parse_home_taxonomy(name, opts) for name, opts in raw_taxonomies.items()
-    }
     profile = data.get("profile", False)
     if not isinstance(profile, bool):
         raise ConfigError(f"{where} 'profile' must be a boolean, got {profile!r}.")
@@ -270,7 +265,6 @@ def _parse_home(data: dict) -> HomeConfig:
         template=str(_require(data, "template", where)),
         recent=recent,
         featured=featured,
-        taxonomies=taxonomies,
         profile=profile,
     )
 
@@ -291,20 +285,6 @@ def _parse_count_table(data: dict, key: str, where: str) -> dict[str, int]:
             )
         result[type_name] = count
     return result
-
-
-def _parse_home_taxonomy(name: str, data: dict) -> HomeTaxonomy:
-    where = f"[home.taxonomies.{name}]"
-    if not isinstance(data, dict):
-        raise ConfigError(f"{where} must be a table.")
-    _reject_unknown_keys(data, _HOME_TAXONOMY_KEYS, where)
-    sort_by = str(data.get("sort_by", "count")).lower()
-    if sort_by not in ("count", "name"):
-        raise ConfigError(f"{where} 'sort_by' must be \"count\" or \"name\", got {sort_by!r}.")
-    order = str(data.get("order", "desc")).lower()
-    if order not in ("asc", "desc"):
-        raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
-    return HomeTaxonomy(name=name, sort_by=sort_by, order=order)
 
 
 def _parse_nav(data: dict) -> NavConfig:
@@ -376,11 +356,6 @@ def parse_config(raw: dict) -> SiteConfig:
                     raise ConfigError(
                         f"[home] {key!r} references unknown content type {type_name!r}."
                     )
-        for tax_name in home.taxonomies:
-            if tax_name not in taxonomies:
-                raise ConfigError(
-                    f"[home] 'taxonomies' references unknown taxonomy {tax_name!r}."
-                )
         if home.profile and profile is None:
             raise ConfigError(
                 "[home] 'profile' is true but there is no [profile] section to render."

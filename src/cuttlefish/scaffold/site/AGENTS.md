@@ -1,19 +1,27 @@
 # Agent guide for this `cuttlefish` site
 
-This site is built by **cuttlefish** (agentic static site generator). You (the agent)
-drive it by editing plain files. This document is the source of truth for how.
+This site is built by **cuttlefish** (agentic static site generator). You (the
+agent) drive its **look, layout, and configuration** by editing plain files. You
+do **not** write the site's content — the author owns that. This document is the
+source of truth for how.
 
 ## Project map
 
 | Path | What it is | Edit? |
 |------|-----------|-------|
 | `config.toml` | Whole-site configuration (types, taxonomies, home). | ✅ |
-| `content/<type>/*.md` | Content for a content type (e.g. `blog`, `project`). | ✅ |
-| `content/pages/*.md` | Standalone pages (no index, no taxonomy). | ✅ |
 | `templates/*.html` | Jinja2 templates (theming & layout). | ✅ |
 | `static/**` | CSS/JS/images copied verbatim to the site root. | ✅ |
+| `content/<type>/*.md` | Content for a content type (e.g. `blog`, `project`). **Author-owned — read for context, never write.** | ❌ |
+| `content/pages/*.md` | Standalone pages (no index, no taxonomy). **Author-owned.** | ❌ |
 | `public/` | **Generated** output. Never edit by hand. | ❌ |
 | `.ctf/` | **Generated** build cache. Never edit by hand. | ❌ |
+
+**Do not create, edit, delete, or rewrite content files** (`content/**/*.md`) —
+not their front matter and not their Markdown bodies. The author writes the
+words; your job is the config, templates, and styling that present them. You may
+**read** content (e.g. to see which taxonomy terms or front-matter fields exist
+so you can wire up config and templates), but treat it as read-only input.
 
 Build with `ctf build`. Preview live with `ctf serve` (watches files and
 reloads the browser). A `public/sitemap.xml` of every page is generated
@@ -42,8 +50,8 @@ sort_by = "date"                  # front-matter field to sort by
 order = "desc"                    # "desc" = newest/largest first, "asc" = oldest/smallest
 ```
 
-Then create `templates/note.html` and `templates/note.index.html`, and put
-content in `content/note/*.md`.
+Then create `templates/note.html` and `templates/note.index.html`. The author
+adds the content under `content/note/*.md`.
 
 ### Add a taxonomy
 
@@ -54,12 +62,21 @@ index_template = "taxonomy.index.html"  # all-terms page (optional)
 permalink = "/categories/{term}/"     # required
 index_permalink = "/categories/"      # required if index_template is set
 multiple = false                      # single term (default true = list)
+sort_by = "name"                      # term ordering: "name" (default) or "count"
+order   = "asc"                       # "asc" (default) or "desc"
+home    = true                        # also surface its terms on the home page
 ```
 
-Apply it by adding the key to a content file's front matter. `multiple`
-decides the front-matter shape: `true` (default) requires a list
+It is applied by adding the key to a content file's front matter (the author
+does this). `multiple` decides the front-matter shape: `true` (default) requires a list
 (`tags = ["python", "ssg"]`); `false` requires a single string
 (`category = "AI"`). The wrong shape is a build error.
+
+`sort_by`/`order` set how this taxonomy's terms are ordered **wherever they are
+listed** — the term index page *and* the home list (below) share one ordering.
+`sort_by` is `"name"` (the term text, default) or `"count"` (most-used first);
+`order` is `"asc"` (default) or `"desc"`. Equal counts fall back to name. Set
+`home = true` (default `false`) to also surface the terms on the landing page.
 
 ### The `pages` type
 
@@ -73,10 +90,7 @@ taxonomy participation. Do **not** give it `index_template`/`index_permalink`.
 template = "home.html"
 recent   = { blog = 5, project = 3 }  # sections: content-type = how many recent items
 featured = { blog = 2 }               # curated: content-type = how many featured items
-
-[home.taxonomies.tags]               # term lists: one table per taxonomy
-sort_by = "count"                    # "count" (default) or "name"
-order   = "desc"                     # "desc" (default) or "asc"
+profile  = true                       # render the [profile] block (see below)
 ```
 
 `recent` is a table of `content-type = count`. Each becomes a section the home
@@ -89,11 +103,12 @@ only from items with `featured = true` in their front matter (newest first). It
 is independent of `recent` — use either, both, or neither. Every key must name a
 declared content type.
 
-`[home.taxonomies.<name>]` surfaces a taxonomy's terms on the home page, read
-by key as `taxonomies.<name>` (e.g. `taxonomies.tags`) — a list of terms, each
-with `name`, `count` and `url`. Use it for a tag cloud (`sort_by = "count"`) or
-a category list (`sort_by = "name"`). All terms are passed; slice in the
-template if you want fewer. Every key must name a declared taxonomy.
+A taxonomy with `home = true` (set on `[taxonomies.<name>]`, see *Add a
+taxonomy*) is surfaced on the home page, read by key as `taxonomies.<name>`
+(e.g. `taxonomies.tags`) — a list of terms, each with `name`, `count` and `url`,
+ordered by that taxonomy's `sort_by`/`order`. Use it for a tag cloud
+(`sort_by = "count"`) or a category list (`sort_by = "name"`). All terms are
+passed; slice in the template if you want fewer.
 
 `[home] profile = true` renders the site author block on the home page (see
 `[profile]` below). The home template then receives a `profile` variable; it is
@@ -130,9 +145,12 @@ links  = ["/blog/", "/projects/", "/about/"]  # hrefs (paired with labels by pos
 by position). Templates access them via `site.nav.enabled` and `site.nav.items`
 (each item has `.label` and `.link`).
 
-## Authoring content
+## Content format (reference)
 
-Each file starts with a TOML front-matter block fenced by `+++`, then Markdown:
+Content is **author-owned** — you don't write or edit it (see the project map).
+This section documents the format the author uses so you can read it correctly
+when wiring up config and templates. Each file starts with a TOML front-matter
+block fenced by `+++`, then Markdown:
 
 ```
 +++
