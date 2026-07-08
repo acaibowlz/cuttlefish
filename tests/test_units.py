@@ -349,6 +349,19 @@ def test_profile_validation():
             parse_config(raw)
 
 
+def test_params_free_form():
+    # [params] is the escape hatch: arbitrary keys pass through untouched, even
+    # ones that would be rejected anywhere else.
+    cfg = parse_config({
+        "params": {"accent": "teal", "show_sidebar": True, "nested": {"a": 1}},
+    })
+    assert cfg.params == {"accent": "teal", "show_sidebar": True, "nested": {"a": 1}}
+    # Absent table defaults to empty, and a non-table [params] is rejected.
+    assert parse_config({"title": "X"}).params == {}
+    with pytest.raises(ConfigError):
+        parse_config({"params": "nope"})
+
+
 def test_sitemap_output_to_url():
     assert _output_to_url("index.html") == "/"
     assert _output_to_url("blog/index.html") == "/blog/"

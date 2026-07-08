@@ -1,6 +1,12 @@
 title = "Demo Site"
 base_url = "https://example.com"
 
+# Free-form custom values. Unlike every other table, keys here are NOT
+# validated — put anything a template needs and read it as `site.params.<key>`
+# (e.g. `site.params.accent`). Everywhere else, an unknown key is a build error.
+[params]
+accent = "teal"
+
 [home]
 template = "home.html"
 # Recent-items sections: content-type = count. The template reads each as

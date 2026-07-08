@@ -27,9 +27,11 @@ CONFIG_DOCS_URL = "https://example.com/cuttlefish/configuration"
 
 #: Allowed keys for each strictly-validated config scope. Unknown keys are
 #: rejected — they are almost always typos that would otherwise be silently
-#: ignored. Custom/free-form values are not supported at the moment.
+#: ignored. The one escape hatch is the ``[params]`` table, whose *contents*
+#: are deliberately free-form (see ``_parse_params``); custom site-wide values
+#: go there rather than as loose top-level keys.
 _TOP_LEVEL_KEYS = frozenset(
-    {"title", "base_url", "content_types", "taxonomies", "home", "nav", "profile"}
+    {"title", "base_url", "content_types", "taxonomies", "home", "nav", "profile", "params"}
 )
 _PROFILE_KEYS = frozenset({"name", "bio", "avatar", "email", "socials"})
 _CONTENT_TYPE_KEYS = frozenset(
@@ -172,6 +174,10 @@ class SiteConfig:
     profile: Profile | None = None
     content_types: dict[str, ContentType] = field(default_factory=dict)
     taxonomies: dict[str, Taxonomy] = field(default_factory=dict)
+    #: Free-form ``[params]`` table, exposed to every template as ``site.params``.
+    #: Its keys are intentionally not validated — this is the escape hatch for
+    #: custom site-wide values a template wants to read.
+    params: dict = field(default_factory=dict)
     #: URL path prefix the site is served under, derived from ``base_url`` (e.g.
     #: ``/repo`` for a GitHub Pages project site). Empty for a root deploy.
     base_path: str = ""
@@ -319,6 +325,18 @@ def _parse_profile(data: dict) -> Profile:
     )
 
 
+def _parse_params(data: dict) -> dict:
+    """Return the free-form ``[params]`` table verbatim.
+
+    Unlike every other scope, its keys are *not* checked: this is the one place
+    a site can declare custom values for its templates to read. We only enforce
+    that it is a table, so ``site.params.foo`` lookups behave predictably.
+    """
+    if not isinstance(data, dict):
+        raise ConfigError("[params] must be a table of custom key = value entries.")
+    return data
+
+
 def parse_config(raw: dict) -> SiteConfig:
     """Validate a raw config mapping into a :class:`SiteConfig`."""
     _reject_unknown_keys(raw, _TOP_LEVEL_KEYS, CONFIG_FILENAME)
@@ -333,6 +351,7 @@ def parse_config(raw: dict) -> SiteConfig:
     home = _parse_home(raw["home"]) if "home" in raw else None
     nav = _parse_nav(raw["nav"]) if "nav" in raw else NavConfig()
     profile = _parse_profile(raw["profile"]) if "profile" in raw else None
+    params = _parse_params(raw["params"]) if "params" in raw else {}
 
     # Cross-checks: taxonomy keys must not collide with reserved/front-matter
     # essentials, and the pages type (if present) must not declare an index.
@@ -362,6 +381,7 @@ def parse_config(raw: dict) -> SiteConfig:
         profile=profile,
         content_types=content_types,
         taxonomies=taxonomies,
+        params=params,
         raw=raw,
     )
 

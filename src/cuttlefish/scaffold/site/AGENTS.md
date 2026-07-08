@@ -144,6 +144,23 @@ links  = ["/blog/", "/projects/", "/about/"]  # hrefs (paired with labels by pos
 by position). Templates access them via `site.nav.enabled` and `site.nav.items`
 (each item has `.label` and `.link`).
 
+### Custom values (`[params]`)
+
+```toml
+[params]
+accent       = "teal"
+show_sidebar = true
+analytics_id = "UA-123"
+```
+
+The **only** table whose keys are not validated. Every other table rejects
+unknown keys as typos; `[params]` is the escape hatch for arbitrary site-wide
+values. Read them in any template as `site.params.<key>` (e.g.
+`{% if site.params.show_sidebar %}` or `{{ site.params.accent }}`). For
+**per-page** custom values, add them to a page's front matter instead and read
+them off the item's `meta` (e.g. `page.meta.hero_layout`) — front matter is
+likewise free-form.
+
 ## Content format (reference)
 
 Content is **author-owned** — you don't write or edit it (see the project map).
@@ -186,8 +203,9 @@ Usable in any `permalink`/`index_permalink`: `{slug}`, `{type}`, `{year}`,
 
 Templates are Jinja2 and live in `templates/`. `base.html` is the shared layout;
 others `{% extends "base.html" %}`. A global `site` object is available
-everywhere: `site.title`, `site.base_url`, `site.nav`, and `site.config` (the
-raw parsed `config.toml`).
+everywhere: `site.title`, `site.base_url`, `site.nav`, `site.profile`,
+`site.params` (your free-form `[params]` table), and `site.config` (the raw
+parsed `config.toml`).
 
 Variables per template kind:
 

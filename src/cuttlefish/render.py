@@ -133,12 +133,13 @@ class Renderer:
         )
 
     def set_site_context(self) -> None:
-        """Expose a stable ``site`` global (title, base_url, nav, profile, config)."""
+        """Expose a stable ``site`` global (title, base_url, nav, profile, params, config)."""
         self.env.globals["site"] = SimpleNamespace(
             title=self.config.title,
             base_url=self.config.base_url,
             nav=self.config.nav,
             profile=self.config.profile,
+            params=self.config.params,
             config=self.config.raw,
         )
 

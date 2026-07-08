@@ -26,7 +26,7 @@ Use `uv run python -m pytest`, **not** `uv run pytest`. The test modules do `fro
 
 A build is a pipeline in `build.py::build_site`, which wires together small single-purpose modules:
 
-1. **`config.py`** — loads and strictly validates `config.toml` into frozen dataclasses (`SiteConfig`, `ContentType`, `Taxonomy`, `HomeConfig`, `Profile`, `NavConfig`). Unknown keys are **rejected** (with a did-you-mean suggestion), because a silently-ignored typo is the worst failure mode for an agent-edited config.
+1. **`config.py`** — loads and strictly validates `config.toml` into frozen dataclasses (`SiteConfig`, `ContentType`, `Taxonomy`, `HomeConfig`, `Profile`, `NavConfig`). Unknown keys are **rejected** (with a did-you-mean suggestion), because a silently-ignored typo is the worst failure mode for an agent-edited config. The sole exception is the free-form `[params]` table (`_parse_params`), exposed to templates as `site.params`: its contents are intentionally *not* key-checked, so it's the one place custom site-wide values can live without tripping the validator.
 2. **`content.py`** — discovers `content/<type>/*.md`, splits `+++`-fenced TOML front matter from the Markdown body, and renders the body to HTML with `mistune`. Produces `ContentItem`.
 3. **`taxonomy.py`** — groups items by each configured taxonomy's terms into `TaxonomyData`/`Term`.
 4. **`permalink.py`** — substitutes tokens (`{slug}`, `{year}`, `{term}`, …) in permalink patterns and maps URLs to "pretty URL" output paths (`/blog/post/` → `public/blog/post/index.html`).
