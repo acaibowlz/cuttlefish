@@ -258,7 +258,7 @@ body.home { --max-width: 64rem; }
 .widget .tags li a { background: var(--bg); }
 .tag-count { color: var(--muted); font-size: 0.75em; }
 
-/* Profile / author card — [profile] rendered when [home] profile = true. */
+/* Profile / author card — [profile] rendered on the home page via site.profile. */
 .profile-card { text-align: center; }
 .profile-card .avatar {
   width: 72px;

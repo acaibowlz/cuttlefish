@@ -58,22 +58,22 @@
       </section>
     </div>
 
-    {% if profile or taxonomies.tags %}
+    {% if site.profile or taxonomies.tags %}
     <aside class="home-aside">
-      {# Author card from [profile], passed only when [home] profile = true.
-         `profile` has name, bio, avatar, email and socials (platform -> url).
-         The same data is on every page as `site.profile`. #}
-      {% if profile %}
+      {# Author card from [profile]. It's a site-wide global, so `site.profile`
+         is available on every page; the home page renders it here. It has
+         name, bio, avatar, email and socials (platform -> url). #}
+      {% if site.profile %}
       <section class="widget profile-card">
-        {% if profile.avatar %}
-        <img class="avatar" src="{{ profile.avatar }}" alt="{{ profile.name }}" width="72" height="72">
+        {% if site.profile.avatar %}
+        <img class="avatar" src="{{ site.profile.avatar }}" alt="{{ site.profile.name }}" width="72" height="72">
         {% endif %}
-        {% if profile.name %}<h2 class="profile-name">{{ profile.name }}</h2>{% endif %}
-        {% if profile.bio %}<p class="profile-bio">{{ profile.bio }}</p>{% endif %}
-        {% if profile.email or profile.socials %}
+        {% if site.profile.name %}<h2 class="profile-name">{{ site.profile.name }}</h2>{% endif %}
+        {% if site.profile.bio %}<p class="profile-bio">{{ site.profile.bio }}</p>{% endif %}
+        {% if site.profile.email or site.profile.socials %}
         <ul class="socials">
-          {% if profile.email %}<li><a href="mailto:{{ profile.email }}">Email</a></li>{% endif %}
-          {% for name, url in profile.socials.items() %}
+          {% if site.profile.email %}<li><a href="mailto:{{ site.profile.email }}">Email</a></li>{% endif %}
+          {% for name, url in site.profile.socials.items() %}
           <li><a href="{{ url }}">{{ name }}</a></li>
           {% endfor %}
         </ul>

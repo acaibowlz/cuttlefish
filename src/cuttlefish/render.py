@@ -224,8 +224,8 @@ class Renderer:
         ``featured`` is the parallel mapping of curated (``featured = true``)
         items, addressed as ``featured.<type>``. ``taxonomies`` maps a taxonomy
         name to its sorted terms (each with ``name``, ``count`` and ``url``),
-        addressed as ``taxonomies.tags``. ``profile`` is passed only when
-        ``[home] profile = true``, so the template gates the block on it.
+        addressed as ``taxonomies.tags``. Author details are available via the
+        site-wide ``site.profile`` global, not passed here.
         """
         home = self.config.home
         if home is None:
@@ -234,13 +234,11 @@ class Renderer:
         featured_sections = {
             name: [i.listing for i in items] for name, items in (featured or {}).items()
         }
-        profile = self.config.profile if home.profile else None
         with _render_step("index.html"):
             html = self.env.get_template(home.template).render(
                 recent=sections,
                 featured=featured_sections,
                 taxonomies=taxonomies or {},
-                profile=profile,
             )
             self._write("index.html", html)
         return "index.html"

@@ -39,7 +39,7 @@ _TAXONOMY_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "multiple",
      "sort_by", "order", "home"}
 )
-_HOME_KEYS = frozenset({"template", "recent", "featured", "profile"})
+_HOME_KEYS = frozenset({"template", "recent", "featured"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
 
@@ -127,9 +127,6 @@ class HomeConfig:
     #: Curated sections: content-type name -> number of ``featured = true``
     #: items to pass (exposed as ``featured.<type>``). Newest first, like recent.
     featured: dict[str, int] = field(default_factory=dict)
-    #: Whether to render the site ``[profile]`` block on the landing page (the
-    #: home template receives ``profile`` only when this is true).
-    profile: bool = False
 
 
 @dataclass(frozen=True)
@@ -258,14 +255,10 @@ def _parse_home(data: dict) -> HomeConfig:
     _reject_unknown_keys(data, _HOME_KEYS, where)
     recent = _parse_count_table(data, "recent", where)
     featured = _parse_count_table(data, "featured", where)
-    profile = data.get("profile", False)
-    if not isinstance(profile, bool):
-        raise ConfigError(f"{where} 'profile' must be a boolean, got {profile!r}.")
     return HomeConfig(
         template=str(_require(data, "template", where)),
         recent=recent,
         featured=featured,
-        profile=profile,
     )
 
 
@@ -356,10 +349,6 @@ def parse_config(raw: dict) -> SiteConfig:
                     raise ConfigError(
                         f"[home] {key!r} references unknown content type {type_name!r}."
                     )
-        if home.profile and profile is None:
-            raise ConfigError(
-                "[home] 'profile' is true but there is no [profile] section to render."
-            )
 
     base_url = str(raw.get("base_url", "")).rstrip("/")
     return SiteConfig(

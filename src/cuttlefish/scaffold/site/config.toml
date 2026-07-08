@@ -10,13 +10,11 @@ recent = { blog = 5, project = 3 }
 # in their front matter (newest first). Read as `featured.<type>`. Independent
 # of `recent` — use either, both, or neither.
 featured = { blog = 2 }
-# Render the [profile] block on the landing page (see below).
-profile = true
 
 # Site author/owner details, exposed to every template as `site.profile`
 # (name, bio, avatar, email, socials). `socials` maps a platform key to its
-# URL and keeps this order. Set `[home] profile = true` to show it on the home
-# page. Avatar is a path under static/.
+# URL and keeps this order. The home template renders it as an author card via
+# `site.profile`. Avatar is a path under static/.
 [profile]
 name = "Demo User"
 bio = "Placeholder bio — a line or two about who you are. Swap in your own."

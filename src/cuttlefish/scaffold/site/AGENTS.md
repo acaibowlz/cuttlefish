@@ -90,7 +90,6 @@ taxonomy participation. Do **not** give it `index_template`/`index_permalink`.
 template = "home.html"
 recent   = { blog = 5, project = 3 }  # sections: content-type = how many recent items
 featured = { blog = 2 }               # curated: content-type = how many featured items
-profile  = true                       # render the [profile] block (see below)
 ```
 
 `recent` is a table of `content-type = count`. Each becomes a section the home
@@ -110,9 +109,9 @@ ordered by that taxonomy's `sort_by`/`order`. Use it for a tag cloud
 (`sort_by = "count"`) or a category list (`sort_by = "name"`). All terms are
 passed; slice in the template if you want fewer.
 
-`[home] profile = true` renders the site author block on the home page (see
-`[profile]` below). The home template then receives a `profile` variable; it is
-`None` when the toggle is off, so gate the block on `{% if profile %}`.
+The site author block on the home page is rendered from `[profile]` (see below)
+via the site-wide `site.profile` global, so the home template gates it on
+`{% if site.profile %}` — no `[home]` key controls it.
 
 ### Author profile
 
@@ -129,8 +128,8 @@ Site-wide author details, available on **every** page as `site.profile`
 (`.name`, `.bio`, `.avatar`, `.email`, `.socials`). `socials` is a
 `platform → url` table and keeps config order, so links render in the order you
 write them and the key is the platform name (handy for icon classes). Avatar's
-`alt` should default to the name. Turn the home-page block on with
-`[home] profile = true`.
+`alt` should default to the name. The home template renders it as an author card
+via `site.profile`; being site-wide, it's available on every page.
 
 ### Navigation bar
 
@@ -198,7 +197,7 @@ Variables per template kind:
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
 | taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |
-| home (`home.html`) | `recent` and `featured` — maps of content-type → summary-only items (`recent.blog`, `featured.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`); `profile` — the `[profile]` block or `None` (also on every page as `site.profile`) |
+| home (`home.html`) | `recent` and `featured` — maps of content-type → summary-only items (`recent.blog`, `featured.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`). Author details come from `site.profile` (on every page), not a home-only variable. |
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
 > home) may use only **listing fields** — `title`, `date`, `description`,

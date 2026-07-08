@@ -325,13 +325,12 @@ def test_profile_parsed():
             "email": "jane@example.com",
             "socials": {"github": "https://github.com/jane", "mastodon": "https://m/@jane"},
         },
-        "home": {"template": "home.html", "profile": True},
+        "home": {"template": "home.html"},
     })
     assert cfg.profile.name == "Jane"
     assert cfg.profile.email == "jane@example.com"
     # socials keep config order (github before mastodon).
     assert list(cfg.profile.socials) == ["github", "mastodon"]
-    assert cfg.home.profile is True
 
 
 def test_profile_defaults_absent():
@@ -340,13 +339,10 @@ def test_profile_defaults_absent():
 
 
 def test_profile_validation():
-    # home.profile true with no [profile] section is an error.
-    with pytest.raises(ConfigError):
-        parse_config({"home": {"template": "h.html", "profile": True}})
-    # Unknown key, non-bool home.profile, and bad socials type are rejected.
+    # Unknown [profile] key and bad socials type are rejected. Author details
+    # are site-wide (site.profile), so there is no [home] toggle to validate.
     for raw in (
         {"profile": {"nam": "x"}},
-        {"profile": {"name": "x"}, "home": {"template": "h.html", "profile": "yes"}},
         {"profile": {"socials": "nope"}},
     ):
         with pytest.raises(ConfigError):
