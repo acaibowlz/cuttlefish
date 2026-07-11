@@ -1,28 +1,31 @@
-<div align="center" style="text-align: center;">
+<div align="center">
 
-<h1>cuttlefish — Agentic Static Site Generator</h1>
+<img src="https://raw.githubusercontent.com/acaibowlz/cuttlefish/refs/heads/main/.github/cover.png" alt="cuttlefish — Agentic Static Site Generator" width="100%">
 
-<p>
-  Style your personal site / portfolio by describing it. You write the content, agents do the rest.
-</p>
+<h1>cuttlefish</h1>
+
+<p><strong>Describe your site. An agent builds it.</strong></p>
+
+<p>An agentic static site generator for personal sites and portfolios —<br>
+you write the content, agents handle the look and layout.</p>
 
 </div>
 
-**cuttlefish** is just another ssg that you are already familiar with: content type, taxonomy, you name it. However, **cuttlefish** has no themes to install, no CSS framework, and no asset pipeline — just one plain stylesheet. You never have to open it. Want a minimal layout with a teal accent? A two-column projects grid? Bigger headings? You _describe_ it, and an agent edits that single file (and the templates) to match. The look and layout of your site is something you talk your way into, not something you hand-tune.
+cuttlefish has the building blocks you'd expect from a static site generator — content types, taxonomies, templates — and one deliberate omission: there's no theme to install, no CSS framework, and no asset pipeline. Your whole site is a handful of plain-text files and one stylesheet you never open by hand.
 
-## The loop
+Want a minimal layout with a teal accent? A two-column projects grid? Bigger headings? Describe it, and a coding agent edits the files to match. The look of your site is something you talk your way into, not something you hand-tune.
 
-You don't hand-edit a theme — you describe what you want, an agent edits the
-files, and `ctf` builds them:
+## How it works
 
-1. Point a coding agent at your site. Every site ships an `AGENTS.md` that is the
-   agent's source of truth — the file map, the `config.toml` schema, the
-   templating rules, and the styling conventions.
-2. Just describe what you want, and the agent updates the stylesheet, templates,
-   and config to match.
-3. `ctf build` renders everything to `public/`. `ctf serve` previews it live.
+Every site ships an `AGENTS.md`: the agent's source of truth for the file map, the `config.toml` schema, the templating rules, and the styling conventions. Point a coding agent at it and say what you want —
 
-## Quick Start
+> Give the site a teal accent, put projects in a two-column grid, and make the headings bigger.
+
+— and it edits the config, templates, and stylesheet to match. You review a diff, not a config dialect; there are no theme docs or class names to memorize. Then `ctf build` renders everything to `public/`, and `ctf serve` previews it live.
+
+## Quick start
+
+Requires Python 3.11+.
 
 ```
 pipx install cuttlefish-ssg
@@ -34,6 +37,17 @@ ctf serve            # live-reloading preview at http://localhost:8000
 
 ## Features
 
-- Agent-first — a generated AGENTS.md documents the schema and conventions so an agent can author and theme the site reliably.
-- Incremental builds — a build cache rebuilds only what changed; a strict summary/body split keeps listings from rebuilding when a post's body is edited.
-- Live reload — ctf serve watches files and reloads the browser, drafts on by default.
+- **Describe, don't hand-tune.** No themes, no CSS framework, no build step — one plain stylesheet an agent edits to match what you describe.
+- **Agent-first.** Every site ships an `AGENTS.md` documenting its schema and conventions, so an agent can author and style it reliably.
+- **Rebuild fast.** Incremental builds cache the last render and rebuild only what changed — editing a post's body never touches your listing pages.
+- **Everything else you'd expect.** Content types, taxonomies, Markdown with TOML front matter, standalone pages, pretty permalinks with pagination, a `sitemap.xml`, and a live-reloading dev server.
+
+## Usage
+
+| Command            | What it does                                                                                                         |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------- |
+| `ctf init <dir>`   | Scaffold a new site into `<dir>`.                                                                                    |
+| `ctf build [root]` | Render the site to `public/`. Add `--force` to ignore the cache, `--drafts` to include drafts.                       |
+| `ctf serve [root]` | Preview at `http://localhost:8000`, live-reloading on change. Drafts on by default; set `--port` to change the port. |
+
+`root` defaults to the current directory, so you can run `ctf build` and `ctf serve` from inside your site.

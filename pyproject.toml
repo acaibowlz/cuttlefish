@@ -1,7 +1,7 @@
 [project]
 name = "cuttlefish-ssg"
 version = "0.1.0"
-description = "Tell your agents to style and layout your site."
+description = "Describe your site. An agent builds it."
 readme = "README.md"
 requires-python = ">=3.11"
 dependencies = [
