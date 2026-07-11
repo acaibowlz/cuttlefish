@@ -22,8 +22,7 @@ PAGES_TYPE = "pages"
 CONFIG_FILENAME = "config.toml"
 
 #: Where config errors point users for the full key reference.
-#: TODO: update to the published Configuration docs page once it is hosted.
-CONFIG_DOCS_URL = "https://example.com/cuttlefish/configuration"
+CONFIG_DOCS_URL = "https://acaibowlz.github.io/cuttlefish/configuration/"
 
 #: Allowed keys for each strictly-validated config scope. Unknown keys are
 #: rejected — they are almost always typos that would otherwise be silently
