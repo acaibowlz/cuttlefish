@@ -117,7 +117,7 @@ def _items_by_type(items: list[ContentItem], config: SiteConfig) -> dict[str, li
         # almost certainly a typo (e.g. "dae" for "date") rather than a real but
         # absent field — surface it instead of silently leaving them unsorted.
         # Empty types are skipped: "absent everywhere" is vacuously true there.
-        if group and ct.sort_by != "date" and not any(ct.sort_by in item.meta for item in group):
+        if group and ct.sort_by != "date" and not any(item.has_sort_field(ct.sort_by) for item in group):
             raise ConfigError(
                 f"[content_types.{name}] 'sort_by' = {ct.sort_by!r} is not a field on any "
                 f"{name} content. Use \"date\" or a front-matter field present on your items."

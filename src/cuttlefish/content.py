@@ -38,6 +38,12 @@ FRONT_MATTER_FENCE = "+++"
 #: template is allowed to render; ``body_html`` is intentionally excluded.
 SUMMARY_FIELDS = ("title", "date", "description", "slug", "url", "taxonomies", "draft")
 
+#: Front-matter keys promoted to typed :class:`ContentItem` fields. They are
+#: read as attributes (never a raw dict), excluded from the free-form
+#: ``params``, and — because each is always present with a default — always
+#: available as a ``sort_by`` target.
+_PROMOTED_KEYS = frozenset({"title", "description", "date", "slug", "draft", "featured"})
+
 
 @dataclass(frozen=True)
 class TocEntry:
@@ -119,9 +125,20 @@ class ContentItem:
 
     type: str
     slug: str
-    meta: dict
+    #: Front-matter fields the generator understands, promoted to typed
+    #: attributes at parse time. The dataclass is the boundary of truth, so
+    #: downstream code reads a field, never ``meta.get(...)``.
+    title: str
+    description: str
+    date: date | None
+    draft: bool
+    featured: bool
     body_html: str
     taxonomies: dict[str, list[str]]
+    #: Free-form front-matter fields: everything that is neither a promoted
+    #: field nor a configured taxonomy. Exposed to full-item templates as
+    #: ``page.params`` — the per-page counterpart to ``site.params``.
+    params: dict
     source_rel: str  # path relative to site root, e.g. "content/blog/post.md"
     url: str
     output_rel: str  # path relative to public/, e.g. "blog/post/index.html"
@@ -129,30 +146,24 @@ class ContentItem:
     #: to build a table of contents. Empty for bodies with no headings.
     toc: list[TocEntry] = field(default_factory=list)
 
-    @property
-    def title(self) -> str:
-        return str(self.meta.get("title", self.slug))
+    def sort_value(self, key: str) -> object:
+        """Value used to order items when a content type's ``sort_by`` names *key*.
 
-    @property
-    def description(self) -> str:
-        return str(self.meta.get("description", ""))
+        A promoted field resolves to its typed value; anything else falls back
+        to ``params``, so ``sort_by`` can point at a custom front-matter field
+        (e.g. a Hugo-style ``weight``) as readily as at ``title``.
+        """
+        if key in _PROMOTED_KEYS:
+            return getattr(self, key)
+        return self.params.get(key)
 
-    @property
-    def date(self) -> date | None:
-        value = self.meta.get("date")
-        if isinstance(value, datetime):
-            return value.date()
-        if isinstance(value, date):
-            return value
-        return None
+    def has_sort_field(self, key: str) -> bool:
+        """Whether *key* is a field this item carries (promoted or custom).
 
-    @property
-    def draft(self) -> bool:
-        return bool(self.meta.get("draft", False))
-
-    @property
-    def featured(self) -> bool:
-        return bool(self.meta.get("featured", False))
+        Lets the build flag a ``sort_by`` that matches nothing — almost always
+        a typo. Promoted fields always count; custom ones must be in ``params``.
+        """
+        return key in _PROMOTED_KEYS or key in self.params
 
     @property
     def meta_fingerprint(self) -> str:
@@ -249,6 +260,21 @@ def _require_front_matter(meta: dict, type_name: str, err_summary: str) -> None:
         )
 
 
+def _coerce_date(value: object) -> date | None:
+    """Front-matter date as a plain ``date`` (a datetime is narrowed to its day)."""
+    if isinstance(value, datetime):
+        return value.date()
+    if isinstance(value, date):
+        return value
+    return None
+
+
+def _custom_params(meta: dict, config: SiteConfig) -> dict:
+    """Free-form front matter: everything not promoted and not a taxonomy key."""
+    reserved = _PROMOTED_KEYS | set(config.taxonomies)
+    return {key: value for key, value in meta.items() if key not in reserved}
+
+
 def _extract_taxonomies(meta: dict, config: SiteConfig) -> dict[str, list[str]]:
     """Pull configured-taxonomy terms out of the front matter."""
     result: dict[str, list[str]] = {}
@@ -305,9 +331,14 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
     return ContentItem(
         type=type_name,
         slug=slug,
-        meta=meta,
+        title=str(meta.get("title", slug)),
+        description=str(meta.get("description", "")),
+        date=_coerce_date(item_date),
+        draft=bool(meta.get("draft", False)),
+        featured=bool(meta.get("featured", False)),
         body_html=body_html,
         taxonomies=taxonomies,
+        params=_custom_params(meta, config),
         source_rel=source_rel,
         url=url,
         output_rel=output_rel,
@@ -349,7 +380,7 @@ def sort_items(items: list[ContentItem], *, sort_by: str = "date", order: str = 
     def key(item: ContentItem):
         if sort_by == "date":
             return (item.date is not None, item.date or date.min)
-        value = item.meta.get(sort_by)
+        value = item.sort_value(sort_by)
         return (value is not None, value if value is not None else "")
 
     return sorted(items, key=key, reverse=(order == "desc"))

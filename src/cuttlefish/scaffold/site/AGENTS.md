@@ -158,8 +158,11 @@ unknown keys as typos; `[params]` is the escape hatch for arbitrary site-wide
 values. Read them in any template as `site.params.<key>` (e.g.
 `{% if site.params.show_sidebar %}` or `{{ site.params.accent }}`). For
 **per-page** custom values, add them to a page's front matter instead and read
-them off the item's `meta` (e.g. `page.meta.hero_layout`) — front matter is
-likewise free-form.
+them off `page.params` — the per-page counterpart to `site.params`. It holds
+every front-matter field that is not a built-in (`title`, `date`,
+`description`, `slug`, `draft`, `featured`) or a configured taxonomy. Guard
+optional ones with `.get`, since a missing key otherwise errors (e.g.
+`{% if page.params.get('hero_layout') %}{{ page.params.hero_layout }}{% endif %}`).
 
 ## Content format (reference)
 
@@ -211,7 +214,7 @@ Variables per template kind:
 
 | Template | Variables |
 |----------|-----------|
-| single content (`blog.html`) | `page` / `item` (full, incl. `page.body_html` and `page.toc`), `type`, `terms` |
+| single content (`blog.html`) | `page` / `item` (full, incl. `page.body_html`, `page.toc`, and `page.params` free-form fields), `type`, `terms` |
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
 | taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |

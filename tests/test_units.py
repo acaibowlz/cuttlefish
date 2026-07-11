@@ -249,17 +249,53 @@ def test_render_markdown_no_headings_gives_empty_toc():
     assert "<p>just a paragraph</p>" in html
 
 
-def test_content_item_featured_flag():
+def _item(**overrides):
+    """A minimally-populated ContentItem for field-level unit tests."""
     from cuttlefish.content import ContentItem
 
-    def make(meta):
-        return ContentItem(
-            type="blog", slug="s", meta=meta, body_html="", taxonomies={},
-            source_rel="content/blog/s.md", url="/b/s/", output_rel="b/s/index.html",
-        )
+    fields = dict(
+        type="blog", slug="s", title="T", description="D", date=None,
+        draft=False, featured=False, body_html="", taxonomies={}, params={},
+        source_rel="content/blog/s.md", url="/b/s/", output_rel="b/s/index.html",
+    )
+    fields.update(overrides)
+    return ContentItem(**fields)
 
-    assert make({"featured": True}).featured is True
-    assert make({}).featured is False
+
+def test_content_item_sort_value_promoted_and_custom():
+    item = _item(title="Zed", params={"weight": 5})
+    assert item.sort_value("title") == "Zed"   # promoted -> typed attribute
+    assert item.sort_value("weight") == 5       # custom -> params
+    assert item.sort_value("missing") is None   # absent custom -> None
+    assert item.has_sort_field("title") is True         # promoted always present
+    assert item.has_sort_field("weight") is True
+    assert item.has_sort_field("missing") is False
+
+
+def test_parse_item_promotes_fields_and_collects_params(tmp_path):
+    import datetime
+
+    from cuttlefish.content import parse_item
+
+    cfg = parse_config({
+        "content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}},
+        "taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/"}},
+    })
+    path = tmp_path / "content" / "blog" / "post.md"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        '+++\ntitle = "T"\ndescription = "D"\ndate = 2026-01-02\n'
+        'featured = true\ntags = ["x"]\nhero_layout = "wide"\n+++\nBody\n',
+        encoding="utf-8",
+    )
+    item = parse_item(path, "blog", cfg)
+
+    assert item.title == "T"
+    assert item.date == datetime.date(2026, 1, 2)
+    assert item.featured is True
+    assert item.taxonomies == {"tags": ["x"]}
+    # params is the leftover: promoted fields and taxonomy keys are excluded.
+    assert item.params == {"hero_layout": "wide"}
 
 
 def test_taxonomy_sort_parsed_with_defaults():
