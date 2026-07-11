@@ -13,7 +13,7 @@ by ``+++`` lines, followed by a Markdown body:
 
 Parsing yields :class:`ContentItem` objects with the body already rendered to
 HTML. Aggregates (indexes, taxonomy pages, home) receive a restricted
-:class:`ListingItem` view that deliberately omits ``body_html`` — this keeps
+:class:`ContentSummary` view that deliberately omits ``body_html`` — this keeps
 incremental builds correct (a body-only edit cannot affect any listing).
 """
 
@@ -34,9 +34,9 @@ from cuttlefish.permalink import resolve_permalink, slugify
 CONTENT_DIR = "content"
 FRONT_MATTER_FENCE = "+++"
 
-#: Front-matter fields exposed to listing templates. Everything an aggregate is
-#: allowed to render lives here; ``body_html`` is intentionally excluded.
-LISTING_FIELDS = ("title", "date", "description", "slug", "url", "taxonomies", "draft")
+#: The fields that make up a content summary — everything an aggregate/listing
+#: template is allowed to render; ``body_html`` is intentionally excluded.
+SUMMARY_FIELDS = ("title", "date", "description", "slug", "url", "taxonomies", "draft")
 
 
 @dataclass(frozen=True)
@@ -97,8 +97,12 @@ class ContentError(CuttlefishError):
 
 
 @dataclass(frozen=True)
-class ListingItem:
-    """Summary-only view of an item, passed to listing/aggregate templates."""
+class ContentSummary:
+    """Reduced view of a :class:`ContentItem` for listing/aggregate templates.
+
+    Carries only the fields safe to show without the body (:data:`SUMMARY_FIELDS`),
+    never ``body_html``. That omission is what keeps incremental builds correct.
+    """
 
     title: str
     date: date | None
@@ -152,10 +156,10 @@ class ContentItem:
 
     @property
     def meta_fingerprint(self) -> str:
-        """Hash of listing-relevant fields only (never the body).
+        """Hash of the summary fields only (never the body).
 
-        Used by aggregates to decide whether a listing must be rebuilt: a
-        body-only edit leaves this unchanged, so indexes are correctly skipped.
+        Used by aggregates to decide whether one must be rebuilt: a body-only
+        edit leaves this unchanged, so indexes are correctly skipped.
         """
         import json
 
@@ -173,8 +177,8 @@ class ContentItem:
         return hash_text(json.dumps(payload, sort_keys=True))
 
     @property
-    def listing(self) -> ListingItem:
-        return ListingItem(
+    def summary(self) -> ContentSummary:
+        return ContentSummary(
             title=self.title,
             date=self.date,
             description=self.description,

@@ -1,10 +1,14 @@
 """Orchestrate a site build: discover, render, copy static, report.
 
-Supports a full build and a hybrid incremental build (Milestone 1): unchanged
-content pages are skipped; aggregates (indexes, taxonomy pages, home) are always
-rebuilt; a change to a template invalidates the content pages that use it
-(transitively); and a config change forces a full rebuild. Stale outputs left by
-deletions/renames are pruned via the manifest.
+There is one build path (``_run_build``) that renders whatever differs from a
+given manifest: unchanged content pages are skipped; an aggregate (index,
+taxonomy page, home) rebuilds when its fingerprint or template changed; a
+changed template invalidates the pages that use it (transitively); and stale
+outputs from deletions/renames are pruned via the manifest. A *full* build is
+the same routine run against an empty manifest on a cleared ``public/`` (so
+everything is "changed"); an *incremental* build passes the previous manifest.
+A config change forces the full variant. Keeping one path means full and
+incremental cannot disagree by construction.
 """
 
 from __future__ import annotations
@@ -200,14 +204,22 @@ def build_site(
     graph = build_graph(root, renderer.env)
 
     if incremental:
-        stats = _incremental_build(
+        stats = _run_build(
             root, config, config_hash, public_dir, items, grouped,
-            taxonomies, renderer, graph, manifest,
+            taxonomies, renderer, graph, manifest, mode="incremental",
         )
     else:
-        stats = _full_build(
+        # A full build is just the incremental routine against an *empty*
+        # manifest: nothing matches, so every page/aggregate/static file is
+        # "dirty" and rebuilt. We only clear public/ first (there is no manifest
+        # to prune stale files against) and then run the one shared path — so
+        # full and incremental cannot drift out of agreement by construction.
+        if public_dir.exists():
+            shutil.rmtree(public_dir)
+        public_dir.mkdir(parents=True)
+        stats = _run_build(
             root, config, config_hash, public_dir, items, grouped,
-            taxonomies, renderer, graph,
+            taxonomies, renderer, graph, Manifest(), mode="full",
         )
 
     stats.elapsed_ms = (time.perf_counter() - start) * 1000
@@ -215,50 +227,16 @@ def build_site(
     return stats
 
 
-def _full_build(root, config, config_hash, public_dir, items, grouped, taxonomies, renderer, graph) -> BuildStats:
-    stats = BuildStats(mode="full")
-    if public_dir.exists():
-        shutil.rmtree(public_dir)
-    public_dir.mkdir(parents=True)
+def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies, renderer, graph, manifest, *, mode) -> BuildStats:
+    """Render the site by diffing against *manifest* and record a new one.
 
-    new_content: dict[str, dict] = {}
-    for item in items:
-        renderer.render_content(item)
-        stats.content += 1
-        src = root / item.source_rel
-        new_content[item.source_rel] = {
-            "hash": hash_file(src),
-            "outputs": [item.output_rel],
-        }
-
-    specs = build_aggregate_specs(config, grouped, taxonomies, renderer)
-    for spec in specs:
-        spec.render()
-        stats.count_rendered(spec.key)
-
-    new_static: dict[str, dict] = {}
-    for src_rel, out_rel in _static_files(root).items():
-        src = root / src_rel
-        dest = public_dir / out_rel
-        dest.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copy2(src, dest)
-        new_static[src_rel] = {"hash": hash_file(src), "output": out_rel}
-        stats.static += 1
-
-    manifest = Manifest(
-        config_hash=config_hash,
-        content=new_content,
-        templates=_template_manifest(root, graph),
-        static=new_static,
-        aggregates=_aggregates_manifest(specs),
-    )
-    stats.sitemap = write_sitemap(public_dir, manifest.page_outputs(), config.base_url)
-    save_manifest(root, manifest)
-    return stats
-
-
-def _incremental_build(root, config, config_hash, public_dir, items, grouped, taxonomies, renderer, graph, manifest) -> BuildStats:
-    stats = BuildStats(mode="incremental")
+    This is the single build path. An incremental build passes the previous
+    manifest; a full build passes an empty :class:`Manifest` (and pre-clears
+    ``public/``), which makes every unit of work register as changed. Because
+    both modes run this exact routine, they are guaranteed to produce identical
+    output for identical inputs — there is no second implementation to drift.
+    """
+    stats = BuildStats(mode=mode)
 
     # Which templates changed, and which templates are therefore affected?
     new_templates = _template_manifest(root, graph)

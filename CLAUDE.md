@@ -36,20 +36,20 @@ A build is a pipeline in `build.py::build_site`, which wires together small sing
 
 ### Two invariants that shape the whole design
 
-**The summary/body split.** Listing pages (type indexes, taxonomy pages, taxonomy indexes, home) receive a restricted `ListingItem` view (`content.py`) that deliberately **omits `body_html`**. Single-content and standalone-page templates get the full `ContentItem`. This is not just encapsulation — it is what makes incremental builds correct: because no listing can render a body, a body-only edit provably cannot change any listing, so listings are safely skipped. Do not add body content to `ListingItem` or pass full `ContentItem`s to aggregate templates; it silently breaks incremental correctness.
+**The summary/body split.** Listing pages (type indexes, taxonomy pages, taxonomy indexes, home) receive a restricted `ContentSummary` view (`content.py`) that deliberately **omits `body_html`**. Single-content and standalone-page templates get the full `ContentItem`. This is not just encapsulation — it is what makes incremental builds correct: because no listing can render a body, a body-only edit provably cannot change any listing, so listings are safely skipped. Do not add body content to `ContentSummary` or pass full `ContentItem`s to aggregate templates; it silently breaks incremental correctness.
 
-**Aggregates are fingerprinted, never body-hashed.** An *aggregate* is any page listing multiple items (type index, taxonomy term page, taxonomy index, home). Each is described by an `AggregateSpec` (`graph.py`) carrying a `fingerprint` computed over exactly the listing-relevant data it renders — via `ContentItem.meta_fingerprint`, which hashes title/date/description/slug/url/taxonomies/draft and **never** the body. An aggregate rebuilds only if its fingerprint changed or its template was (transitively) affected.
+**Aggregates are fingerprinted, never body-hashed.** An *aggregate* is any page listing multiple items (type index, taxonomy term page, taxonomy index, home). Each is described by an `AggregateSpec` (`graph.py`) carrying a `fingerprint` computed over exactly the summary data it renders — via `ContentItem.meta_fingerprint`, which hashes title/date/description/slug/url/taxonomies/draft and **never** the body. An aggregate rebuilds only if its fingerprint changed or its template was (transitively) affected.
 
 ### Incremental builds
 
-`.ctf/cache.json` (a `Manifest`) records the previous build: a `config_hash`, per-content file hashes, per-template hashes + refs, static hashes, and aggregate fingerprints. On the next build (`_incremental_build`):
+`.ctf/cache.json` (a `Manifest`) records the previous build: a `config_hash`, per-content file hashes, per-template hashes + refs, static hashes, and aggregate fingerprints. There is a **single build routine** (`build.py::_run_build`) that renders whatever differs from a given manifest:
 
-- A build is incremental only when a manifest exists, `public/` exists, and `config_hash` matches. Otherwise it falls back to `_full_build` (which clears `public/`).
+- A build is incremental only when a manifest exists, `public/` exists, and `config_hash` matches — then `_run_build` runs against that manifest. Otherwise it runs the **full** variant: `public/` is cleared and `_run_build` runs against an *empty* `Manifest()`, so every page/aggregate/static file registers as changed and is rebuilt. Full is not a separate implementation — it is the same routine with a blank slate, so the two modes cannot drift out of agreement.
 - `config_hash` includes the effective `base_path`, so switching between `ctf build` and `ctf serve` (which forces `base_path=""`) correctly invalidates the cache.
 - **Template dependencies** (`template_deps.py::TemplateGraph`) track `{% extends %}`/`{% include %}` edges. A changed base/partial invalidates every template that transitively uses it via `affected_by`.
-- **Pruning**: outputs present in the old manifest but not the new one (deleted content, renamed slugs, removed terms) are deleted, and now-empty directories cleaned up.
+- **Pruning**: outputs present in the old manifest but not the new one (deleted content, renamed slugs, removed terms) are deleted, and now-empty directories cleaned up. (A full build clears `public/` up front, and prunes against the empty manifest — a no-op — so the same code covers both.)
 
-When touching build logic, keep `_full_build` and `_incremental_build` in agreement — they must produce identical `public/` output and write equivalent manifests; the incremental path is purely an optimization of the full one.
+When touching build logic, preserve the single-path property: full and incremental must stay one routine. `tests/test_incremental.py::test_incremental_output_matches_full` guards this by asserting a sequence of incremental rebuilds is byte-identical to a forced full build.
 
 ### Error handling
 

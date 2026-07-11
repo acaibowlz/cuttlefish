@@ -20,6 +20,39 @@ def _edit(path: Path, old: str, new: str) -> None:
     path.write_text(text.replace(old, new), encoding="utf-8")
 
 
+def _snapshot(public: Path) -> dict[str, bytes]:
+    """Map every output file (rel path) to its bytes, for equality checks."""
+    return {
+        str(p.relative_to(public)): p.read_bytes()
+        for p in public.rglob("*")
+        if p.is_file()
+    }
+
+
+def test_incremental_output_matches_full(site: Path, build):
+    # The core invariant behind having one build path: a series of incremental
+    # rebuilds must leave public/ byte-identical to a full build of the same
+    # final source. Exercise content edits, a new tag (aggregates), a new file,
+    # and a deletion (pruning), then compare to a forced full rebuild.
+    build(site)
+    _edit(site / "content/blog/hello-world.md", 'title = "Hello, World"', 'title = "Hi"')
+    _edit(site / "content/blog/second-post.md", 'tags = ["meta"]', 'tags = ["meta", "news"]')
+    (site / "content/project/example-project.md").unlink()
+    (site / "content/blog/fresh.md").write_text(
+        '+++\ntitle = "Fresh"\ndate = 2026-07-01\n'
+        'description = "A new post."\ntags = ["news"]\n+++\n\nBody.\n',
+        encoding="utf-8",
+    )
+    build(site)  # fold all of the above in via the incremental path
+    incremental = _snapshot(site / "public")
+
+    stats = build(site, force=True)
+    assert stats.mode == "full"
+    full = _snapshot(site / "public")
+
+    assert incremental == full
+
+
 def test_a_body_edit_skips_all_aggregates(site: Path, build):
     build(site)
     append(site / "content/blog/hello-world.md", "\nA new paragraph.\n")

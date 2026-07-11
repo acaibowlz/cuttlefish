@@ -1,7 +1,7 @@
 """Render pages with Jinja2 and write them to ``public/``.
 
 The renderer is deliberately strict about what listing templates can see: index,
-taxonomy, taxonomy-index and home templates receive :class:`ListingItem` views
+taxonomy, taxonomy-index and home templates receive :class:`ContentSummary` views
 (summary fields only), never full content bodies. Single-content and standalone
 page templates receive the full :class:`ContentItem`.
 """
@@ -20,7 +20,7 @@ from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoes
 from jinja2 import TemplateSyntaxError
 
 from cuttlefish.config import ContentType, SiteConfig
-from cuttlefish.content import ContentItem, ListingItem
+from cuttlefish.content import ContentItem, ContentSummary
 from cuttlefish.errors import CuttlefishError
 from cuttlefish.permalink import output_path
 from cuttlefish.taxonomy import HomeTerm, TaxonomyData, Term, term_links
@@ -74,7 +74,7 @@ def _prefix_links(html: str, base_path: str) -> str:
 class Page:
     """One page of a paginated listing."""
 
-    items: list[ListingItem]
+    items: list[ContentSummary]
     number: int
     total_pages: int
     base_url: str
@@ -170,8 +170,8 @@ class Renderer:
         if not content_type.has_index:
             return []
         base = content_type.index_permalink
-        listings = [i.listing for i in items]
-        pages = _paginate(base, listings, content_type.paginate)
+        summaries = [i.summary for i in items]
+        pages = _paginate(base, summaries, content_type.paginate)
         outputs = []
         for page in pages:
             url = _page_url(base, page.number)
@@ -186,12 +186,12 @@ class Renderer:
 
     def render_term(self, data: TaxonomyData, term: Term) -> str:
         """Render one taxonomy term page (summary-only listing)."""
-        listings = [i.listing for i in term.items]
+        summaries = [i.summary for i in term.items]
         with _render_step(term.output_rel):
             html = self.env.get_template(data.taxonomy.template).render(
                 taxonomy=data.taxonomy.name,
                 term=SimpleNamespace(name=term.name, url=term.url, count=term.count),
-                items=listings,
+                items=summaries,
             )
             self._write(term.output_rel, html)
         return term.output_rel
@@ -220,7 +220,7 @@ class Renderer:
         """Render the landing page (recent items per type, summary-only).
 
         ``recent`` is exposed to the template as a mapping of content-type name
-        to its listings, so the template addresses sections by key
+        to its summary items, so the template addresses sections by key
         (``recent.blog``) rather than being forced to loop over them.
         ``featured`` is the parallel mapping of curated (``featured = true``)
         items, addressed as ``featured.<type>``. ``taxonomies`` maps a taxonomy
@@ -231,9 +231,9 @@ class Renderer:
         home = self.config.home
         if home is None:
             return None
-        sections = {name: [i.listing for i in items] for name, items in recent.items()}
+        sections = {name: [i.summary for i in items] for name, items in recent.items()}
         featured_sections = {
-            name: [i.listing for i in items] for name, items in (featured or {}).items()
+            name: [i.summary for i in items] for name, items in (featured or {}).items()
         }
         with _render_step("index.html"):
             html = self.env.get_template(home.template).render(

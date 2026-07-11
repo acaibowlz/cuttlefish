@@ -4,7 +4,7 @@ An *aggregate* is any page that lists multiple content items: a type index, a
 taxonomy term page, a taxonomy index, or the home page. Each aggregate gets:
 
 - a stable **key** (e.g. ``index:blog``, ``taxonomy:tags:python``),
-- a **fingerprint** over exactly the data it renders (member listing
+- a **fingerprint** over exactly the data it renders (member summary
   fingerprints, term counts, …) — never content bodies,
 - the **template** it uses, and
 - a **render** callable plus its expected **outputs**.
