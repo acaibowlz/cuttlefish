@@ -197,6 +197,25 @@ slug = "my-post"           # optional; defaults to the filename
   slug defaults to the filename.
 - `draft = true` hides a page from `ctf build` (shown by `ctf serve`).
 
+**Markdown body extensions.** Beyond standard Markdown, bodies support tables,
+footnotes (`[^1]`), strikethrough (`~~x~~`), task lists (`- [x]`), autolinks,
+highlight (`==x==` → `<mark>`), and math (`$…$` inline, `$$…$$` block).
+
+Math emits only markup (`<span class="math">\(…\)</span>` and
+`<div class="math">$$…$$</div>`) — **no math JavaScript ships by default**, so it
+renders as plain text until the site loads a library. If the author wants math to
+render, add a MathJax script to `templates/base.html` before `</body>`:
+
+```html
+<script>
+  window.MathJax = { tex: { inlineMath: [['\\(', '\\)']], displayMath: [['$$', '$$']] } };
+</script>
+<script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js" async></script>
+```
+
+The same pattern (a script the template loads, opt-in) covers any client-side
+feature, e.g. Mermaid diagrams from ```mermaid``` code blocks.
+
 ## Permalink tokens
 
 Usable in any `permalink`/`index_permalink`: `{slug}`, `{type}`, `{year}`,

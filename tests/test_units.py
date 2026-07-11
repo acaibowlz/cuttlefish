@@ -249,6 +249,15 @@ def test_render_markdown_no_headings_gives_empty_toc():
     assert "<p>just a paragraph</p>" in html
 
 
+def test_render_markdown_supports_mark_and_math():
+    # `mark` and `math` only emit markup; math rendering is left to a script the
+    # site adds, so we assert on the emitted HTML, not any rendered output.
+    html, _ = render_markdown("==key== and $a^2$\n\n$$\nx = y\n$$\n")
+    assert "<mark>key</mark>" in html
+    assert '<span class="math">\\(a^2\\)</span>' in html
+    assert '<div class="math">$$\nx = y\n$$</div>' in html
+
+
 def _item(**overrides):
     """A minimally-populated ContentItem for field-level unit tests."""
     from cuttlefish.content import ContentItem

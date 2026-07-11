@@ -100,8 +100,14 @@ Bodies are rendered with [mistune](https://mistune.lepture.com). Alongside stand
 - **Strikethrough** (`~~text~~`)
 - **Task lists** (`- [x]` / `- [ ]`)
 - **Autolinks** — bare URLs become links
+- **Highlight** (`==text==` → `<mark>text</mark>`)
+- **Math** (`$…$` inline, `$$…$$` block)
 
 Every `##`/`###` heading is given a stable anchor `id` derived from its text, and the headings are collected into a table of contents a template can render as `page.toc`. See [Templates & theming](templates.md#page-variables).
+
+### Math rendering
+
+The **Math** extension only emits markup — inline math becomes `<span class="math">\(…\)</span>` and block math `<div class="math">$$…$$</div>`. Cuttlefish ships **no** math JavaScript, so nothing renders those spans until the site adds a library itself. To turn it on, load MathJax (or KaTeX) from your base template — see the scaffold's `AGENTS.md` for a drop-in snippet. The same applies to any client-side feature (e.g. Mermaid diagrams): the generator stays JS-free, and the site opts in.
 
 Reference images and other static assets by absolute path — `![](/img/diagram.png)` — since `static/` is copied to the site root.
 

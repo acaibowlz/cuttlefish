@@ -83,9 +83,15 @@ def _toc_hook(md: mistune.Markdown, state: mistune.core.BlockState) -> None:
     state.env["toc"] = entries
 
 
+# `mark` and `math` only emit markup — `<mark>…</mark>` and
+# `<span class="math">\(…\)</span>` / `<div class="math">$$…$$</div>`. `mark`
+# renders on its own (browsers style `<mark>`); `math` needs a MathJax/KaTeX
+# script the *site* supplies, which is why we ship no such JS by default (see the
+# scaffold AGENTS.md). Enabling the parser side here costs nothing until a page
+# uses it and keeps the generator free of any client-side dependency.
 _markdown = mistune.create_markdown(
     escape=False,
-    plugins=["table", "footnotes", "strikethrough", "task_lists", "url"],
+    plugins=["table", "footnotes", "strikethrough", "task_lists", "url", "mark", "math"],
 )
 _markdown.before_render_hooks.append(_toc_hook)
 
