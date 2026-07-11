@@ -1,7 +1,8 @@
 """Command-line interface for cuttlefish.
 
-Three commands: ``init`` scaffolds a new site, ``build`` renders it to
-``public/``, and ``serve`` runs a live-reloading dev server.
+``init`` scaffolds a new site, ``new`` creates a content file from config,
+``build`` renders the site to ``public/``, and ``serve`` runs a live-reloading
+dev server.
 """
 
 from __future__ import annotations
@@ -65,6 +66,36 @@ def init(
     from cuttlefish.scaffold import scaffold_site
 
     scaffold_site(directory, force=force, console=console)
+
+
+@app.command()
+@handle_errors
+def new(
+    type: str = typer.Argument(..., help="Content type from config.toml, e.g. blog."),
+    title: str = typer.Argument(..., help="Title of the new content."),
+    slug: str = typer.Option(None, "--slug", help="Explicit slug (default: derived from the title)."),
+    description: str = typer.Option("", "--description", help="Seed the description field."),
+    date: str = typer.Option(None, "--date", help="Publish date as YYYY-MM-DD (default: today)."),
+    draft: bool = typer.Option(False, "--draft/--no-draft", help="Mark the content as a draft."),
+    force: bool = typer.Option(False, "--force", help="Overwrite the file if it already exists."),
+    edit: bool = typer.Option(False, "--edit", help="Open the new file in $EDITOR afterward."),
+    root: Path = typer.Option(Path("."), "--root", help="Site root (contains config.toml)."),
+) -> None:
+    """Create a new content file from config."""
+    from cuttlefish.new import create_content
+
+    create_content(
+        root,
+        type,
+        title,
+        slug=slug,
+        description=description,
+        date=date,
+        draft=draft,
+        force=force,
+        edit=edit,
+        console=console,
+    )
 
 
 @app.command()
