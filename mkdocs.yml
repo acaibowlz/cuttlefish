@@ -26,10 +26,12 @@ theme:
 nav:
   - Home: index.md
   - Getting started: getting-started.md
+  - Working with an agent: working-with-an-agent.md
   - Configuration: configuration.md
   - Authoring content: content.md
   - Templates & theming: templates.md
   - CLI reference: cli.md
+  - Deployment: deployment.md
   - Incremental builds: incremental-builds.md
 
 markdown_extensions:

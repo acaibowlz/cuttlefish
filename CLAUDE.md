@@ -65,3 +65,5 @@ User-fixable problems raise `CuttlefishError` subclasses (`ConfigError`, `Conten
 ## The scaffold payload
 
 `src/cuttlefish/scaffold/site/` is copied verbatim by `ctf init`. Its `AGENTS.md`, `config.toml`, templates, and `static/css/main.css` are the reference for the site-authoring contract (config schema, permalink tokens, template variables like `recent.<type>`, `featured.<type>`, `taxonomies.<name>`, `site.profile`). When you change what the generator supports (a new config key, a new template variable), update this scaffold — especially `AGENTS.md` — so generated sites document it. `.gitignore` deliberately anchors `/site/` (mkdocs output) so it does not match this scaffolded `site/`.
+
+The human-facing docs in `docs/` (rendered by mkdocs) are the **canonical prose reference** for the same site-authoring contract; the scaffold `AGENTS.md` is its compressed, agent-facing counterpart. A change to what the generator supports must land in **both** — update the relevant `docs/*.md` page alongside the scaffold, or the two drift apart.

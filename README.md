@@ -35,6 +35,10 @@ ctf build            # render to public/
 ctf serve            # live-reloading preview at http://localhost:8000
 ```
 
+## Documentation
+
+Full documentation is at [acaibowlz.github.io/cuttlefish](https://acaibowlz.github.io/cuttlefish/).
+
 ## Features
 
 - **Describe, don't hand-tune:** No themes, no CSS framework, no build step — one plain stylesheet an agent edits to match what you describe.
