@@ -11,9 +11,9 @@ This distinction matters: this repo is the **generator** (the `cuttlefish` Pytho
 ## Commands
 
 ```bash
-uv run python -m pytest              # run the full test suite (58 tests)
+uv run python -m pytest              # run the full test suite (71 tests)
 uv run python -m pytest -q           # quiet
-uv run python -m pytest tests/test_units.py::test_split_front_matter_basic  # single test
+uv run python -m pytest tests/test_content.py::test_split_front_matter_basic  # single test
 uv run ctf init <dir>                # scaffold a new site
 uv run ctf build <root>              # render a site to public/
 uv run ctf serve <root>             # live-reloading dev server (drafts on by default)
@@ -61,6 +61,7 @@ User-fixable problems raise `CuttlefishError` subclasses (`ConfigError`, `Conten
 - Config/content dataclasses are the boundary of truth: validate at parse time in `config.py` rather than defensively downstream.
 - Comments in this codebase explain **why** (especially the non-obvious invariants above), not what. Match that when editing.
 - Conventional Commits (see the global instruction). Note `!` for breaking changes, e.g. `feat(content)!: ...`.
+- Tests mirror the source: unit tests live in `tests/test_<module>.py` (e.g. `test_config.py`, `test_content.py`) covering that one module. Cross-module behavior goes in the integration suites — `test_end_to_end.py` (a full `build_site` of the scaffold) and `test_incremental.py` (the incremental dependency graph). Put a new unit test with its module's file, not in a grab-bag.
 
 ## The scaffold payload
 

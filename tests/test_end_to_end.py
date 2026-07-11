@@ -1,4 +1,4 @@
-"""End-to-end full-build tests against the scaffolded site."""
+"""End-to-end full-build tests: `build_site` against the scaffolded site."""
 
 from __future__ import annotations
 
