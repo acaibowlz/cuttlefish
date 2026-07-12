@@ -4,7 +4,8 @@
    hardcoded values, and add a token rather than sprinkling literals. */
 
 :root {
-  --max-width: 44rem;
+  --max-width: 44rem;    /* default container width: the reading column */
+  --width-wide: 64rem;   /* wider container for the home landing page */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
@@ -67,9 +68,11 @@ a:hover { color: var(--accent-hover); }
 
 /* -- layout -------------------------------------------------------------- */
 
-.site-header,
-main,
-.site-footer {
+/* One centered content column, sized by --max-width. The nav bar and footer are
+   full-bleed (their background/border span the viewport); only their *inner*
+   content wears `.container`, so the sticky bar stretches edge to edge. `main`
+   is a `.container` itself. */
+.container {
   width: 100%;
   max-width: var(--max-width);
   margin-inline: auto;
@@ -81,21 +84,35 @@ main {
   padding-block: 3rem;
 }
 
+/* The home page widens its container for the two-column landing layout. */
+body.layout-wide { --max-width: var(--width-wide); }
+
+/* The nav bar and footer keep a fixed inner width (independent of the page's
+   --max-width) so their contents don't shift as you move between the narrow
+   reading column and the wide home page. It matches the home width, so the
+   logo lines up with the content there; on reading pages the bar simply sits
+   wider than the text. */
+.site-header-inner,
+.site-footer-inner { max-width: var(--width-wide); }
+
 /* -- header -------------------------------------------------------------- */
 
 .site-header {
   position: sticky;
   top: 0;
   z-index: 10;
+  padding-block: 1rem;
+  background: color-mix(in srgb, var(--bg) 82%, transparent);
+  backdrop-filter: saturate(180%) blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.site-header-inner {
   display: flex;
   justify-content: space-between;
   align-items: center;
   gap: 1rem;
   flex-wrap: wrap;
-  padding-block: 1rem;
-  background: color-mix(in srgb, var(--bg) 82%, transparent);
-  backdrop-filter: saturate(180%) blur(12px);
-  border-bottom: 1px solid var(--border);
 }
 
 .site-title {
@@ -219,11 +236,9 @@ time { color: var(--muted); font-size: 0.85rem; }
   border-bottom: 1px solid var(--border);
 }
 
-/* Home layout: a genuine two-column landing page. The home page widens the
-   shared container (via --max-width on body.home) so the reading column and
-   the sidebar both get real room; the header and footer widen with it and
-   stay aligned. Collapses to a single column on narrow screens. */
-body.home { --max-width: 64rem; }
+/* Home layout: a genuine two-column landing page. The home page uses the
+   default full page width (no `content` class), so the reading column and the
+   sidebar both get real room. Collapses to one column on narrow screens. */
 
 .home-grid {
   display: grid;
@@ -413,3 +428,24 @@ pre code { background: none; border: none; padding: 0; }
   font-size: 0.85rem;
 }
 .site-footer p { margin: 0; }
+
+/* -- 404 ----------------------------------------------------------------- */
+
+.not-found {
+  text-align: center;
+  min-height: 60vh;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+}
+.not-found-code {
+  font-family: var(--font-mono);
+  font-size: 4rem;
+  font-weight: 700;
+  line-height: 1;
+  color: var(--accent);
+  margin: 0;
+}
+.not-found h1 { margin: 0.5rem 0 1rem; }
+.not-found p { color: var(--muted); }

@@ -92,6 +92,7 @@ def test_d_base_template_forces_all(site: Path, build):
     stats = build(site)
     assert stats.content == 4
     assert stats.aggregates_skipped == 0
+    assert stats.error_pages == 1      # 404 extends base.html, so it re-renders too
 
 
 def test_e_config_change_forces_full(site: Path, build):
@@ -121,9 +122,31 @@ def test_g_slug_rename_prunes_old_writes_new(site: Path, build):
     assert not (site / "public/blog/hello-world/index.html").exists()
 
 
+def test_h_error_page_rebuilds_in_isolation(site: Path, build):
+    # Editing 404.html re-renders only the error page: it backs no content type
+    # and no aggregate, so nothing else is touched.
+    build(site)
+    append(site / "templates/404.html", "\n<!-- edit -->\n")
+    stats = build(site)
+    assert stats.mode == "incremental"
+    assert stats.error_pages == 1
+    assert stats.content == 0
+    assert stats.aggregates_skipped == TOTAL_AGGREGATES
+
+
+def test_i_error_template_removed_prunes_output(site: Path, build):
+    build(site)
+    assert (site / "public/404.html").is_file()
+    (site / "templates/404.html").unlink()
+    stats = build(site)
+    assert stats.pruned >= 1
+    assert not (site / "public/404.html").exists()
+
+
 def test_no_change_skips_everything(site: Path, build):
     build(site)
     stats = build(site)
     assert stats.content == 0
     assert stats.skipped == 4
     assert stats.aggregates_skipped == TOTAL_AGGREGATES
+    assert stats.error_pages == 0      # unchanged 404 template is not re-rendered

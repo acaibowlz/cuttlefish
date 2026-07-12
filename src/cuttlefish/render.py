@@ -27,6 +27,12 @@ from cuttlefish.taxonomy import HomeTerm, TaxonomyData, Term, term_links
 
 TEMPLATES_DIR = "templates"
 
+#: Template-only pages that hosts serve for missing paths. They have no content
+#: item and no pretty URL — the file lives at the site root as-is (its template
+#: name is its output name, e.g. ``404.html`` -> ``public/404.html``), so they
+#: sit outside the permalink/aggregate machinery. Ordered by convention.
+ERROR_TEMPLATES = ("404.html",)
+
 
 class RenderError(CuttlefishError):
     """Raised when a template fails to render."""
@@ -164,6 +170,19 @@ class Renderer:
             )
             self._write(item.output_rel, html)
         return item.output_rel
+
+    def render_error_page(self, template_name: str) -> str:
+        """Render a template-only error page (e.g. ``404.html``) to the site root.
+
+        Error pages carry no content of their own and no pretty URL: hosts look
+        for the file literally at the root (``public/404.html``), so we bypass
+        the permalink mapping and render against the site-global context only
+        (``site.*``). The output path is the template name unchanged.
+        """
+        with _render_step(template_name):
+            html = self.env.get_template(template_name).render()
+            self._write(template_name, html)
+        return template_name
 
     def render_index(self, content_type: ContentType, items: list[ContentItem]) -> list[str]:
         """Render a content-type index (summary-only), paginated if configured."""

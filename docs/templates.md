@@ -79,13 +79,32 @@ It deliberately omits `body_html`. This isn't only tidiness: it's what keeps [in
 
 A pattern that ends in `/` produces a pretty URL: `/blog/{slug}/` → `/blog/my-post/`, written to `public/blog/my-post/index.html`. A pattern ending in a filename (`.xml`, `.html`) is written as that file.
 
+## The 404 page {#the-404-page}
+
+`templates/404.html` is a special template: it renders straight to `public/404.html` — no content file, no permalink, no pretty URL. Static hosts (GitHub Pages, Netlify, Cloudflare Pages) serve that file for any missing path, so a visitor who hits a dead link gets your styled page instead of the host's generic one. See [Deployment](deployment.md#custom-404-page).
+
+It renders against the global `site` context only (there's no `page`), so extend `base.html` like any other template:
+
+```jinja
+{% extends "base.html" %}
+{% block title %}Page not found — {{ site.title }}{% endblock %}
+{% block content %}
+  <h1>Page not found</h1>
+  <p><a href="/">Back to home</a></p>
+{% endblock %}
+```
+
+Delete the template and no `404.html` is emitted (the build prunes it); edit it and only that one page rebuilds. It's kept out of `sitemap.xml`, since it isn't a real page. Links inside it should be **root-absolute** (`/`, `/blog/`) — a 404 can be served for a URL at any depth, so relative links would resolve wrong.
+
 ## Styling
 
 Styling is plain CSS in `static/css/main.css`, linked once from `base.html`. There's no asset pipeline and no framework — `static/` is copied verbatim, so what you write ships as-is. The starter stylesheet follows a few conventions worth keeping:
 
-- **Design tokens on `:root`.** Colors, fonts, and sizing are CSS custom properties: surfaces (`--bg`, `--surface`, `--border`), text (`--fg`, `--muted`), accent (`--accent`, `--accent-hover`), typography (`--font-sans`, `--font-mono`), and shape (`--max-width`, `--radius`, `--radius-sm`). Reference them with `var(--accent)` rather than hardcoding values; add a token for anything you want to reuse.
+- **Design tokens on `:root`.** Colors, fonts, and sizing are CSS custom properties: surfaces (`--bg`, `--surface`, `--border`), text (`--fg`, `--muted`), accent (`--accent`, `--accent-hover`), typography (`--font-sans`, `--font-mono`), and width/shape (`--max-width`, `--width-wide`, `--radius`, `--radius-sm`). Reference them with `var(--accent)` rather than hardcoding values; add a token for anything you want to reuse.
 - **Dark mode for free.** The palette is themed with a `@media (prefers-color-scheme: dark)` block that overrides the same tokens. Style through tokens and light/dark both work.
-- **Mobile-first and responsive.** Size layout in relative units (`rem`/`%`/`ch`) or `clamp()`, let content reflow, and scale images with `max-width: 100%`. The starter caps a fluid column at `--max-width` and collapses the nav into a CSS-only menu under `40rem`.
+- **One centered column.** `.container` caps and centers content at `--max-width` — the reading column, `44rem` by default. The home page opts into the wider `--width-wide` by setting `{% block body_class %}layout-wide{% endblock %}` (the `body.layout-wide` rule swaps the width), which gives its two-column landing layout room. A new full-width page does the same.
+- **Full-bleed nav bar and footer.** The `.site-header` and `.site-footer` backgrounds/borders span the whole viewport; only their *inner* `.container` is width-capped. That inner frame is pinned to `--width-wide` (not the per-page `--max-width`), so the logo and nav stay put as you move between the narrow reading column and the wide home page.
+- **Mobile-first and responsive.** Size layout in relative units (`rem`/`%`/`ch`) or `clamp()`, let content reflow, and scale images with `max-width: 100%`. The starter collapses the nav into a CSS-only menu under `40rem`.
 - **Semantic classes.** Style by meaning (`.post-list`, `.site-header`) rather than utility classes or inline styles, and keep a class and its rule in the same edit.
 
 Because everything flows from tokens, "give the site a teal accent" is usually a one-line change — the accent token — not a sweep through the file. That's what makes the [agent workflow](working-with-an-agent.md) feel light.

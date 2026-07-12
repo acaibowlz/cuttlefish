@@ -121,6 +121,17 @@ def test_home_featured_section(site: Path, build):
     assert "Hello, World" not in block       # not featured
 
 
+def test_error_page_built_and_excluded_from_sitemap(site: Path, build):
+    """The scaffold's 404.html renders to the site root but stays out of the sitemap."""
+    stats = build(site)
+    assert stats.error_pages == 1
+    page = read(site, "404.html")           # at the root, not a pretty URL
+    assert "Page not found" in page          # rendered through base.html
+    assert "<title>" in page and "Demo Site" in page  # site-global context available
+    # A 404 is a host fallback, not a crawlable page — keep it out of the sitemap.
+    assert "404" not in read(site, "sitemap.xml")
+
+
 def test_pages_have_no_index(site: Path, build):
     build(site)
     # 'pages' is standalone: no /pages/ index is generated.

@@ -30,7 +30,7 @@ from cuttlefish.cache import (
 from cuttlefish.config import CONFIG_FILENAME, ConfigError, SiteConfig, load_config
 from cuttlefish.content import ContentItem, discover, sort_items
 from cuttlefish.graph import AggregateSpec, aggregate_is_dirty, build_aggregate_specs
-from cuttlefish.render import Renderer
+from cuttlefish.render import ERROR_TEMPLATES, Renderer
 from cuttlefish.sitemap import write_sitemap
 from cuttlefish.taxonomy import build_taxonomies
 from cuttlefish.template_deps import build_graph
@@ -48,6 +48,7 @@ class BuildStats:
     taxonomy_indexes: int = 0
     home: int = 0
     aggregates_skipped: int = 0
+    error_pages: int = 0
     static: int = 0
     pruned: int = 0
     sitemap: bool = False
@@ -87,6 +88,8 @@ class BuildStats:
             segs.append(f"{self.terms} terms")
         if self.home:
             segs.append("home")
+        if self.error_pages:
+            segs.append(f"{self.error_pages} error")
         if self.static:
             segs.append(f"{self.static} static")
         if self.sitemap:
@@ -282,6 +285,23 @@ def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies
         else:
             stats.aggregates_skipped += 1
 
+    # Error pages: template-only pages (e.g. 404.html) that hosts serve for
+    # missing paths. They have no content source and no pretty URL — the file
+    # lives at the site root as-is — so they sit outside the aggregate/permalink
+    # machinery. Present only when the author added the template. Rebuild when
+    # that template (transitively) changed or is newly added; prune via the
+    # manifest when it is removed. A full build passes an empty manifest, so
+    # every present error page counts as new and is rendered.
+    new_error_pages: dict[str, dict] = {}
+    for template_name in ERROR_TEMPLATES:
+        if template_name not in new_templates:
+            continue  # author hasn't added this error template
+        old = manifest.error_pages.get(template_name)
+        if old is None or template_name in affected_templates or old.get("output") != template_name:
+            renderer.render_error_page(template_name)
+            stats.error_pages += 1
+        new_error_pages[template_name] = {"output": template_name}
+
     # Static: copy new/changed files; track for pruning.
     new_static: dict[str, dict] = {}
     for src_rel, out_rel in _static_files(root).items():
@@ -301,6 +321,7 @@ def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies
         templates=new_templates,
         static=new_static,
         aggregates=_aggregates_manifest(specs),
+        error_pages=new_error_pages,
     )
 
     # Prune outputs that existed last time but are no longer produced

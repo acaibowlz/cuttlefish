@@ -262,6 +262,15 @@ h.text }}</a>{% endfor %}`. The matching `id` attributes are already present in
 Reference static assets by absolute path (e.g. `/css/main.css`); `static/` is
 copied to the site root, so `static/css/main.css` → `/css/main.css`.
 
+### The 404 page
+
+`templates/404.html` is special: it renders straight to `public/404.html` (no
+content file, no permalink), and static hosts serve it for any missing path.
+It gets the global `site` context only — there is no `page` — so extend
+`base.html` and use `site.*`. Keep its links **root-absolute** (`/`, `/blog/`),
+since it can be served for a URL at any depth. Delete the template and no 404 is
+emitted; it never appears in `sitemap.xml`.
+
 ### Styling
 
 Styling is **plain CSS** in `static/css/main.css`, linked once from `base.html`.
@@ -272,10 +281,18 @@ consistent as you edit it:
 - **Use the design tokens, don't hardcode.** Colors, fonts, and layout are CSS
   custom properties on `:root`: surfaces (`--bg`, `--surface`, `--border`), text
   (`--fg`, `--muted`), accent (`--accent`, `--accent-hover`), typography
-  (`--font-sans`, `--font-mono`), and shape/size (`--max-width`, `--radius`).
-  Reference them with `var(--accent)` rather than repeating raw values. Need a
-  new color or spacing value site-wide? Add a token to `:root` and use it
-  everywhere, instead of sprinkling literals.
+  (`--font-sans`, `--font-mono`), and width/shape (`--max-width`, `--width-wide`,
+  `--radius`). Reference them with `var(--accent)` rather than repeating raw
+  values. Need a new color or spacing value site-wide? Add a token to `:root` and
+  use it everywhere, instead of sprinkling literals.
+- **Understand the layout container.** `.container` caps and centers content at
+  `--max-width` — the reading column (`44rem`). The home page opts into the wider
+  `--width-wide` with `{% block body_class %}layout-wide{% endblock %}` (the
+  `body.layout-wide` rule swaps the width) to fit its two-column layout; do the
+  same for any full-width page. The `.site-header`/`.site-footer` backgrounds are
+  full-bleed (span the viewport) while their inner `.container` is width-capped;
+  that inner frame is pinned to `--width-wide` so the nav bar stays put across
+  pages. `main` is a `.container` itself.
 - **Respect dark mode.** The palette is themed via a `@media
   (prefers-color-scheme: dark)` block that overrides the same tokens. Because
   everything reads from tokens, you get light/dark for free — keep it that way by

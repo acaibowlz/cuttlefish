@@ -108,22 +108,43 @@ class _Handler(BaseHTTPRequestHandler):
             target = target / "index.html"
         return target
 
+    def _inject_reload(self, html: str) -> str:
+        """Insert the live-reload SSE script so built output stays clean."""
+        if "</body>" in html:
+            return html.replace("</body>", _RELOAD_SCRIPT + "</body>", 1)
+        return html + _RELOAD_SCRIPT
+
     def _serve_file(self, url_path: str, *, head_only: bool = False) -> None:
         target = self._resolve(url_path)
         if target is None or not target.is_file():
-            self.send_error(404, "Not Found")
+            self._serve_404(head_only=head_only)
             return
         body = target.read_bytes()
         ctype = mimetypes.guess_type(str(target))[0] or "application/octet-stream"
         if ctype == "text/html":
-            html = body.decode("utf-8")
-            if "</body>" in html:
-                html = html.replace("</body>", _RELOAD_SCRIPT + "</body>", 1)
-            else:
-                html += _RELOAD_SCRIPT
-            body = html.encode("utf-8")
+            body = self._inject_reload(body.decode("utf-8")).encode("utf-8")
         self.send_response(200)
         self.send_header("Content-Type", ctype)
+        self.send_header("Content-Length", str(len(body)))
+        self.send_header("Cache-Control", "no-store")
+        self.end_headers()
+        if not head_only:
+            self.wfile.write(body)
+
+    def _serve_404(self, *, head_only: bool = False) -> None:
+        """Serve the site's ``404.html`` (status 404) for a missing path.
+
+        Static hosts (GitHub Pages, Netlify, …) serve a root ``404.html`` on a
+        miss; doing the same here keeps local preview honest. If the site ships
+        no ``404.html``, fall back to a plain error.
+        """
+        page = self.server.public_dir / "404.html"  # type: ignore[attr-defined]
+        if not page.is_file():
+            self.send_error(404, "Not Found")
+            return
+        body = self._inject_reload(page.read_text(encoding="utf-8")).encode("utf-8")
+        self.send_response(404)
+        self.send_header("Content-Type", "text/html")
         self.send_header("Content-Length", str(len(body)))
         self.send_header("Cache-Control", "no-store")
         self.end_headers()

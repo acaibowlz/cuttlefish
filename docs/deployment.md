@@ -93,6 +93,12 @@ base_url = "https://mysite.com"
 
 If your host uses a `CNAME` file (GitHub Pages does), drop it in `static/` — everything in `static/` is copied verbatim to the site root, so `static/CNAME` becomes `public/CNAME` on every build.
 
+## Custom 404 page {#custom-404-page}
+
+`ctf build` renders `templates/404.html` to `public/404.html`. Every major static host — GitHub Pages, Netlify, Cloudflare Pages — serves a root `404.html` automatically for any path that doesn't exist, so your styled page shows up on dead links with no host configuration. The scaffold ships one; edit it like any other template (see [The 404 page](templates.md#the-404-page)), or delete it to fall back to the host's default.
+
+A missing path always returns an HTTP 404 status regardless — the host does that. The `404.html` only controls *what the visitor sees*. Keep its links root-absolute, since it can be served for a URL at any depth.
+
 ## Sitemap
 
 `ctf build` writes `public/sitemap.xml` from the pages it renders, using `base_url` for the absolute URLs. Keep `base_url` set to your real domain so the sitemap points where the site actually lives, and reference it from a `robots.txt` (drop one in `static/`) if you want search engines to find it.
