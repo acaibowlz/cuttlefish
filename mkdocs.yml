@@ -33,6 +33,7 @@ nav:
   - CLI reference: cli.md
   - Deployment: deployment.md
   - Incremental builds: incremental-builds.md
+  - Recipes: recipes.md
 
 markdown_extensions:
   - admonition

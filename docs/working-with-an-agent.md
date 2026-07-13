@@ -32,6 +32,10 @@ Some things worth naming when they matter to you:
 - **How much** — "a bit bigger", "much tighter spacing", "just the accent, nothing else".
 - **What not to touch** — "leave the blog layout alone" keeps a change from spreading.
 
+## Recipes
+
+For features that come up on lots of sites — reading time, a breadcrumb trail, a comments widget — cuttlefish offers **recipes**: short guides an agent applies by editing your templates, CSS, and config. You don't install anything; you hand the agent a recipe and review the diff, like any other change. See [Recipes](recipes.md) for the library and how to use or write them.
+
 ## Reviewing what comes back
 
 Because a cuttlefish site is plain files, every change is a readable diff — CSS, templates, and TOML, not a theme's internal settings. Read it the way you'd read any small edit:

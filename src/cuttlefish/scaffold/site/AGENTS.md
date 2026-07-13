@@ -27,6 +27,23 @@ Build with `ctf build`. Preview live with `ctf serve` (watches files and
 reloads the browser). A `public/sitemap.xml` of every page is generated
 automatically when `base_url` is set.
 
+## Recipes
+
+A **recipe** is a short Markdown guide for adding one feature (reading time, a
+breadcrumb trail, comments, …). cuttlefish keeps a library of them, but they are
+**not** part of this site — you'll be handed one when the author wants it, either
+pasted into the conversation or added to the repo. When you apply a recipe,
+follow its steps and honor its "When to apply / skip" and "Limits".
+
+Recipes are **additive** by rule: they edit templates, CSS, and — for custom
+site-wide values — the free-form `[params]` table, and nothing else. They do
+**not** edit the structural config tables (`content_types`, `taxonomies`, `nav`)
+that define the site; a recipe that needs one names it as a prerequisite. They
+prefer build-time solutions over client-side JavaScript, which (when genuinely
+needed) is an opt-in file under `static/js/` loaded by a `<script>`, the same
+pattern as the math and diagram scripts under *Content format*. If no recipe
+covers the request, build it directly using the rest of this guide.
+
 ## Editing `config.toml`
 
 Top-level keys: `title`, `base_url`, and the tables below. `base_url` is the
