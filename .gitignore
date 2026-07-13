@@ -13,8 +13,11 @@ build/
 public/
 .ctf/
 
-# pytest
+# pytest / coverage
 .pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
 
 # mkdocs build output (anchored: must not match src/cuttlefish/scaffold/site/)
 /site/
