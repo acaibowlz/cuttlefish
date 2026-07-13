@@ -55,3 +55,7 @@ ctf serve            # live-reloading preview at http://localhost:8000
 ## Documentation
 
 Visit https://acaibowlz.github.io/cuttlefish/ to view the full documentation.
+
+## License
+
+Released under the [MIT License](LICENSE)
