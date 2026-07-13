@@ -1,56 +1,40 @@
 # Working with an agent
 
-The look and structure of a cuttlefish site — its config, templates, and CSS — is meant to be edited by a coding agent, in response to what you ask for in plain language. You describe the change; the agent edits the files; you review a diff. This page is about doing that well.
+A cuttlefish site is nothing but files — `config.toml`, Markdown in `content/`, Jinja2 templates, and one stylesheet. There's no theme with hidden settings and no admin screen. You change the site by asking a coding agent for an outcome; it edits the files; you review the diff and preview. This page is about what that workflow gives you that an ordinary project doesn't.
 
-## What `AGENTS.md` is
+## The agent already knows cuttlefish
 
-Every scaffolded site has an `AGENTS.md` at its root. It's a briefing document written *for the agent*: the file map, the `config.toml` schema, the templating rules, the permalink tokens, and the styling conventions specific to this site. It's why an agent can make a coherent change without you explaining how cuttlefish works first.
+What makes this work is that every scaffolded site ships an `AGENTS.md` at its root — a contract written *for the agent*. It spells out the file map, the full `config.toml` schema, the permalink tokens, every template variable, and this site's styling tokens and conventions. Agents that follow the `AGENTS.md` convention read it from the project root on their own (cuttlefish also symlinks `CLAUDE.md` to it, so Claude Code loads the same file).
 
-You don't have to do anything to "load" it. Coding agents that follow the `AGENTS.md` convention pick it up from the project root on their own. (cuttlefish also drops a `CLAUDE.md` symlink pointing at it, so Claude Code reads the same file.)
+The practical upshot: **you never have to explain how cuttlefish works.** You don't paste documentation, name template variables, or describe the config format. The agent arrives already knowing them, so your side of the conversation is just the outcome — "put the three most recent projects on the home page," not "iterate `recent.project` in `home.html`." It derives the second sentence from the first.
 
-Your job isn't to know what's in `AGENTS.md` — it's to describe what you want. The agent reads the contract; you describe the outcome.
+## What a conversation can change
 
-## How to ask
+It helps to know roughly what levers exist, so a request can name a real target instead of a vague direction. Broadly:
 
-The agent is good at turning an outcome into file edits. It's less good at reading your mind. The more your request names a concrete result, the better the diff.
+- **Look and feel.** Colors, fonts, spacing, and widths are CSS custom properties (`--accent`, `--font-sans`, `--max-width`, …) in `static/css/main.css`. Ask for "a warmer accent and a wider reading column" and the agent edits tokens, not scattered values. Dark mode and responsive behavior are driven by those same tokens, so they keep working through a restyle. → [Templates & theming](templates.md)
+- **Layout.** The home page is assembled from sections you control — recent items per type, curated *featured* items, taxonomy term lists — and every listing and single-page template is yours to restructure. "Group blog posts by year" or "show tags as a cloud on the home page" are template changes.
+- **Structure.** New content types, taxonomies, nav links, pagination, the author profile card, a custom 404 — these live in `config.toml` (plus their templates). They shape what the site *is*, so they reward being deliberate, but each is a request away. → [Configuration](configuration.md)
+- **Custom values.** Anything site-wide that isn't a built-in setting goes in the free-form `[params]` table and is read in templates — an analytics ID, a feature flag, a hero toggle. Per-page, front-matter fields surface as `page.params`.
+- **Whole features.** Reusable additions like reading time or a comments widget come as [recipes](recipes.md) you hand the agent.
 
-A request that works well:
+You don't need to memorize any of this to ask for something — it's the map, not a script. The [Configuration](configuration.md) and [Templates & theming](templates.md) pages hold the detail for when you want to understand a diff.
 
-> Give the site a teal accent, put projects in a two-column grid, and make the headings a bit bigger.
+## What stays yours
 
-Each part maps to a real edit — the accent token in `main.css`, the projects index layout, the heading scale — so the agent can act on it directly.
+One boundary is worth calling out because the agent enforces it: **your content is off-limits to it.** `AGENTS.md` instructs the agent never to create, edit, or rewrite anything under `content/` — not the Markdown bodies, not the front matter. It may *read* your posts (to see which taxonomy terms or fields exist, so it can wire up config and templates), but the words stay yours. "Restyle the blog" won't quietly reword a post.
 
-A request that leaves too much open:
+A few other conventions keep changes coherent without you asking:
 
-> Make it look nicer.
+- It styles through the design tokens rather than hardcoding values — which is *why* dark mode and mobile layouts survive an edit.
+- It won't invent `config.toml` keys. The config is strictly validated, so a custom value lands in `[params]` instead of a made-up field that would fail the build.
+- It keeps the "Built with cuttlefish" line in the footer unless you ask otherwise.
 
-"Nicer" has no target. You'll get *a* change, but probably not *your* change. If you're not sure what you want, it's fine to say so and ask for options — just make the ask explicit ("show me two header layouts") rather than vague.
+## Reviewing and iterating
 
-Some things worth naming when they matter to you:
+Every change is a plain-file diff — CSS, templates, TOML — with no hidden state behind it, so the diff *is* the change in full. Read it like any small edit, with two cuttlefish-specific habits:
 
-- **Where** — "on the home page", "in the post footer", "only on project pages".
-- **How much** — "a bit bigger", "much tighter spacing", "just the accent, nothing else".
-- **What not to touch** — "leave the blog layout alone" keeps a change from spreading.
+- **Preview with `ctf serve`.** It runs a live-reloading server: the diff tells you what changed, the browser tells you whether it's right. It also shows drafts (`draft = true`) that a production `ctf build` hides, so you can review work in progress — and check a narrow window, since layouts should stay responsive.
+- **Scope-check it.** A one-line accent tweak shouldn't also touch the nav. If a change spread wider than you wanted, say so — "keep the accent, revert the nav change" is a fine next message. It's all files, so nothing is hard to undo.
 
-## Recipes
-
-For features that come up on lots of sites — reading time, a breadcrumb trail, a comments widget — cuttlefish offers **recipes**: short guides an agent applies by editing your templates, CSS, and config. You don't install anything; you hand the agent a recipe and review the diff, like any other change. See [Recipes](recipes.md) for the library and how to use or write them.
-
-## Reviewing what comes back
-
-Because a cuttlefish site is plain files, every change is a readable diff — CSS, templates, and TOML, not a theme's internal settings. Read it the way you'd read any small edit:
-
-- **Does it match what you asked?** The change should be scoped to your request. A one-line accent tweak shouldn't also rewrite the nav.
-- **Preview it.** Run `ctf serve` and look. The diff tells you what changed; the browser tells you whether it's right. Check a narrow window too — the starter theme is responsive, and changes should stay that way.
-- **Iterate in small steps.** "Now make the grid three columns on wide screens" is easier to review than a fresh from-scratch redesign each time.
-
-If a change went wider than you wanted, say so — "revert the nav change but keep the accent" is a perfectly good next message.
-
-## What agents handle vs. what you write
-
-A clean division of labor keeps things predictable:
-
-- **You write content** — the Markdown in `content/`, and the simple front-matter fields on it. That's yours; an agent generally shouldn't be rewriting your posts.
-- **The agent shapes everything else** — `config.toml`, the templates, and `main.css`. That's where the "describe it" workflow shines, and where `AGENTS.md` gives the agent the rules to work within.
-
-For the details an agent works from — the config schema, the template variables, the styling tokens — the same material is written up for you in [Configuration](configuration.md), [Templates & theming](templates.md), and the rest of these docs. You rarely need it to make a request, but it's there when you want to understand a diff.
+Small, named steps review better than one sweeping redesign, and the incremental build keeps each step cheap — only what you changed re-renders.
