@@ -14,6 +14,11 @@ dependencies = [
     "watchfiles>=0.21",
 ]
 
+[project.urls]
+Homepage = "https://github.com/acaibowlz/cuttlefish"
+Documentation = "https://acaibowlz.github.io/cuttlefish/"
+Repository = "https://github.com/acaibowlz/cuttlefish"
+
 [project.scripts]
 ctf = "cuttlefish.cli:main"
 
