@@ -19,7 +19,9 @@ you write the content, agents handle the look and layout.</p>
 </p>
 </div>
 
-cuttlefish has the building blocks you'd expect from a static site generator — content types, taxonomies, templates — and one deliberate omission: there's no theme to install, no CSS framework, and no asset pipeline. Your whole site is a handful of plain-text files and one stylesheet you never open by hand.
+cuttlefish changes the way your site looks in a blink — just like the fast, shape-shifting sea creature it's named after.
+
+It has the building blocks you'd expect from a static site generator — content types, taxonomies, templates — and one deliberate omission: there's no theme to install, no CSS framework, and no asset pipeline. Your whole site is a handful of plain-text files and one stylesheet you never open by hand.
 
 Want a minimal layout with a teal accent? A two-column projects grid? Bigger headings? Describe it, and a coding agent edits the files to match. The look of your site is something you talk your way into, not something you hand-tune.
 
@@ -27,7 +29,7 @@ Want a minimal layout with a teal accent? A two-column projects grid? Bigger hea
 
 Every site ships an `AGENTS.md`: the agent's source of truth for the file map, the `config.toml` schema, the templating rules, and the styling conventions. Point a coding agent at it and say what you want —
 
-> Give the site a teal accent, put projects in a two-column grid, and make the headings bigger.
+> Switch to a serif font, give the header a dark background, and feature my three latest posts on the home page.
 
 — and it edits the config, templates, and stylesheet to match. You review a diff, not a config dialect; there are no theme docs or class names to memorize. Then `ctf build` renders everything to `public/`, and `ctf serve` previews it live.
 
