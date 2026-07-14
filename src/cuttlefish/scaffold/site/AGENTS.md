@@ -304,7 +304,7 @@ emitted; it never appears in `sitemap.xml`.
 ### Styling
 
 Styling is **plain CSS** in `static/css/main.css`, linked once from `base.html`.
-There is no CSS build step and no CSS framework: `static/` is copied verbatim,
+There is no build step and no CSS framework: `static/` is copied verbatim,
 so whatever you write ships as-is. Follow these conventions so the site stays
 consistent as you edit it:
 
