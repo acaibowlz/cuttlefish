@@ -4,7 +4,7 @@
 
 cuttlefish is an agentic static site generator for personal sites and portfolios — you write the content, agents handle the look and layout.
 
-It has the building blocks you'd expect from a static site generator — content types, taxonomies, templates — and one deliberate omission: there's no theme to install, no CSS framework, and nothing to compile or bundle. Your whole site is a handful of plain-text files and one stylesheet you never open by hand.
+It has the building blocks you'd expect from a static site generator — content types, taxonomies, templates — and one deliberate omission: there's no theme to install, no CSS framework, and no build step for your styles and scripts. Your whole site is a handful of plain-text files and one stylesheet you never open by hand.
 
 Want a minimal layout with a teal accent? A two-column projects grid? Bigger headings? Describe it, and a coding agent edits the files to match. The look of your site is something you talk your way into, not something you hand-tune.
 

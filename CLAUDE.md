@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## What this is
 
-**cuttlefish** is an "agentic" static site generator, published as `cuttlefish-ssg` with the CLI entry point `ctf`. A generated site is described entirely by files — `config.toml`, Markdown content, Jinja2 templates, and a single stylesheet — which a coding agent edits in response to plain-language requests. There are no themes, no CSS framework, and nothing to compile or bundle. The generated site ships an `AGENTS.md` that is the agent's contract for editing *that* site; this repo builds the tool that renders it.
+**cuttlefish** is an "agentic" static site generator, published as `cuttlefish-ssg` with the CLI entry point `ctf`. A generated site is described entirely by files — `config.toml`, Markdown content, Jinja2 templates, and a single stylesheet — which a coding agent edits in response to plain-language requests. There are no themes, no CSS framework, and no build step for your styles and scripts. The generated site ships an `AGENTS.md` that is the agent's contract for editing *that* site; this repo builds the tool that renders it.
 
 This distinction matters: this repo is the **generator** (the `cuttlefish` Python package). The starter site it emits lives under `src/cuttlefish/scaffold/site/` and is a *template payload*, not part of the generator's own runtime.
 
