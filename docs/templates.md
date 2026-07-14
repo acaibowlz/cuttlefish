@@ -98,7 +98,7 @@ Delete the template and no `404.html` is emitted (the build prunes it); edit it 
 
 ## Styling
 
-Styling is plain CSS in `static/css/main.css`, linked once from `base.html`. There's no asset pipeline and no framework — `static/` is copied verbatim, so what you write ships as-is. The starter stylesheet follows a few conventions worth keeping:
+Styling is plain CSS in `static/css/main.css`, linked once from `base.html`. There's no CSS build step and no framework — `static/` is copied verbatim, so what you write ships as-is. The starter stylesheet follows a few conventions worth keeping:
 
 - **Design tokens on `:root`.** Colors, fonts, and sizing are CSS custom properties: surfaces (`--bg`, `--surface`, `--border`), text (`--fg`, `--muted`), accent (`--accent`, `--accent-hover`), typography (`--font-sans`, `--font-mono`), and width/shape (`--max-width`, `--width-wide`, `--radius`, `--radius-sm`). Reference them with `var(--accent)` rather than hardcoding values; add a token for anything you want to reuse.
 - **Dark mode for free.** The palette is themed with a `@media (prefers-color-scheme: dark)` block that overrides the same tokens. Style through tokens and light/dark both work.
