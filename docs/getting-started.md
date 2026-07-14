@@ -35,7 +35,7 @@ When you're ready to publish, render the site to static files:
 ctf build
 ```
 
-Everything lands in `public/` — plain HTML, CSS, and a `sitemap.xml`, ready to upload anywhere. See [Deployment](deployment.md) for getting it onto the web.
+Everything lands in `public/` — plain HTML, CSS, and a `sitemap.xml` and `robots.txt`, ready to upload anywhere. See [Deployment](deployment.md) for getting it onto the web.
 
 ## The project layout
 

@@ -7,6 +7,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Generate `public/robots.txt` when `base_url` is set: it permits all crawlers
+  and advertises the sitemap (`Sitemap: <base_url>/sitemap.xml`). A site that
+  ships its own `static/robots.txt` overrides the generated one.
+
 ### Fixed
 
 - Reject `featured` on standalone `pages`. The flag feeds the home

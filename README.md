@@ -50,7 +50,7 @@ ctf serve            # live-reloading preview at http://localhost:8000
 - **Describe, don't hand-tune:** No themes, no CSS framework, no build step — one plain stylesheet an agent edits to match what you describe.
 - **Agent-first:** Every site ships an `AGENTS.md` documenting its schema and conventions, so an agent can author and style it reliably.
 - **Rebuild fast:** Incremental builds cache the last render and rebuild only what changed — editing a post's body never touches your listing pages.
-- **Everything else you'd expect:** Content types, taxonomies, Markdown with TOML front matter, standalone pages, pretty permalinks with pagination, a `sitemap.xml`, and a live-reloading dev server.
+- **Everything else you'd expect:** Content types, taxonomies, Markdown with TOML front matter, standalone pages, pretty permalinks with pagination, `sitemap.xml` and `robots.txt`, and a live-reloading dev server.
 - **Recipes:** A library of copy-in feature guides — reading time, breadcrumbs, comments — that an agent applies by editing your templates, CSS, and config. No plugin system, just packaged instructions.
 
 ## Usage

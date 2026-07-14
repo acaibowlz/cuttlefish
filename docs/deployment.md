@@ -99,6 +99,8 @@ If your host uses a `CNAME` file (GitHub Pages does), drop it in `static/` — e
 
 A missing path always returns an HTTP 404 status regardless — the host does that. The `404.html` only controls *what the visitor sees*. Keep its links root-absolute, since it can be served for a URL at any depth.
 
-## Sitemap
+## Sitemap and robots.txt
 
-`ctf build` writes `public/sitemap.xml` from the pages it renders, using `base_url` for the absolute URLs. Keep `base_url` set to your real domain so the sitemap points where the site actually lives, and reference it from a `robots.txt` (drop one in `static/`) if you want search engines to find it.
+`ctf build` writes `public/sitemap.xml` from the pages it renders, using `base_url` for the absolute URLs. Keep `base_url` set to your real domain so the sitemap points where the site actually lives.
+
+Alongside it, the build writes a `public/robots.txt` that allows all crawlers and advertises the sitemap (`Sitemap: <base_url>/sitemap.xml`). Both files are generated only when `base_url` is set. To use your own crawl rules instead, drop a `robots.txt` in `static/` — it's copied verbatim to the site root and the generated one steps aside. (Crawlers only honor `robots.txt` at the host root, so it has no effect when a site is served under a subpath.)

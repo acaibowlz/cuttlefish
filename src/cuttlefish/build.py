@@ -31,6 +31,7 @@ from cuttlefish.config import CONFIG_FILENAME, ConfigError, SiteConfig, load_con
 from cuttlefish.content import ContentItem, discover, sort_items
 from cuttlefish.graph import AggregateSpec, aggregate_is_dirty, build_aggregate_specs
 from cuttlefish.render import ERROR_TEMPLATES, Renderer
+from cuttlefish.robots import ROBOTS_FILENAME, write_robots
 from cuttlefish.sitemap import write_sitemap
 from cuttlefish.taxonomy import build_taxonomies
 from cuttlefish.template_deps import build_graph
@@ -52,6 +53,7 @@ class BuildStats:
     static: int = 0
     pruned: int = 0
     sitemap: bool = False
+    robots: bool = False
     mode: str = "full"
     elapsed_ms: float = 0.0
 
@@ -94,6 +96,8 @@ class BuildStats:
             segs.append(f"{self.static} static")
         if self.sitemap:
             segs.append("sitemap")
+        if self.robots:
+            segs.append("robots")
         return ", ".join(segs)
 
     def summary_line(self, title: str) -> str:
@@ -329,6 +333,11 @@ def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies
     stats.pruned = _prune(public_dir, manifest.all_outputs(), new_manifest.all_outputs())
 
     stats.sitemap = write_sitemap(public_dir, new_manifest.page_outputs(), config.base_url)
+    # robots.txt: generated unless the site ships its own static/robots.txt, in
+    # which case the verbatim static copy already produced public/robots.txt and
+    # we leave it alone.
+    robots_overridden = (root / STATIC_DIR / ROBOTS_FILENAME).is_file()
+    stats.robots = write_robots(public_dir, config.base_url, user_provided=robots_overridden)
     save_manifest(root, new_manifest)
     return stats
 
