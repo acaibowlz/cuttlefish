@@ -11,15 +11,15 @@ can browse them and pull in the ones you want.
 
 ## Using a recipe
 
-Pick one below, open it, and either:
+Pick one below and copy it into your site's `recipes/` folder (create it if it
+isn't there), then ask your agent to apply it. The agent reads the recipe from
+`recipes/` and makes the edits — an ordinary diff (templates / CSS /
+`config.toml`) you review like any other change. Placing the file doesn't apply
+it on its own; you ask.
 
-- **paste its contents to your agent** — "apply this recipe to my site", or
-- **drop the file into your site's repo** and ask your agent to apply it.
-
-Either way the result is an ordinary diff (templates / CSS / `config.toml`) you
-review like any other change. Because a recipe only edits your site's files,
-there is no version to track — to update an applied one, re-apply the newer
-recipe.
+The `recipes/` folder isn't published (the build ignores it), so it just records
+the recipes your site uses. To update an applied one, replace the file with the
+newer version and re-apply.
 
 ## Available recipes
 

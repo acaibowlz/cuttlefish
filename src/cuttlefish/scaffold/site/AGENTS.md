@@ -14,6 +14,7 @@ source of truth for how.
 | `static/**` | CSS/JS/images copied verbatim to the site root. | ✅ |
 | `content/<type>/*.md` | Content for a content type (e.g. `blog`, `project`). **Author-owned — read for context, never write.** | ❌ |
 | `content/pages/*.md` | Standalone pages (no index, no taxonomy). **Author-owned.** | ❌ |
+| `recipes/*.md` | Recipes to apply (if present) — read and apply when asked; not published. | 📖 |
 | `public/` | **Generated** output. Never edit by hand. | ❌ |
 | `.ctf/` | **Generated** build cache. Never edit by hand. | ❌ |
 
@@ -30,10 +31,18 @@ automatically when `base_url` is set.
 ## Recipes
 
 A **recipe** is a short Markdown guide for adding one feature (reading time, a
-breadcrumb trail, comments, …). cuttlefish keeps a library of them, but they are
-**not** part of this site — you'll be handed one when the author wants it, either
-pasted into the conversation or added to the repo. When you apply a recipe,
-follow its steps and honor its "When to apply / skip" and "Limits".
+breadcrumb trail, comments, …). A fresh site has none; the author copies the ones
+they want from cuttlefish's recipe library into a `recipes/` folder here.
+*Placing* a recipe doesn't apply it — you apply one when asked.
+
+**When the user asks for a feature, check `recipes/` first.** If the folder
+exists, scan the descriptions (`grep -h '^description' recipes/*.md`) — each
+recipe's front matter is just its `name` and one-line `description`. If one
+matches, read that file and apply it: follow its **How** steps and honor its
+**Where** and **When**. If nothing matches (or there is no `recipes/` folder),
+build the feature directly using the rest of this guide. Once applied, the feature
+lives in the templates, CSS, and config you edited — not in the recipe file;
+leaving it in `recipes/` (or deleting it) has no effect on the build.
 
 Recipes are **additive** by rule: they edit templates, CSS, and — for custom
 site-wide values — the free-form `[params]` table, and nothing else. They do

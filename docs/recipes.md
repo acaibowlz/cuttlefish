@@ -15,13 +15,14 @@ The library lives in the [`recipes/` folder of the cuttlefish repository](https:
 
 ## Using a recipe
 
-You don't install or invoke recipes — you hand one to your agent:
+You don't install or invoke recipes — you place one in your site and ask your agent to apply it:
 
 1. **Browse the library** and open the recipe you want.
-2. **Give it to your agent** — either paste its contents into the conversation ("apply this recipe to my site") or drop the file into your repo and ask the agent to apply it.
-3. **Review the diff** and preview with `ctf serve`, the same as any other change.
+2. **Copy it into your site's `recipes/` folder** (create the folder if it isn't there yet). This folder isn't published — the build ignores it — so it's simply a home for the recipes your site uses. Commit it, and it doubles as a record of the features you've added.
+3. **Ask your agent to apply it.** It reads the recipe from `recipes/` and makes the edits. Placing the file doesn't apply it on its own — you ask.
+4. **Review the diff** and preview with `ctf serve`, the same as any other change.
 
-Because a recipe only edits your own files, there's no version to track. To pick up an improved recipe later, just apply the newer version again.
+Once applied, the feature lives in the templates, CSS, and config the agent edited — not in the recipe file. You can keep the file in `recipes/` for reference or delete it; either way it doesn't affect the build, and editing it later won't change your site unless you ask for it to be re-applied. To pick up an improved recipe, replace the file with the newer version and re-apply.
 
 ## What a recipe can change
 
