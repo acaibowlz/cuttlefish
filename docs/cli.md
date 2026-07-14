@@ -1,6 +1,6 @@
 # CLI reference
 
-cuttlefish installs one command, `ctf`, with four subcommands. Run `ctf --help` or `ctf <command> --help` for the same information at the terminal.
+cuttlefish installs one command, `ctf`, with five subcommands. Run `ctf --help` or `ctf <command> --help` for the same information at the terminal.
 
 ## `init`
 
@@ -54,6 +54,19 @@ Render the site to `public/`.
 | `--drafts` | off | Include content marked `draft = true`. |
 
 Builds are [incremental](incremental-builds.md) by default: only what changed since the last build is re-rendered. `--force` clears the cache and rebuilds from scratch.
+
+## `check`
+
+```
+ctf check [root] [--drafts]
+```
+
+Validate the site without writing anything. `check` runs the same pipeline as `build` — it parses `config.toml` and every content file, and renders every template — so any error a real build would raise is caught. But the output goes to a throwaway temporary directory and the incremental cache (`.ctf/`) is left untouched, so nothing in the site is created or changed. It exits non-zero on the first error, which makes it useful in CI or a pre-commit hook.
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `root` | `.` | Site root (contains `config.toml`). |
+| `--drafts` | off | Include content marked `draft = true`. |
 
 ## `serve`
 

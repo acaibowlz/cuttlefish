@@ -13,11 +13,12 @@ This distinction matters: this repo is the **generator** (the `cuttlefish` Pytho
 ## Commands
 
 ```bash
-uv run python -m pytest              # run the full test suite (74 tests)
+uv run python -m pytest              # run the full test suite
 uv run python -m pytest -q           # quiet
 uv run python -m pytest tests/test_content.py::test_split_front_matter_basic  # single test
 uv run ctf init <dir>                # scaffold a new site
 uv run ctf build <root>              # render a site to public/
+uv run ctf check <root>              # validate config/content/templates, write nothing
 uv run ctf serve <root>             # live-reloading dev server (drafts on by default)
 uv run mkdocs serve                  # preview the project docs (docs/)
 ```

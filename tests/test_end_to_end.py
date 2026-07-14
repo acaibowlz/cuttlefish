@@ -4,7 +4,21 @@ from __future__ import annotations
 
 from pathlib import Path
 
+import pytest
+from rich.console import Console
+
+from cuttlefish.build import check_site
+from cuttlefish.config import ConfigError
+from cuttlefish.content import ContentError
 from tests.conftest import read
+
+
+def _quiet_check(root: Path):
+    return check_site(root, console=Console(quiet=True))
+
+
+def _snapshot(public: Path) -> dict[str, bytes]:
+    return {str(p.relative_to(public)): p.read_bytes() for p in public.rglob("*") if p.is_file()}
 
 
 def test_full_build_outputs(site: Path, build):
@@ -137,3 +151,37 @@ def test_pages_have_no_index(site: Path, build):
     # 'pages' is standalone: no /pages/ index is generated.
     assert not (site / "public" / "pages" / "index.html").exists()
     assert (site / "public" / "about" / "index.html").is_file()
+
+
+def test_check_validates_but_writes_nothing(site: Path):
+    stats = _quiet_check(site)
+    # The full pipeline ran (content was rendered)...
+    assert stats.content > 0
+    # ...but nothing landed in the site: no output dir, no cache.
+    assert not (site / "public").exists()
+    assert not (site / ".ctf").exists()
+
+
+def test_check_leaves_an_existing_build_untouched(site: Path, build):
+    build(site)
+    before = _snapshot(site / "public")
+    cache_before = (site / ".ctf" / "cache.json").read_bytes()
+    _quiet_check(site)
+    assert _snapshot(site / "public") == before
+    assert (site / ".ctf" / "cache.json").read_bytes() == cache_before
+
+
+def test_check_catches_content_errors(site: Path):
+    # featured on a standalone page is a build error — check must surface it.
+    page = site / "content" / "pages" / "about.md"
+    page.write_text(page.read_text().replace("+++\n", "+++\nfeatured = true\n", 1), encoding="utf-8")
+    with pytest.raises(ContentError):
+        _quiet_check(site)
+
+
+def test_check_catches_config_errors(site: Path):
+    # An unknown top-level table is rejected by config validation.
+    config = site / "config.toml"
+    config.write_text(config.read_text() + "\n[bogus_table]\nx = 1\n", encoding="utf-8")
+    with pytest.raises(ConfigError):
+        _quiet_check(site)

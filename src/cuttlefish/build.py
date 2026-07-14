@@ -14,6 +14,7 @@ incremental cannot disagree by construction.
 from __future__ import annotations
 
 import shutil
+import tempfile
 import time
 from dataclasses import dataclass
 from pathlib import Path
@@ -177,12 +178,16 @@ def build_site(
     drafts: bool = False,
     base_path: str | None = None,
     console: Console | None = None,
+    output_dir: Path | None = None,
+    persist: bool = True,
 ) -> BuildStats:
     console = console or Console()
     start = time.perf_counter()
     root = root.resolve()
     config = load_config(root)
-    public_dir = root / PUBLIC_DIR
+    # public_dir is where output is written; ``check`` points it at a throwaway
+    # temp dir and sets persist=False so nothing in the site is touched.
+    public_dir = (root / PUBLIC_DIR) if output_dir is None else output_dir
 
     # base_path defaults to the one derived from base_url, but callers (the dev
     # server) can force "" to preview at the local root without the prefix. It
@@ -211,7 +216,7 @@ def build_site(
     graph = build_graph(root, renderer.env)
 
     if incremental:
-        stats = _run_build(
+        stats, new_manifest = _run_build(
             root, config, config_hash, public_dir, items, grouped,
             taxonomies, renderer, graph, manifest, mode="incremental",
         )
@@ -224,24 +229,60 @@ def build_site(
         if public_dir.exists():
             shutil.rmtree(public_dir)
         public_dir.mkdir(parents=True)
-        stats = _run_build(
+        stats, new_manifest = _run_build(
             root, config, config_hash, public_dir, items, grouped,
             taxonomies, renderer, graph, Manifest(), mode="full",
         )
+
+    # Persist the incremental cache unless the caller opted out (``check``).
+    if persist:
+        save_manifest(root, new_manifest)
 
     stats.elapsed_ms = (time.perf_counter() - start) * 1000
     console.print(stats.summary_line(config.title))
     return stats
 
 
-def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies, renderer, graph, manifest, *, mode) -> BuildStats:
-    """Render the site by diffing against *manifest* and record a new one.
+def check_site(root: Path, *, drafts: bool = False, console: Console | None = None) -> BuildStats:
+    """Validate the site without writing it — the same pipeline as ``build``.
+
+    Runs a full build so config, content, permalinks and *every template* are
+    exercised: any error a real ``ctf build`` would raise surfaces here. But the
+    output goes to a throwaway temporary directory and the incremental cache
+    (``.ctf/``) is not touched (``persist=False``), so nothing in the site is
+    created or changed. Reusing ``build_site`` keeps this on the one build path —
+    ``check`` cannot pass while ``build`` fails.
+    """
+    console = console or Console()
+    root = root.resolve()
+    config = load_config(root)  # fail fast on config errors; also gives the title
+    with tempfile.TemporaryDirectory(prefix="ctf-check-") as tmp:
+        stats = build_site(
+            root,
+            force=True,
+            drafts=drafts,
+            console=Console(quiet=True),
+            output_dir=Path(tmp) / PUBLIC_DIR,
+            persist=False,
+        )
+    console.print(
+        f"[green]✓[/green] Checked [bold]{config.title}[/bold] in {stats.elapsed_str} "
+        f"[dim]·[/dim] {stats.counts_str} [dim](no output written)[/dim]"
+    )
+    return stats
+
+
+def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies, renderer, graph, manifest, *, mode) -> tuple[BuildStats, Manifest]:
+    """Render the site by diffing against *manifest*; return stats + the new manifest.
 
     This is the single build path. An incremental build passes the previous
     manifest; a full build passes an empty :class:`Manifest` (and pre-clears
     ``public/``), which makes every unit of work register as changed. Because
     both modes run this exact routine, they are guaranteed to produce identical
     output for identical inputs — there is no second implementation to drift.
+
+    Persisting the returned manifest is the caller's choice (``build`` saves it;
+    ``check`` discards it), so this routine has no cache side effect of its own.
     """
     stats = BuildStats(mode=mode)
 
@@ -338,8 +379,7 @@ def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies
     # we leave it alone.
     robots_overridden = (root / STATIC_DIR / ROBOTS_FILENAME).is_file()
     stats.robots = write_robots(public_dir, config.base_url, user_provided=robots_overridden)
-    save_manifest(root, new_manifest)
-    return stats
+    return stats, new_manifest
 
 
 def _prune(public_dir: Path, old_outputs: set[str], new_outputs: set[str]) -> int:

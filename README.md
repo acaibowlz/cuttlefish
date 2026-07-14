@@ -59,6 +59,7 @@ ctf serve            # live-reloading preview at http://localhost:8000
 | ------------------ | -------------------------------------------------------------------------------------------------------------------- |
 | `ctf init <dir>`   | Scaffold a new site into `<dir>`.                                                                                    |
 | `ctf build [root]` | Render the site to `public/`. Add `--force` to ignore the cache, `--drafts` to include drafts.                       |
+| `ctf check [root]` | Validate config, content, and templates without writing anything. Exits non-zero on error — handy in CI.             |
 | `ctf serve [root]` | Preview at `http://localhost:8000`, live-reloading on change. Drafts on by default; set `--port` to change the port. |
 
 `root` defaults to the current directory, so you can run `ctf build` and `ctf serve` from inside your site.

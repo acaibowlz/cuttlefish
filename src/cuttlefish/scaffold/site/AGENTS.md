@@ -25,7 +25,9 @@ words; your job is the config, templates, and styling that present them. You may
 so you can wire up config and templates), but treat it as read-only input.
 
 Build with `ctf build`. Preview live with `ctf serve` (watches files and
-reloads the browser). When `base_url` is set, the build also emits a
+reloads the browser). Validate without writing anything with `ctf check` — it
+runs the same pipeline as a build and exits non-zero on the first error, so it's
+a quick way to confirm an edit is sound. When `base_url` is set, the build also emits a
 `public/sitemap.xml` of every page and a `public/robots.txt` that points at it.
 To supply your own crawl rules, drop a `robots.txt` in `static/` and the
 generated one steps aside.

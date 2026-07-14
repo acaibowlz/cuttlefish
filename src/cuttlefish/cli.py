@@ -1,8 +1,8 @@
 """Command-line interface for cuttlefish.
 
 ``init`` scaffolds a new site, ``new`` creates a content file from config,
-``build`` renders the site to ``public/``, and ``serve`` runs a live-reloading
-dev server.
+``build`` renders the site to ``public/``, ``check`` validates it without
+writing, and ``serve`` runs a live-reloading dev server.
 """
 
 from __future__ import annotations
@@ -109,6 +109,18 @@ def build(
     from cuttlefish.build import build_site
 
     build_site(root, force=force, drafts=drafts, console=console)
+
+
+@app.command()
+@handle_errors
+def check(
+    root: Path = typer.Argument(Path("."), help="Site root (contains config.toml)."),
+    drafts: bool = typer.Option(False, "--drafts", help="Include content marked draft = true."),
+) -> None:
+    """Validate config, content, and templates without writing the site."""
+    from cuttlefish.build import check_site
+
+    check_site(root, drafts=drafts, console=console)
 
 
 @app.command()

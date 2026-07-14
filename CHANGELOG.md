@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- `ctf check` command: validate config, content, and templates by running the
+  full build pipeline into a throwaway directory — nothing is written to the
+  site and the incremental cache is left untouched. Exits non-zero on the first
+  error, for use in CI or a pre-commit hook.
 - Generate `public/robots.txt` when `base_url` is set: it permits all crawlers
   and advertises the sitemap (`Sitemap: <base_url>/sitemap.xml`). A site that
   ships its own `static/robots.txt` overrides the generated one.
