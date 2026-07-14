@@ -61,7 +61,7 @@ This is a standalone page.
 |-------|---------|
 | `slug` | Override the filename-derived slug. Sets the URL. |
 | `draft` | `draft = true` hides the file from `ctf build`. `ctf serve` still shows it. |
-| `featured` | `featured = true` marks the item for the home page's `featured` sections. |
+| `featured` | `featured = true` marks the item for the home page's `featured` sections. Applies to content types only. |
 
 ### Taxonomies
 

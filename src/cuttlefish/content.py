@@ -243,6 +243,16 @@ def _require_front_matter(meta: dict, type_name: str, err_summary: str) -> None:
     post's date to a single, sortable day.
     """
     if type_name == PAGES_TYPE:
+        # The 'featured' flag is a content-type concept: it feeds the home
+        # [home].featured sections, which draw only from indexed content types. On
+        # a standalone page it does nothing, so reject it rather than silently
+        # accept a no-op flag. 'draft' stays valid — it genuinely hides the page.
+        if meta.get("featured"):
+            raise ContentError(
+                "The 'featured' flag applies to content types only — it feeds the "
+                "home [home].featured sections. Remove it.",
+                summary=err_summary,
+            )
         return
     for key in ("title", "description"):
         if not str(meta.get(key, "")).strip():

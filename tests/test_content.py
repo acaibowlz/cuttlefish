@@ -83,6 +83,15 @@ def test_required_front_matter_pages_exempt():
     _require_front_matter({}, PAGES_TYPE, "err")  # must not raise
 
 
+def test_pages_cannot_be_featured():
+    # 'featured' feeds the home [home].featured sections, which pages never join,
+    # so a featured page is rejected rather than silently ignored. 'draft' and an
+    # unset/false 'featured' remain fine.
+    with pytest.raises(ContentError):
+        _require_front_matter({"featured": True}, PAGES_TYPE, "err")
+    _require_front_matter({"featured": False, "draft": True}, PAGES_TYPE, "err")  # must not raise
+
+
 def test_extract_taxonomies_multiple_requires_list():
     config = _tax_config(multiple=True)
     assert _extract_taxonomies({"tags": ["travel", "japan"]}, config) == {

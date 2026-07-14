@@ -194,7 +194,7 @@ title = "My Post"
 date = 2026-06-21
 description = "One-line description used in listings."
 draft = false
-featured = true            # optional; include in the home [home].featured sections
+featured = true            # optional; content types only — feeds home [home].featured
 tags = ["python", "ssg"]   # any configured taxonomy name
 slug = "my-post"           # optional; defaults to the filename
 +++
