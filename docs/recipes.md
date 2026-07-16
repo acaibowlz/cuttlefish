@@ -18,7 +18,7 @@ The library lives in the [`recipes/` folder of the cuttlefish repository](https:
 You don't install or invoke recipes — you place one in your site and ask your agent to apply it:
 
 1. **Browse the library** and open the recipe you want.
-2. **Copy it into your site's `recipes/` folder** (create the folder if it isn't there yet). This folder isn't published — the build ignores it — so it's simply a home for the recipes your site uses. Commit it, and it doubles as a record of the features you've added.
+2. **Copy it into your site's `recipes/` folder** (create the folder if it isn't there yet). This folder isn't published — the build ignores it — so it's simply a home for the recipes your site uses. Commit it, and the folder shows at a glance which recipes your site draws on.
 3. **Ask your agent to apply it.** It reads the recipe from `recipes/` and makes the edits. Placing the file doesn't apply it on its own — you ask.
 4. **Review the diff** and preview with `ctf serve`, the same as any other change.
 
