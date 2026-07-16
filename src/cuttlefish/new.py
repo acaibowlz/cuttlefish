@@ -55,8 +55,16 @@ def _toml_string(value: str) -> str:
     return f'"{escaped}"'
 
 
-def _skeleton(config, type_name: str, *, title: str, slug: str, description: str,
-              date_value: date_cls, draft: bool) -> str:
+def _skeleton(
+    config,
+    type_name: str,
+    *,
+    title: str,
+    slug: str,
+    description: str,
+    date_value: date_cls,
+    draft: bool,
+) -> str:
     """Build the ``+++``-fenced front matter and body for a new file."""
     is_pages = type_name == PAGES_TYPE
     lines = ["+++", f"title = {_toml_string(title)}"]

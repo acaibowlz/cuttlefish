@@ -60,7 +60,9 @@ def handle_errors(func: Callable[..., T]) -> Callable[..., T]:
 @handle_errors
 def init(
     directory: Path = typer.Argument(..., help="Directory to create the new site in."),
-    force: bool = typer.Option(False, "--force", help="Scaffold even if the directory is non-empty."),
+    force: bool = typer.Option(
+        False, "--force", help="Scaffold even if the directory is non-empty."
+    ),
 ) -> None:
     """Scaffold a new site."""
     from cuttlefish.scaffold import scaffold_site
@@ -73,7 +75,9 @@ def init(
 def new(
     type: str = typer.Argument(..., help="Content type from config.toml, e.g. blog."),
     title: str = typer.Argument(..., help="Title of the new content."),
-    slug: str = typer.Option(None, "--slug", help="Explicit slug (default: derived from the title)."),
+    slug: str = typer.Option(
+        None, "--slug", help="Explicit slug (default: derived from the title)."
+    ),
     description: str = typer.Option("", "--description", help="Seed the description field."),
     date: str = typer.Option(None, "--date", help="Publish date as YYYY-MM-DD (default: today)."),
     draft: bool = typer.Option(False, "--draft/--no-draft", help="Mark the content as a draft."),
@@ -102,7 +106,9 @@ def new(
 @handle_errors
 def build(
     root: Path = typer.Argument(Path("."), help="Site root (contains config.toml)."),
-    force: bool = typer.Option(False, "--force", "--clean", help="Ignore the cache and rebuild everything."),
+    force: bool = typer.Option(
+        False, "--force", "--clean", help="Ignore the cache and rebuild everything."
+    ),
     drafts: bool = typer.Option(False, "--drafts", help="Include content marked draft = true."),
 ) -> None:
     """Build the site into public/."""
@@ -128,8 +134,12 @@ def check(
 def serve(
     root: Path = typer.Argument(Path("."), help="Site root (contains config.toml)."),
     port: int = typer.Option(8000, "--port", "-p", help="Port to serve on."),
-    drafts: bool = typer.Option(True, "--drafts/--no-drafts", help="Include drafts (default on in serve)."),
-    reload: bool = typer.Option(True, "--reload/--no-reload", help="Watch + live-reload the browser."),
+    drafts: bool = typer.Option(
+        True, "--drafts/--no-drafts", help="Include drafts (default on in serve)."
+    ),
+    reload: bool = typer.Option(
+        True, "--reload/--no-reload", help="Watch + live-reload the browser."
+    ),
 ) -> None:
     """Serve public/ with watch + live reload."""
     from cuttlefish.serve import serve_site

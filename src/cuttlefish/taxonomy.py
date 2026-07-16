@@ -154,12 +154,14 @@ def build_taxonomies(items: list[ContentItem], config: SiteConfig) -> dict[str, 
     for name, data in result.items():
         taxonomy = data.taxonomy
         members = [item for term in data.terms.values() for item in term.items]
-        if members and taxonomy.item_sort_by != "date" and not any(
-            item.has_sort_field(taxonomy.item_sort_by) for item in members
+        if (
+            members
+            and taxonomy.item_sort_by != "date"
+            and not any(item.has_sort_field(taxonomy.item_sort_by) for item in members)
         ):
             raise ConfigError(
                 f"[taxonomies.{name}.items] 'sort_by' = {taxonomy.item_sort_by!r} is not a "
-                f"field on any item under this taxonomy. Use \"date\" or a front-matter "
+                f'field on any item under this taxonomy. Use "date" or a front-matter '
                 "field present on your items."
             )
         for term in data.terms.values():

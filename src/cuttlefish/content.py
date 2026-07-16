@@ -36,7 +36,17 @@ FRONT_MATTER_FENCE = "+++"
 
 #: The fields that make up a content summary — everything an aggregate/listing
 #: template is allowed to render; ``body_html`` is intentionally excluded.
-SUMMARY_FIELDS = ("type", "title", "date", "description", "cover", "slug", "url", "taxonomies", "draft")
+SUMMARY_FIELDS = (
+    "type",
+    "title",
+    "date",
+    "description",
+    "cover",
+    "slug",
+    "url",
+    "taxonomies",
+    "draft",
+)
 
 #: Front-matter keys promoted to typed :class:`ContentItem` fields. They are
 #: read as attributes (never a raw dict), excluded from the free-form
@@ -229,7 +239,7 @@ def split_front_matter(text: str) -> tuple[dict, str]:
     if closing is None:
         raise ContentError("Front matter opened with '+++' but never closed.")
     fm_text = "".join(lines[1:closing])
-    body = "".join(lines[closing + 1:])
+    body = "".join(lines[closing + 1 :])
     try:
         meta = tomllib.loads(fm_text)
     except tomllib.TOMLDecodeError as exc:
@@ -237,9 +247,7 @@ def split_front_matter(text: str) -> tuple[dict, str]:
     return meta, body
 
 
-def _require_front_matter(
-    meta: dict, type_name: str, config: SiteConfig, err_summary: str
-) -> None:
+def _require_front_matter(meta: dict, type_name: str, config: SiteConfig, err_summary: str) -> None:
     """Enforce required front matter.
 
     Regular content (blog, project, …) must declare ``title``, ``description``
@@ -407,8 +415,11 @@ def discover(root: Path, config: SiteConfig, *, drafts: bool = False) -> list[Co
     return items
 
 
-def sort_items(items: list[ContentItem], *, sort_by: str = "date", order: str = "desc") -> list[ContentItem]:
+def sort_items(
+    items: list[ContentItem], *, sort_by: str = "date", order: str = "desc"
+) -> list[ContentItem]:
     """Return *items* sorted by a front-matter field (missing values last)."""
+
     def key(item: ContentItem):
         if sort_by == "date":
             return (item.date is not None, item.date or date.min)

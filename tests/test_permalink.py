@@ -10,9 +10,7 @@ from cuttlefish.permalink import PermalinkError, resolve_permalink, slugify
 
 
 def test_resolve_permalink_tokens():
-    url = resolve_permalink(
-        "/blog/{year}/{slug}/", date=datetime.date(2026, 6, 21), slug="hello"
-    )
+    url = resolve_permalink("/blog/{year}/{slug}/", date=datetime.date(2026, 6, 21), slug="hello")
     assert url == "/blog/2026/hello/"
 
 

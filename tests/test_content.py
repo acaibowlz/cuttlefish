@@ -26,9 +26,19 @@ def _tax_config(**taxonomy_extra):
 def _item(**overrides):
     """A minimally-populated ContentItem for field-level unit tests."""
     fields = dict(
-        type="blog", slug="s", title="T", description="D", date=None,
-        draft=False, cover="", body_html="", taxonomies={}, params={},
-        source_rel="content/blog/s.md", url="/b/s/", output_rel="b/s/index.html",
+        type="blog",
+        slug="s",
+        title="T",
+        description="D",
+        date=None,
+        draft=False,
+        cover="",
+        body_html="",
+        taxonomies={},
+        params={},
+        source_rel="content/blog/s.md",
+        url="/b/s/",
+        output_rel="b/s/index.html",
     )
     fields.update(overrides)
     return ContentItem(**fields)
@@ -59,9 +69,9 @@ def test_required_front_matter_ok():
 def test_required_front_matter_missing_fields():
     good_date = datetime.date(2026, 7, 2)
     bad = [
-        {"description": "D", "date": good_date},   # no title
-        {"title": "T", "date": good_date},         # no description
-        {"title": "T", "description": "D"},        # no date
+        {"description": "D", "date": good_date},  # no title
+        {"title": "T", "date": good_date},  # no description
+        {"title": "T", "description": "D"},  # no date
         {"title": " ", "description": "D", "date": good_date},  # blank title
     ]
     for meta in bad:
@@ -112,9 +122,7 @@ def test_extract_taxonomies_single_requires_string():
 
 
 def test_render_markdown_builds_toc_with_anchors():
-    html, toc = render_markdown(
-        "## Getting Started\n\ntext\n\n### Install *now*\n\nmore\n"
-    )
+    html, toc = render_markdown("## Getting Started\n\ntext\n\n### Install *now*\n\nmore\n")
     # Each heading gets a slug id in the HTML, matching its TOC entry.
     assert '<h2 id="getting-started">' in html
     assert '<h3 id="install-now">' in html
@@ -147,19 +155,21 @@ def test_render_markdown_supports_mark_and_math():
 
 def test_content_item_sort_value_promoted_and_custom():
     item = _item(title="Zed", params={"weight": 5})
-    assert item.sort_value("title") == "Zed"   # promoted -> typed attribute
-    assert item.sort_value("weight") == 5       # custom -> params
-    assert item.sort_value("missing") is None   # absent custom -> None
-    assert item.has_sort_field("title") is True         # promoted always present
+    assert item.sort_value("title") == "Zed"  # promoted -> typed attribute
+    assert item.sort_value("weight") == 5  # custom -> params
+    assert item.sort_value("missing") is None  # absent custom -> None
+    assert item.has_sort_field("title") is True  # promoted always present
     assert item.has_sort_field("weight") is True
     assert item.has_sort_field("missing") is False
 
 
 def test_parse_item_promotes_fields_and_collects_params(tmp_path):
-    cfg = parse_config({
-        "content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}},
-        "taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/"}},
-    })
+    cfg = parse_config(
+        {
+            "content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}},
+            "taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/"}},
+        }
+    )
     path = tmp_path / "content" / "blog" / "post.md"
     path.parent.mkdir(parents=True)
     path.write_text(
@@ -180,7 +190,9 @@ def test_parse_item_promotes_fields_and_collects_params(tmp_path):
 
 
 def test_cover_is_optional_and_in_fingerprint(tmp_path):
-    cfg = parse_config({"content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}}})
+    cfg = parse_config(
+        {"content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}}}
+    )
     path = tmp_path / "content" / "blog" / "post.md"
     path.parent.mkdir(parents=True)
     base = '+++\ntitle = "T"\ndescription = "D"\ndate = 2026-01-02\n'

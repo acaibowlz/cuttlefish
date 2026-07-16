@@ -80,9 +80,7 @@ def build_aggregate_specs(
             )
         if data.taxonomy.has_index and data.index_output_rel is not None:
             terms_fp = hash_text(
-                json.dumps(
-                    [(t.name, t.count) for t in data.sorted_terms], sort_keys=True
-                )
+                json.dumps([(t.name, t.count) for t in data.sorted_terms], sort_keys=True)
             )
             specs.append(
                 AggregateSpec(

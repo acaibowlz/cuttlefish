@@ -125,10 +125,14 @@ def _items_by_type(items: list[ContentItem], config: SiteConfig) -> dict[str, li
         # almost certainly a typo (e.g. "dae" for "date") rather than a real but
         # absent field — surface it instead of silently leaving them unsorted.
         # Empty types are skipped: "absent everywhere" is vacuously true there.
-        if group and ct.sort_by != "date" and not any(item.has_sort_field(ct.sort_by) for item in group):
+        if (
+            group
+            and ct.sort_by != "date"
+            and not any(item.has_sort_field(ct.sort_by) for item in group)
+        ):
             raise ConfigError(
                 f"[content_types.{name}] 'sort_by' = {ct.sort_by!r} is not a field on any "
-                f"{name} content. Use \"date\" or a front-matter field present on your items."
+                f'{name} content. Use "date" or a front-matter field present on your items.'
             )
         grouped[name] = sort_items(group, sort_by=ct.sort_by, order=ct.order)
     return grouped
@@ -196,15 +200,12 @@ def build_site(
     # cache, or unchanged pages would keep the previous build's prefix.
     effective_base_path = config.base_path if base_path is None else base_path
     config_hash = hash_text(
-        (root / CONFIG_FILENAME).read_text(encoding="utf-8")
-        + f"\nbase_path={effective_base_path}"
+        (root / CONFIG_FILENAME).read_text(encoding="utf-8") + f"\nbase_path={effective_base_path}"
     )
 
     manifest = None if force else load_manifest(root)
     incremental = (
-        manifest is not None
-        and public_dir.exists()
-        and manifest.config_hash == config_hash
+        manifest is not None and public_dir.exists() and manifest.config_hash == config_hash
     )
 
     items = discover(root, config, drafts=drafts)
@@ -217,8 +218,17 @@ def build_site(
 
     if incremental:
         stats, new_manifest = _run_build(
-            root, config, config_hash, public_dir, items, grouped,
-            taxonomies, renderer, graph, manifest, mode="incremental",
+            root,
+            config,
+            config_hash,
+            public_dir,
+            items,
+            grouped,
+            taxonomies,
+            renderer,
+            graph,
+            manifest,
+            mode="incremental",
         )
     else:
         # A full build is just the incremental routine against an *empty*
@@ -230,8 +240,17 @@ def build_site(
             shutil.rmtree(public_dir)
         public_dir.mkdir(parents=True)
         stats, new_manifest = _run_build(
-            root, config, config_hash, public_dir, items, grouped,
-            taxonomies, renderer, graph, Manifest(), mode="full",
+            root,
+            config,
+            config_hash,
+            public_dir,
+            items,
+            grouped,
+            taxonomies,
+            renderer,
+            graph,
+            Manifest(),
+            mode="full",
         )
 
     # Persist the incremental cache unless the caller opted out (``check``).
@@ -272,7 +291,20 @@ def check_site(root: Path, *, drafts: bool = False, console: Console | None = No
     return stats
 
 
-def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies, renderer, graph, manifest, *, mode) -> tuple[BuildStats, Manifest]:
+def _run_build(
+    root,
+    config,
+    config_hash,
+    public_dir,
+    items,
+    grouped,
+    taxonomies,
+    renderer,
+    graph,
+    manifest,
+    *,
+    mode,
+) -> tuple[BuildStats, Manifest]:
     """Render the site by diffing against *manifest*; return stats + the new manifest.
 
     This is the single build path. An incremental build passes the previous
@@ -289,15 +321,15 @@ def _run_build(root, config, config_hash, public_dir, items, grouped, taxonomies
     # Which templates changed, and which templates are therefore affected?
     new_templates = _template_manifest(root, graph)
     changed_templates = {
-        name for name, entry in new_templates.items()
+        name
+        for name, entry in new_templates.items()
         if manifest.templates.get(name, {}).get("hash") != entry["hash"]
     }
     affected_templates = graph.affected_by(changed_templates)
 
     # A content type is "template-dirty" if its single template is affected.
     type_dirty = {
-        name: ct.template in affected_templates
-        for name, ct in config.content_types.items()
+        name: ct.template in affected_templates for name, ct in config.content_types.items()
     }
 
     # Content pages: render only those that changed or use a dirty template.

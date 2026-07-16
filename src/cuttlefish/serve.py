@@ -176,8 +176,7 @@ def _watch_loop(
         try:
             stats = build_site(root, drafts=drafts, base_path="", console=Console(quiet=True))
             console.print(
-                f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str} "
-                f"[dim]·[/dim] {stats.counts_str}"
+                f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str} [dim]·[/dim] {stats.counts_str}"
             )
             server.broadcast("reload")
         except CuttlefishError as exc:  # keep the server alive on build errors

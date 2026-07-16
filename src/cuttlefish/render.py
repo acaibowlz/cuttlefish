@@ -219,10 +219,7 @@ class Renderer:
         """Render the index that lists every term of a taxonomy."""
         if not data.taxonomy.has_index or data.index_output_rel is None:
             return None
-        terms = [
-            SimpleNamespace(name=t.name, url=t.url, count=t.count)
-            for t in data.sorted_terms
-        ]
+        terms = [SimpleNamespace(name=t.name, url=t.url, count=t.count) for t in data.sorted_terms]
         with _render_step(data.index_output_rel):
             html = self.env.get_template(data.taxonomy.index_template).render(
                 taxonomy=data.taxonomy.name, terms=terms

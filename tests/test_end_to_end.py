@@ -61,16 +61,19 @@ def test_sitemap_generated(site: Path, build):
 
 def _set_subpath(site: Path) -> None:
     cfg = site / "config.toml"
-    cfg.write_text(cfg.read_text().replace(
-        'base_url = "https://example.com"', 'base_url = "https://you.github.io/repo"'))
+    cfg.write_text(
+        cfg.read_text().replace(
+            'base_url = "https://example.com"', 'base_url = "https://you.github.io/repo"'
+        )
+    )
 
 
 def test_subpath_base_url_prefixes_links(site: Path, build):
     _set_subpath(site)
     build(site)
     home = read(site, "index.html")
-    assert 'href="/repo/css/main.css"' in home   # asset prefixed
-    assert 'href="/repo/blog/"' in home          # nav/link prefixed
+    assert 'href="/repo/css/main.css"' in home  # asset prefixed
+    assert 'href="/repo/blog/"' in home  # nav/link prefixed
     # Output file paths on disk are NOT prefixed.
     assert (site / "public" / "blog" / "hello-world" / "index.html").is_file()
     assert not (site / "public" / "repo").exists()
@@ -90,11 +93,11 @@ def test_base_path_override_disables_prefix(site: Path, build):
 def test_base_path_change_invalidates_cache(site: Path, build):
     """Switching prefix (e.g. build vs serve) must not reuse stale prefixed output."""
     _set_subpath(site)
-    build(site)                                  # full, prefix /repo
+    build(site)  # full, prefix /repo
     assert 'href="/repo/blog/"' in read(site, "index.html")
 
-    stats = build(site, base_path="")            # how `ctf serve` builds
-    assert stats.mode == "full"                  # prefix change busts the cache
+    stats = build(site, base_path="")  # how `ctf serve` builds
+    assert stats.mode == "full"  # prefix change busts the cache
     home = read(site, "index.html")
     assert 'href="/blog/"' in home
     assert "/repo" not in home
@@ -102,8 +105,7 @@ def test_base_path_change_invalidates_cache(site: Path, build):
 
 def test_sitemap_skipped_without_base_url(site: Path, build):
     cfg = site / "config.toml"
-    cfg.write_text(cfg.read_text().replace(
-        'base_url = "https://example.com"', 'base_url = ""'))
+    cfg.write_text(cfg.read_text().replace('base_url = "https://example.com"', 'base_url = ""'))
     stats = build(site)
     assert stats.sitemap is False
     assert not (site / "public" / "sitemap.xml").exists()
@@ -176,8 +178,8 @@ def test_featured_is_a_taxonomy_term(site: Path, build):
     home tag cloud links to it — there is no dedicated featured mechanism."""
     build(site)
     featured = read(site, "tags/featured/index.html")
-    assert "Front Matter" in featured        # tagged `featured`
-    assert "Hello, World" not in featured    # not tagged
+    assert "Front Matter" in featured  # tagged `featured`
+    assert "Hello, World" not in featured  # not tagged
     index = read(site, "index.html")
     assert '<a href="/tags/featured/">featured' in index
 
@@ -186,8 +188,8 @@ def test_error_page_built_and_excluded_from_sitemap(site: Path, build):
     """The scaffold's 404.html renders to the site root but stays out of the sitemap."""
     stats = build(site)
     assert stats.error_pages == 1
-    page = read(site, "404.html")           # at the root, not a pretty URL
-    assert "Page not found" in page          # rendered through base.html
+    page = read(site, "404.html")  # at the root, not a pretty URL
+    assert "Page not found" in page  # rendered through base.html
     assert "<title>" in page and "Demo Site" in page  # site-global context available
     # A 404 is a host fallback, not a crawlable page — keep it out of the sitemap.
     assert "404" not in read(site, "sitemap.xml")
@@ -221,7 +223,9 @@ def test_check_leaves_an_existing_build_untouched(site: Path, build):
 def test_check_catches_content_errors(site: Path):
     # Malformed TOML front matter is a build error — check must surface it.
     page = site / "content" / "pages" / "about.md"
-    page.write_text(page.read_text().replace("+++\n", "+++\ntitle = = broken\n", 1), encoding="utf-8")
+    page.write_text(
+        page.read_text().replace("+++\n", "+++\ntitle = = broken\n", 1), encoding="utf-8"
+    )
     with pytest.raises(ContentError):
         _quiet_check(site)
 

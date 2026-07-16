@@ -37,8 +37,17 @@ _CONTENT_TYPE_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "paginate", "sort_by", "order"}
 )
 _TAXONOMY_KEYS = frozenset(
-    {"template", "permalink", "index_template", "index_permalink", "multiple",
-     "sort_by", "order", "home", "items"}
+    {
+        "template",
+        "permalink",
+        "index_template",
+        "index_permalink",
+        "multiple",
+        "sort_by",
+        "order",
+        "home",
+        "items",
+    }
 )
 #: Keys allowed in the nested ``[taxonomies.<name>.items]`` sub-table, which sets
 #: how *items* are ordered on a term page (distinct from the term ordering above).
@@ -207,7 +216,7 @@ def _parse_content_type(name: str, data: dict) -> ContentType:
     _reject_unknown_keys(data, _CONTENT_TYPE_KEYS, where)
     order = str(data.get("order", "desc")).lower()
     if order not in ("asc", "desc"):
-        raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
+        raise ConfigError(f'{where} \'order\' must be "asc" or "desc", got {order!r}.')
     # Only an omitted key or a non-negative integer is valid; 0 (or omitting it)
     # disables pagination. Reject everything else — including bools, which TOML
     # parses as a subclass of int — with a clear message instead of a traceback.
@@ -239,10 +248,10 @@ def _parse_taxonomy(name: str, data: dict) -> Taxonomy:
         raise ConfigError(f"{where} 'multiple' must be a boolean, got {multiple!r}.")
     sort_by = str(data.get("sort_by", "name")).lower()
     if sort_by not in ("count", "name"):
-        raise ConfigError(f"{where} 'sort_by' must be \"count\" or \"name\", got {sort_by!r}.")
+        raise ConfigError(f'{where} \'sort_by\' must be "count" or "name", got {sort_by!r}.')
     order = str(data.get("order", "asc")).lower()
     if order not in ("asc", "desc"):
-        raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
+        raise ConfigError(f'{where} \'order\' must be "asc" or "desc", got {order!r}.')
     home = data.get("home", False)
     if not isinstance(home, bool):
         raise ConfigError(f"{where} 'home' must be a boolean, got {home!r}.")
@@ -275,7 +284,7 @@ def _parse_item_sort(data: dict, where: str) -> tuple[str, str]:
     sort_by = str(data.get("sort_by", "date"))
     order = str(data.get("order", "desc")).lower()
     if order not in ("asc", "desc"):
-        raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
+        raise ConfigError(f'{where} \'order\' must be "asc" or "desc", got {order!r}.')
     return sort_by, order
 
 
@@ -368,8 +377,7 @@ def parse_config(raw: dict) -> SiteConfig:
         for name, data in (raw.get("content_types") or {}).items()
     }
     taxonomies = {
-        name: _parse_taxonomy(name, data)
-        for name, data in (raw.get("taxonomies") or {}).items()
+        name: _parse_taxonomy(name, data) for name, data in (raw.get("taxonomies") or {}).items()
     }
     home = _parse_home(raw["home"]) if "home" in raw else None
     nav = _parse_nav(raw["nav"]) if "nav" in raw else NavConfig()
@@ -387,9 +395,7 @@ def parse_config(raw: dict) -> SiteConfig:
     if home is not None:
         for type_name in home.recent:
             if type_name not in content_types:
-                raise ConfigError(
-                    f"[home] 'recent' references unknown content type {type_name!r}."
-                )
+                raise ConfigError(f"[home] 'recent' references unknown content type {type_name!r}.")
 
     base_url = str(raw.get("base_url", "")).rstrip("/")
     return SiteConfig(

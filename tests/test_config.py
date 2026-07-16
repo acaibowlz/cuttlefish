@@ -39,14 +39,20 @@ def test_config_order_default_and_validation():
     assert cfg.content_types["blog"].order == "desc"
     assert cfg.content_types["blog"].descending is True
 
-    bad = {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/", "order": "newest"}}}
+    bad = {
+        "content_types": {
+            "blog": {"template": "b.html", "permalink": "/b/{slug}/", "order": "newest"}
+        }
+    }
     with pytest.raises(ConfigError):
         parse_config(bad)
 
 
 def test_config_paginate_default_and_validation():
     def ct(**extra):
-        return {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/", **extra}}}
+        return {
+            "content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/", **extra}}
+        }
 
     # Omitted disables pagination; a non-negative integer is taken as-is.
     assert parse_config(ct()).content_types["blog"].paginate == 0
@@ -66,11 +72,11 @@ def test_config_unknown_keys_rejected():
 
     # Unknown keys are rejected in every strict scope (top level + each table).
     bad_configs = [
-        {"titel": "X"},                                                  # top level
-        {"content_types": {"blog": {**ct, "index_tempalte": "i.html"}}}, # content type
+        {"titel": "X"},  # top level
+        {"content_types": {"blog": {**ct, "index_tempalte": "i.html"}}},  # content type
         {"taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/", "paginate": 5}}},
-        {"home": {"template": "h.html", "recnt": {}}},                   # home
-        {"nav": {"enabledd": True}},                                     # nav
+        {"home": {"template": "h.html", "recnt": {}}},  # home
+        {"nav": {"enabledd": True}},  # nav
     ]
     for raw in bad_configs:
         with pytest.raises(ConfigError):
@@ -87,13 +93,15 @@ def test_taxonomy_multiple_must_be_bool():
 
 
 def test_home_recent_multiple_sections():
-    cfg = parse_config({
-        "content_types": {
-            "blog": {"template": "b.html", "permalink": "/b/{slug}/"},
-            "project": {"template": "p.html", "permalink": "/p/{slug}/"},
-        },
-        "home": {"template": "home.html", "recent": {"blog": 5, "project": 3}},
-    })
+    cfg = parse_config(
+        {
+            "content_types": {
+                "blog": {"template": "b.html", "permalink": "/b/{slug}/"},
+                "project": {"template": "p.html", "permalink": "/p/{slug}/"},
+            },
+            "home": {"template": "home.html", "recent": {"blog": 5, "project": 3}},
+        }
+    )
     assert cfg.home.recent == {"blog": 5, "project": 3}
 
 
@@ -118,15 +126,21 @@ def test_home_rejects_removed_featured_key():
 
 
 def test_taxonomy_sort_parsed_with_defaults():
-    cfg = parse_config({
-        "taxonomies": {
-            "tags": {"template": "t.html", "permalink": "/t/{term}/"},
-            "category": {
-                "template": "c.html", "permalink": "/c/{term}/", "multiple": False,
-                "sort_by": "count", "order": "desc", "home": True,
+    cfg = parse_config(
+        {
+            "taxonomies": {
+                "tags": {"template": "t.html", "permalink": "/t/{term}/"},
+                "category": {
+                    "template": "c.html",
+                    "permalink": "/c/{term}/",
+                    "multiple": False,
+                    "sort_by": "count",
+                    "order": "desc",
+                    "home": True,
+                },
             },
-        },
-    })
+        }
+    )
     tags = cfg.taxonomies["tags"]
     assert (tags.sort_by, tags.order, tags.home) == ("name", "asc", False)  # defaults
     # Term-page item order defaults to newest-first, like a type index.
@@ -137,9 +151,15 @@ def test_taxonomy_sort_parsed_with_defaults():
 
 def test_taxonomy_item_sort_parsed_and_validated():
     def tax(items):
-        return {"taxonomies": {"tags": {
-            "template": "t.html", "permalink": "/t/{term}/", "items": items,
-        }}}
+        return {
+            "taxonomies": {
+                "tags": {
+                    "template": "t.html",
+                    "permalink": "/t/{term}/",
+                    "items": items,
+                }
+            }
+        }
 
     cfg = parse_config(tax({"sort_by": "weight", "order": "asc"}))
     tags = cfg.taxonomies["tags"]
@@ -157,10 +177,10 @@ def test_taxonomy_sort_validation():
         return {"taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/", **opts}}}
 
     bad = [
-        {"sort_by": "date"},   # bad sort_by
-        {"order": "up"},       # bad order
-        {"home": "yes"},       # home must be a boolean
-        {"limit": 5},          # unknown key
+        {"sort_by": "date"},  # bad sort_by
+        {"order": "up"},  # bad order
+        {"home": "yes"},  # home must be a boolean
+        {"limit": 5},  # unknown key
     ]
     for opts in bad:
         with pytest.raises(ConfigError):
@@ -168,16 +188,18 @@ def test_taxonomy_sort_validation():
 
 
 def test_profile_parsed():
-    cfg = parse_config({
-        "profile": {
-            "name": "Jane",
-            "bio": "Hi there.",
-            "avatar": "/img/a.svg",
-            "email": "jane@example.com",
-            "socials": {"github": "https://github.com/jane", "mastodon": "https://m/@jane"},
-        },
-        "home": {"template": "home.html"},
-    })
+    cfg = parse_config(
+        {
+            "profile": {
+                "name": "Jane",
+                "bio": "Hi there.",
+                "avatar": "/img/a.svg",
+                "email": "jane@example.com",
+                "socials": {"github": "https://github.com/jane", "mastodon": "https://m/@jane"},
+            },
+            "home": {"template": "home.html"},
+        }
+    )
     assert cfg.profile.name == "Jane"
     assert cfg.profile.email == "jane@example.com"
     # socials keep config order (github before mastodon).
@@ -203,9 +225,11 @@ def test_profile_validation():
 def test_params_free_form():
     # [params] is the escape hatch: arbitrary keys pass through untouched, even
     # ones that would be rejected anywhere else.
-    cfg = parse_config({
-        "params": {"accent": "teal", "show_sidebar": True, "nested": {"a": 1}},
-    })
+    cfg = parse_config(
+        {
+            "params": {"accent": "teal", "show_sidebar": True, "nested": {"a": 1}},
+        }
+    )
     assert cfg.params == {"accent": "teal", "show_sidebar": True, "nested": {"a": 1}}
     # Absent table defaults to empty, and a non-table [params] is rejected.
     assert parse_config({"title": "X"}).params == {}
@@ -221,9 +245,9 @@ def test_config_base_path_derived_from_base_url():
 
 
 def test_nav_pairs_labels_and_links():
-    cfg = parse_config({
-        "nav": {"enabled": True, "labels": ["Blog", "About"], "links": ["/blog/", "/about/"]}
-    })
+    cfg = parse_config(
+        {"nav": {"enabled": True, "labels": ["Blog", "About"], "links": ["/blog/", "/about/"]}}
+    )
     assert cfg.nav.enabled is True
     assert [(i.label, i.link) for i in cfg.nav.items] == [("Blog", "/blog/"), ("About", "/about/")]
 
