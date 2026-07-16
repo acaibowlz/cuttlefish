@@ -13,8 +13,8 @@ you write the content, agents handle the look and layout.</p>
 <a href="https://pypi.org/project/cuttlefish-ssg/"><img src="https://img.shields.io/pypi/v/cuttlefish-ssg?style=flat&color=0aa" alt="PyPI version"></a>
 <a href="https://pypi.org/project/cuttlefish-ssg/"><img src="https://img.shields.io/badge/python-3.11+-blue?style=flat" alt="Python 3.11+"></a>
 <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-blue?style=flat" alt="License: MIT"></a>
-<a href="https://github.com/acaibowlz/cuttlefish/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/acaibowlz/cuttlefish/test.yml?branch=main&style=flat&label=tests" alt="Tests"></a>
-<a href="https://codecov.io/gh/acaibowlz/cuttlefish"><img src="https://img.shields.io/codecov/c/github/acaibowlz/cuttlefish?style=flat" alt="Coverage"></a>
+<a href="https://github.com/acaibowlz/cuttlefish/actions/workflows/test.yml"><img src="https://img.shields.io/github/actions/workflow/status/acaibowlz/cuttlefish/test.yml?branch=main&style=flat&label=tests&logo=github&logoColor=white" alt="Tests"></a>
+<a href="https://codecov.io/gh/acaibowlz/cuttlefish"><img src="https://img.shields.io/codecov/c/github/acaibowlz/cuttlefish?style=flat&logo=codecov&logoColor=white" alt="Coverage"></a>
 <a href="https://github.com/acaibowlz/cuttlefish/blob/main/src/cuttlefish/scaffold/site/AGENTS.md"><img src="https://img.shields.io/badge/AGENTS.md-included-8957e5?style=flat" alt="AGENTS.md included"></a>
 </p>
 </div>
