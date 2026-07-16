@@ -27,7 +27,7 @@ def _item(**overrides):
     """A minimally-populated ContentItem for field-level unit tests."""
     fields = dict(
         type="blog", slug="s", title="T", description="D", date=None,
-        draft=False, body_html="", taxonomies={}, params={},
+        draft=False, cover="", body_html="", taxonomies={}, params={},
         source_rel="content/blog/s.md", url="/b/s/", output_rel="b/s/index.html",
     )
     fields.update(overrides)
@@ -164,7 +164,7 @@ def test_parse_item_promotes_fields_and_collects_params(tmp_path):
     path.parent.mkdir(parents=True)
     path.write_text(
         '+++\ntitle = "T"\ndescription = "D"\ndate = 2026-01-02\n'
-        'tags = ["x"]\nhero_layout = "wide"\n+++\nBody\n',
+        'cover = "/img/t.jpg"\ntags = ["x"]\nhero_layout = "wide"\n+++\nBody\n',
         encoding="utf-8",
     )
     item = parse_item(path, "blog", cfg)
@@ -172,5 +172,24 @@ def test_parse_item_promotes_fields_and_collects_params(tmp_path):
     assert item.title == "T"
     assert item.date == datetime.date(2026, 1, 2)
     assert item.taxonomies == {"tags": ["x"]}
+    # cover is a promoted field: typed on the item and its summary, not in params.
+    assert item.cover == "/img/t.jpg"
+    assert item.summary.cover == "/img/t.jpg"
     # params is the leftover: promoted fields and taxonomy keys are excluded.
     assert item.params == {"hero_layout": "wide"}
+
+
+def test_cover_is_optional_and_in_fingerprint(tmp_path):
+    cfg = parse_config({"content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}}})
+    path = tmp_path / "content" / "blog" / "post.md"
+    path.parent.mkdir(parents=True)
+    base = '+++\ntitle = "T"\ndescription = "D"\ndate = 2026-01-02\n'
+
+    path.write_text(base + "+++\nBody\n", encoding="utf-8")
+    without = parse_item(path, "blog", cfg)
+    assert without.cover == ""  # optional: absent front matter -> empty string
+
+    path.write_text(base + 'cover = "/img/t.jpg"\n+++\nBody\n', encoding="utf-8")
+    with_cover = parse_item(path, "blog", cfg)
+    # A listing renders the cover, so it must move the fingerprint when it changes.
+    assert with_cover.meta_fingerprint != without.meta_fingerprint

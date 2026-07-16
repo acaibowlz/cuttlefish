@@ -201,7 +201,7 @@ values. Read them in any template as `site.params.<key>` (e.g.
 **per-page** custom values, add them to a page's front matter instead and read
 them off `page.params` — the per-page counterpart to `site.params`. It holds
 every front-matter field that is not a built-in (`title`, `date`,
-`description`, `slug`, `draft`) or a configured taxonomy. Guard
+`description`, `slug`, `draft`, `cover`) or a configured taxonomy. Guard
 optional ones with `.get`, since a missing key otherwise errors (e.g.
 `{% if page.params.get('hero_layout') %}{{ page.params.hero_layout }}{% endif %}`).
 
@@ -220,6 +220,7 @@ description = "One-line description used in listings."
 draft = false
 tags = ["python", "ssg"]   # any configured taxonomy name
 slug = "my-post"           # optional; defaults to the filename
+cover = "/img/my-post.jpg" # optional; cover image, available on listings as item.cover
 +++
 
 # Markdown body here
@@ -237,6 +238,9 @@ slug = "my-post"           # optional; defaults to the filename
   defaults to the filename. A configured taxonomy key on a page is rejected —
   pages join no taxonomy listing.
 - `draft = true` hides a page from `ctf build` (shown by `ctf serve`).
+- `cover` is an optional cover-image URL. It's a **listing field**, so it reaches
+  aggregate templates as `item.cover` (not just the item's own page) — use it for
+  card thumbnails. Empty when unset.
 
 **Markdown body extensions.** Beyond standard Markdown, bodies support tables,
 footnotes (`[^1]`), strikethrough (`~~x~~`), task lists (`- [x]`), autolinks,
@@ -282,7 +286,7 @@ Variables per template kind:
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
 > home) may use only **listing fields** — `type`, `title`, `date`,
-> `description`, `slug`, `url`, `taxonomies`, `draft`. The full rendered body
+> `description`, `cover`, `slug`, `url`, `taxonomies`, `draft`. The full rendered body
 > (`body_html`) is
 > available **only** in single-content and page templates. This keeps
 > incremental builds correct: editing a post's body never forces listings to

@@ -30,7 +30,7 @@ Template changes follow their dependencies. cuttlefish tracks `{% extends %}` an
 
 ### Why listings survive body edits
 
-This is the load-bearing detail. Listing pages (indexes, taxonomy pages, the home page) render **summaries** of content, never the body — see [the summary rule](templates.md#the-summary-rule). Each listing carries a *fingerprint* computed over exactly the summary data it shows: content type, title, date, description, slug, url, taxonomies, and draft status. Crucially, that fingerprint never includes the body.
+This is the load-bearing detail. Listing pages (indexes, taxonomy pages, the home page) render **summaries** of content, never the body — see [the summary rule](templates.md#the-summary-rule). Each listing carries a *fingerprint* computed over exactly the summary data it shows: content type, title, date, description, cover, slug, url, taxonomies, and draft status. Crucially, that fingerprint never includes the body.
 
 So when you edit a post's body, its summary fingerprint is unchanged, and every listing that shows it is correctly skipped. A listing rebuilds only when a fingerprint it depends on changes — a retitled post, a new tag, a removed item — or when its template is affected. This is why the summary/body split in templates isn't just tidiness; it's what makes "edit a body, rebuild one page" provably correct.
 

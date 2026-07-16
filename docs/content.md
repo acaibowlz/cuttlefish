@@ -63,6 +63,7 @@ The [optional fields](#optional-fields) below still apply: `slug` overrides the 
 |-------|---------|
 | `slug` | Override the filename-derived slug. Sets the URL. |
 | `draft` | `draft = true` hides the file from `ctf build`. `ctf serve` still shows it. |
+| `cover` | Cover/hero image URL (e.g. `/img/post.jpg`). Unlike a custom field, it's a **summary** field, so listing templates can show a thumbnail via `item.cover` — not just the item's own page. Empty when unset. |
 
 ### Taxonomies
 
@@ -77,7 +78,7 @@ A mismatch — a list where a single term is expected, or vice versa — is an e
 
 ### Custom fields {#custom-fields}
 
-Any front-matter field that isn't a built-in (`title`, `date`, `description`, `slug`, `draft`) or a configured taxonomy is a **custom field**. Custom fields are collected into `page.params` and made available to that item's template:
+Any front-matter field that isn't a built-in (`title`, `date`, `description`, `slug`, `draft`, `cover`) or a configured taxonomy is a **custom field**. Custom fields are collected into `page.params` and made available to that item's template:
 
 ```markdown
 +++

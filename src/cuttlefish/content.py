@@ -36,13 +36,13 @@ FRONT_MATTER_FENCE = "+++"
 
 #: The fields that make up a content summary — everything an aggregate/listing
 #: template is allowed to render; ``body_html`` is intentionally excluded.
-SUMMARY_FIELDS = ("type", "title", "date", "description", "slug", "url", "taxonomies", "draft")
+SUMMARY_FIELDS = ("type", "title", "date", "description", "cover", "slug", "url", "taxonomies", "draft")
 
 #: Front-matter keys promoted to typed :class:`ContentItem` fields. They are
 #: read as attributes (never a raw dict), excluded from the free-form
 #: ``params``, and — because each is always present with a default — always
 #: available as a ``sort_by`` target.
-_PROMOTED_KEYS = frozenset({"title", "description", "date", "slug", "draft"})
+_PROMOTED_KEYS = frozenset({"title", "description", "date", "slug", "draft", "cover"})
 
 
 @dataclass(frozen=True)
@@ -120,6 +120,7 @@ class ContentSummary:
     title: str
     date: date | None
     description: str
+    cover: str
     slug: str
     url: str
     taxonomies: dict[str, list[str]]
@@ -139,6 +140,9 @@ class ContentItem:
     description: str
     date: date | None
     draft: bool
+    #: Optional cover/hero image URL (e.g. ``/img/post.jpg``). A summary field, so
+    #: listings can show a thumbnail; empty string when unset.
+    cover: str
     body_html: str
     taxonomies: dict[str, list[str]]
     #: Free-form front-matter fields: everything that is neither a promoted
@@ -187,6 +191,7 @@ class ContentItem:
             "title": self.title,
             "date": self.date.isoformat() if self.date else None,
             "description": self.description,
+            "cover": self.cover,
             "slug": self.slug,
             "url": self.url,
             "taxonomies": {k: sorted(v) for k, v in sorted(self.taxonomies.items())},
@@ -201,6 +206,7 @@ class ContentItem:
             title=self.title,
             date=self.date,
             description=self.description,
+            cover=self.cover,
             slug=self.slug,
             url=self.url,
             taxonomies=self.taxonomies,
@@ -361,6 +367,7 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
         description=str(meta.get("description", "")),
         date=_coerce_date(item_date),
         draft=bool(meta.get("draft", False)),
+        cover=str(meta.get("cover", "")),
         body_html=body_html,
         taxonomies=taxonomies,
         params=_custom_params(meta, config),

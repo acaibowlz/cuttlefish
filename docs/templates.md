@@ -50,7 +50,7 @@ On the home page, `recent.blog` is a list of summaries; `taxonomies.tags` is a l
 
 Single-content and page templates get the full item as `page` (also aliased `item`):
 
-- `page.title`, `page.date`, `page.description`, `page.slug`, `page.url`, `page.draft`
+- `page.title`, `page.date`, `page.description`, `page.cover`, `page.slug`, `page.url`, `page.draft`
 - `page.body_html` — the rendered Markdown body (use `| safe`)
 - `page.taxonomies` — a map of taxonomy name to the item's terms
 - `page.params` — the item's [custom fields](content.md#custom-fields)
@@ -61,7 +61,7 @@ Single-content and page templates get the full item as `page` (also aliased `ite
 
 Listing templates — every index, taxonomy term, taxonomy index, and the home page — receive **summaries**, not full items. A summary carries only:
 
-> `type`, `title`, `date`, `description`, `slug`, `url`, `taxonomies`, `draft`
+> `type`, `title`, `date`, `description`, `cover`, `slug`, `url`, `taxonomies`, `draft`
 
 It deliberately omits `body_html`. This isn't only tidiness: it's what keeps [incremental builds](incremental-builds.md) correct. Because no listing can render a body, editing a post's body provably can't change any listing, so listings are skipped on a body-only edit. A single-content template can render the body; a listing template cannot.
 
