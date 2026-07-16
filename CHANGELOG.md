@@ -26,6 +26,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- **Breaking:** standalone `pages` now require a `title` and reject configured
+  taxonomy keys. A page joins no taxonomy listing, so a key like `tags` was a
+  silent no-op that could still leak the page into term pages; it is now a build
+  error. `description` and `date` remain optional for pages.
 - Recipes are used by copying them into a per-site `recipes/` folder for the
   agent to discover and apply, rather than pasting them into the conversation.
   The repo's `recipes/` gallery remains the source of examples. (Documentation

@@ -59,7 +59,7 @@ template = "page.html"
 permalink = "/{slug}/"
 ```
 
-It takes only `template` and `permalink`. Declaring `index_template` or `index_permalink` on it is an error. Content in `content/pages/` is also exempt from the usual front-matter requirements (see [Authoring content](content.md)).
+It takes only `template` and `permalink`. Declaring `index_template` or `index_permalink` on it is an error. Content in `content/pages/` needs only a `title` and may not use taxonomies (see [Authoring content](content.md)).
 
 ## Taxonomies
 

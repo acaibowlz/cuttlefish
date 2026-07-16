@@ -53,7 +53,7 @@ def test_split_front_matter_unclosed():
 
 def test_required_front_matter_ok():
     meta = {"title": "T", "description": "D", "date": datetime.date(2026, 7, 2)}
-    _require_front_matter(meta, "blog", "err")  # must not raise
+    _require_front_matter(meta, "blog", _tax_config(), "err")  # must not raise
 
 
 def test_required_front_matter_missing_fields():
@@ -66,7 +66,7 @@ def test_required_front_matter_missing_fields():
     ]
     for meta in bad:
         with pytest.raises(ContentError):
-            _require_front_matter(meta, "blog", "err")
+            _require_front_matter(meta, "blog", _tax_config(), "err")
 
 
 def test_required_front_matter_date_must_be_plain_date():
@@ -75,12 +75,22 @@ def test_required_front_matter_date_must_be_plain_date():
     # A date-time carries a time component — also rejected; must be plain YYYY-MM-DD.
     for bad_date in ("2026-07-02", datetime.datetime(2026, 7, 2, 9, 30)):
         with pytest.raises(ContentError):
-            _require_front_matter({**base, "date": bad_date}, "blog", "err")
+            _require_front_matter({**base, "date": bad_date}, "blog", _tax_config(), "err")
 
 
-def test_required_front_matter_pages_exempt():
-    # The standalone pages type needs none of title/description/date.
-    _require_front_matter({}, PAGES_TYPE, "err")  # must not raise
+def test_required_front_matter_pages_need_only_title():
+    # A standalone page needs a title but no description or date.
+    _require_front_matter({"title": "About"}, PAGES_TYPE, _tax_config(), "err")  # ok
+    for bad in ({}, {"title": " "}, {"description": "D"}):  # missing/blank title
+        with pytest.raises(ContentError):
+            _require_front_matter(bad, PAGES_TYPE, _tax_config(), "err")
+
+
+def test_required_front_matter_pages_reject_taxonomy_keys():
+    # A page is grouped into no taxonomy listing, so a taxonomy key would be a
+    # silent no-op (or worse, leak the page into term pages) — reject it.
+    with pytest.raises(ContentError):
+        _require_front_matter({"title": "About", "tags": ["x"]}, PAGES_TYPE, _tax_config(), "err")
 
 
 def test_extract_taxonomies_multiple_requires_list():

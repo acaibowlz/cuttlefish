@@ -42,9 +42,9 @@ For every type *except* `pages`, three fields are required:
 
 The `date` rule is strict, and worth reading twice: it must be an unquoted TOML local date (`date = 2026-06-01`). A quoted string (`"2026-06-01"`) is rejected, and so is a date-time with a time component (`2026-06-01T09:30:00Z`). The TOML parser also validates the calendar date, so an impossible date fails the build rather than passing silently. A missing required field stops the build and names the file.
 
-### The `pages` type is exempt
+### The `pages` type is (mostly) exempt
 
-Standalone pages (`content/pages/`) need none of the above — a page carries no date. Its slug defaults to the filename, though pages commonly set one explicitly:
+Standalone pages (`content/pages/`) need only a `title` — no `description` and no `date`, since a page carries neither. Its slug defaults to the filename, though pages commonly set one explicitly:
 
 ```markdown
 +++
@@ -54,6 +54,8 @@ slug = "about"
 
 This is a standalone page.
 ```
+
+A page belongs to no index and no taxonomy, so a configured taxonomy key (e.g. `tags`) on a page is **rejected** rather than silently ignored — it would otherwise leak the page into that taxonomy's term listings.
 
 ### Optional fields
 

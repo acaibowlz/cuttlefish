@@ -228,12 +228,21 @@ def split_front_matter(text: str) -> tuple[dict, str]:
     return meta, body
 
 
-def _require_front_matter(meta: dict, type_name: str, err_summary: str) -> None:
-    """Enforce required front matter for dated content types.
+def _require_front_matter(
+    meta: dict, type_name: str, config: SiteConfig, err_summary: str
+) -> None:
+    """Enforce required front matter.
 
     Regular content (blog, project, …) must declare ``title``, ``description``
-    and a ``date``. The standalone ``pages`` type is exempt — a page carries no
-    date and needs only its filename-derived slug.
+    and a ``date``. A standalone ``pages`` file needs only a ``title`` (for its
+    heading and ``<title>``) and its filename-derived slug — it carries no date
+    and no description requirement.
+
+    A page is never grouped into a type index or a taxonomy listing, so a
+    configured taxonomy key on it does nothing structural — yet it would still
+    pull the page into that taxonomy's term pages (an "About" page surfacing
+    under ``/tags/``). That silent surprise is worse than an error, so a taxonomy
+    key on a page is rejected.
 
     ``date`` must be a plain ``YYYY-MM-DD`` value: an unquoted TOML *local date*
     (``date = 2026-07-02``), not a quoted string and not a date-time. The TOML
@@ -242,8 +251,15 @@ def _require_front_matter(meta: dict, type_name: str, err_summary: str) -> None:
     post's date to a single, sortable day.
     """
     if type_name == PAGES_TYPE:
-        # A standalone page carries no date and needs only its filename-derived
-        # slug, so it is exempt from the title/description/date requirement below.
+        if not str(meta.get("title", "")).strip():
+            raise ContentError("Missing required front-matter 'title'.", summary=err_summary)
+        for name in config.taxonomies:
+            if name in meta:
+                raise ContentError(
+                    f"Standalone pages cannot set the '{name}' taxonomy — a page is "
+                    "not part of any taxonomy listing. Remove it.",
+                    summary=err_summary,
+                )
         return
     for key in ("title", "description"):
         if not str(meta.get(key, "")).strip():
@@ -316,7 +332,7 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
     except ContentError as exc:
         raise ContentError(exc.detail, summary=summary) from exc
 
-    _require_front_matter(meta, type_name, summary)
+    _require_front_matter(meta, type_name, config, summary)
 
     slug = str(meta.get("slug") or slugify(path.stem))
     body_html, toc = render_markdown(body)

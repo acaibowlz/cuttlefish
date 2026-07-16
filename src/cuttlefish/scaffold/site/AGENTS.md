@@ -112,6 +112,8 @@ listed** — the term index page *and* the home list (below) share one ordering.
 
 `[content_types.pages]` is special: standalone pages with **no** index and no
 taxonomy participation. Do **not** give it `index_template`/`index_permalink`.
+A page's front matter needs only a `title`, and — since it joins no taxonomy
+listing — a taxonomy key (e.g. `tags`) on a page is a build error.
 
 ### Home page
 
@@ -221,8 +223,9 @@ slug = "my-post"           # optional; defaults to the filename
   (`date = 2026-06-21`). A quoted string (`"2026-06-21"`) and a date-time with a
   time component (`2026-06-21T09:30:00Z`) are both rejected; the parser also
   validates the calendar date, so an impossible date fails too.
-- The **`pages`** type is exempt — a standalone page needs none of these; its
-  slug defaults to the filename.
+- The **`pages`** type needs only a `title` (no `description`/`date`); its slug
+  defaults to the filename. A configured taxonomy key on a page is rejected —
+  pages join no taxonomy listing.
 - `draft = true` hides a page from `ctf build` (shown by `ctf serve`).
 
 **Markdown body extensions.** Beyond standard Markdown, bodies support tables,
