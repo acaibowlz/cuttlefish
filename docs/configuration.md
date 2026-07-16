@@ -96,16 +96,14 @@ The landing page.
 [home]
 template = "home.html"
 recent = { blog = 5, project = 3 }
-featured = { blog = 2 }
 ```
 
 | Key | Meaning |
 |-----|---------|
 | `template` | Required. The landing-page template. |
 | `recent` | A `content-type = count` table. The template receives each as `recent.<type>` — the newest *count* items of that type. |
-| `featured` | Same shape, drawn only from items with `featured = true` in their front matter. Exposed as `featured.<type>`. |
 
-`recent` and `featured` are independent — use either, both, or neither. Every content type they reference must exist.
+Every content type `recent` references must exist.
 
 ## Navigation
 

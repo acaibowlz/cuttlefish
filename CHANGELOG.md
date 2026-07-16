@@ -17,11 +17,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   and advertises the sitemap (`Sitemap: <base_url>/sitemap.xml`). A site that
   ships its own `static/robots.txt` overrides the generated one.
 
-### Fixed
+### Removed
 
-- Reject `featured` on standalone `pages`. The flag feeds the home
-  `[home].featured` sections, which pages never join, so it was silently
-  ignored; setting it is now a build error.
+- **Breaking:** the `featured` front-matter flag and the `[home].featured`
+  config table (with its `featured.<type>` home-template variable). It duplicated
+  what a taxonomy already does; use a taxonomy term instead. A leftover
+  `featured` in `[home]` is now an unknown-key error.
 
 ### Changed
 

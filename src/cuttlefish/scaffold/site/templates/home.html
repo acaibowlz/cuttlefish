@@ -13,23 +13,6 @@
      the right. Collapses to a single column on small screens (see main.css). #}
   <div class="home-grid">
     <div class="home-main">
-      {# Curated picks from [home].featured — posts flagged `featured = true`.
-         Read as featured.<type>, same shape as recent. #}
-      {% if featured.blog %}
-      <section class="featured">
-        <h2>Featured</h2>
-        <ul class="post-list">
-          {% for item in featured.blog %}
-          <li>
-            <a href="{{ item.url }}">{{ item.title }}</a>
-            {% if item.date %}<time>{{ item.date }}</time>{% endif %}
-            {% if item.description %}<p>{{ item.description }}</p>{% endif %}
-          </li>
-          {% endfor %}
-        </ul>
-      </section>
-      {% endif %}
-
       {# Each section is addressed by content-type key — no forced loop, so you
          can title and order them however you like. Keys come from [home].recent. #}
       <section class="recent">

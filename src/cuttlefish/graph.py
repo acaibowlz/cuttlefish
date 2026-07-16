@@ -101,12 +101,6 @@ def build_aggregate_specs(
             type_name: grouped.get(type_name, [])[:count]
             for type_name, count in home.recent.items()
         }
-        # Featured items keep the type's sort order (newest first) but are
-        # filtered to those flagged `featured = true` in front matter.
-        featured = {
-            type_name: [i for i in grouped.get(type_name, []) if i.featured][:count]
-            for type_name, count in home.featured.items()
-        }
         home_taxonomies = {
             name: home_taxonomy_terms(taxonomies[name])
             for name, tax in config.taxonomies.items()
@@ -114,15 +108,13 @@ def build_aggregate_specs(
         }
         # Fingerprint over every section's items, salted with the section names
         # (and their order) plus each surfaced taxonomy's terms and counts, so
-        # adding/reordering a section, flipping a featured flag, or changing a
-        # term's usage rebuilds home.
+        # adding/reordering a section or changing a term's usage rebuilds home.
         members = [item for items in recent.values() for item in items]
-        members += [item for items in featured.values() for item in items]
         tax_salt = json.dumps(
             {name: [(t.name, t.count) for t in terms] for name, terms in home_taxonomies.items()},
             sort_keys=True,
         )
-        salt = f"home:{','.join(recent)}|feat:{','.join(featured)}|tax:{tax_salt}"
+        salt = f"home:{','.join(recent)}|tax:{tax_salt}"
         specs.append(
             AggregateSpec(
                 key="home",
@@ -130,8 +122,8 @@ def build_aggregate_specs(
                 fingerprint=_members_fingerprint(members, salt),
                 outputs=["index.html"],
                 render=(
-                    lambda r=recent, t=home_taxonomies, f=featured: [
-                        x for x in [renderer.render_home(r, t, f)] if x
+                    lambda r=recent, t=home_taxonomies: [
+                        x for x in [renderer.render_home(r, t)] if x
                     ]
                 ),
             )

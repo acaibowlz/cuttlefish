@@ -11,7 +11,9 @@ from pathlib import Path
 
 from tests.conftest import append
 
-TOTAL_AGGREGATES = 6
+# Scaffold aggregates: home, the blog + project indexes, the tags index, and the
+# three tag term pages (meta, python, featured).
+TOTAL_AGGREGATES = 7
 
 
 def _edit(path: Path, old: str, new: str) -> None:
@@ -36,7 +38,7 @@ def test_incremental_output_matches_full(site: Path, build):
     # and a deletion (pruning), then compare to a forced full rebuild.
     build(site)
     _edit(site / "content/blog/hello-world.md", 'title = "Hello, World"', 'title = "Hi"')
-    _edit(site / "content/blog/second-post.md", 'tags = ["meta"]', 'tags = ["meta", "news"]')
+    _edit(site / "content/blog/second-post.md", 'tags = ["meta", "featured"]', 'tags = ["meta", "featured", "news"]')
     (site / "content/project/example-project.md").unlink()
     (site / "content/blog/fresh.md").write_text(
         '+++\ntitle = "Fresh"\ndate = 2026-07-01\n'

@@ -3,8 +3,7 @@ title = "Front Matter"
 slug = "front-matter"
 date = 2026-06-15
 description = "A tour of the TOML front matter that tops every content file."
-tags = ["meta"]
-featured = true
+tags = ["meta", "featured"]
 +++
 
 Every content file opens with **front matter**: a small block of TOML
@@ -47,13 +46,11 @@ to be a calendar day and nothing more.
 Everything else is optional:
 
 ```toml
-slug = "custom-url"        # override the URL (defaults to the filename)
-tags = ["python", "ssg"]   # any taxonomy configured in config.toml
-featured = true            # also list it in the home page's featured section
-draft = true               # hide from `ctf build`; still shown by `ctf serve`
+slug = "custom-url"                # override the URL (defaults to the filename)
+tags = ["python", "featured"]      # any taxonomy configured in config.toml
+draft = true                       # hide from `ctf build`; still shown by `ctf serve`
 ```
 
 This post, for example, sets `slug = "front-matter"` (so it lives at
-`/blog/front-matter/` rather than `/blog/second-post/`), a single `tag`, and
-`featured = true`. Mix and match freely — the three required fields are the
-only hard rule.
+`/blog/front-matter/` rather than `/blog/second-post/`) and two `tags`. Mix and
+match freely — the three required fields are the only hard rule.

@@ -125,14 +125,15 @@ def test_content_terms_link_to_term_pages(site: Path, build):
     assert '<a href="/tags/python/">python</a>' in post
 
 
-def test_home_featured_section(site: Path, build):
-    """The Featured section shows only `featured = true` posts."""
+def test_featured_is_a_taxonomy_term(site: Path, build):
+    """Curated 'featured' items are just a tag: the term page lists them and the
+    home tag cloud links to it — there is no dedicated featured mechanism."""
     build(site)
+    featured = read(site, "tags/featured/index.html")
+    assert "Front Matter" in featured        # tagged `featured`
+    assert "Hello, World" not in featured    # not tagged
     index = read(site, "index.html")
-    assert '<section class="featured">' in index
-    block = index.split('<section class="featured">')[1].split("</section>")[0]
-    assert "Front Matter" in block          # flagged featured = true
-    assert "Hello, World" not in block       # not featured
+    assert '<a href="/tags/featured/">featured' in index
 
 
 def test_error_page_built_and_excluded_from_sitemap(site: Path, build):
@@ -172,9 +173,9 @@ def test_check_leaves_an_existing_build_untouched(site: Path, build):
 
 
 def test_check_catches_content_errors(site: Path):
-    # featured on a standalone page is a build error — check must surface it.
+    # Malformed TOML front matter is a build error — check must surface it.
     page = site / "content" / "pages" / "about.md"
-    page.write_text(page.read_text().replace("+++\n", "+++\nfeatured = true\n", 1), encoding="utf-8")
+    page.write_text(page.read_text().replace("+++\n", "+++\ntitle = = broken\n", 1), encoding="utf-8")
     with pytest.raises(ContentError):
         _quiet_check(site)
 

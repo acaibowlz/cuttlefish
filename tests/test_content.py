@@ -27,7 +27,7 @@ def _item(**overrides):
     """A minimally-populated ContentItem for field-level unit tests."""
     fields = dict(
         type="blog", slug="s", title="T", description="D", date=None,
-        draft=False, featured=False, body_html="", taxonomies={}, params={},
+        draft=False, body_html="", taxonomies={}, params={},
         source_rel="content/blog/s.md", url="/b/s/", output_rel="b/s/index.html",
     )
     fields.update(overrides)
@@ -81,15 +81,6 @@ def test_required_front_matter_date_must_be_plain_date():
 def test_required_front_matter_pages_exempt():
     # The standalone pages type needs none of title/description/date.
     _require_front_matter({}, PAGES_TYPE, "err")  # must not raise
-
-
-def test_pages_cannot_be_featured():
-    # 'featured' feeds the home [home].featured sections, which pages never join,
-    # so a featured page is rejected rather than silently ignored. 'draft' and an
-    # unset/false 'featured' remain fine.
-    with pytest.raises(ContentError):
-        _require_front_matter({"featured": True}, PAGES_TYPE, "err")
-    _require_front_matter({"featured": False, "draft": True}, PAGES_TYPE, "err")  # must not raise
 
 
 def test_extract_taxonomies_multiple_requires_list():
@@ -163,14 +154,13 @@ def test_parse_item_promotes_fields_and_collects_params(tmp_path):
     path.parent.mkdir(parents=True)
     path.write_text(
         '+++\ntitle = "T"\ndescription = "D"\ndate = 2026-01-02\n'
-        'featured = true\ntags = ["x"]\nhero_layout = "wide"\n+++\nBody\n',
+        'tags = ["x"]\nhero_layout = "wide"\n+++\nBody\n',
         encoding="utf-8",
     )
     item = parse_item(path, "blog", cfg)
 
     assert item.title == "T"
     assert item.date == datetime.date(2026, 1, 2)
-    assert item.featured is True
     assert item.taxonomies == {"tags": ["x"]}
     # params is the leftover: promoted fields and taxonomy keys are excluded.
     assert item.params == {"hero_layout": "wide"}

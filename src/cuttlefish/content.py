@@ -42,7 +42,7 @@ SUMMARY_FIELDS = ("title", "date", "description", "slug", "url", "taxonomies", "
 #: read as attributes (never a raw dict), excluded from the free-form
 #: ``params``, and — because each is always present with a default — always
 #: available as a ``sort_by`` target.
-_PROMOTED_KEYS = frozenset({"title", "description", "date", "slug", "draft", "featured"})
+_PROMOTED_KEYS = frozenset({"title", "description", "date", "slug", "draft"})
 
 
 @dataclass(frozen=True)
@@ -138,7 +138,6 @@ class ContentItem:
     description: str
     date: date | None
     draft: bool
-    featured: bool
     body_html: str
     taxonomies: dict[str, list[str]]
     #: Free-form front-matter fields: everything that is neither a promoted
@@ -243,16 +242,8 @@ def _require_front_matter(meta: dict, type_name: str, err_summary: str) -> None:
     post's date to a single, sortable day.
     """
     if type_name == PAGES_TYPE:
-        # The 'featured' flag is a content-type concept: it feeds the home
-        # [home].featured sections, which draw only from indexed content types. On
-        # a standalone page it does nothing, so reject it rather than silently
-        # accept a no-op flag. 'draft' stays valid — it genuinely hides the page.
-        if meta.get("featured"):
-            raise ContentError(
-                "The 'featured' flag applies to content types only — it feeds the "
-                "home [home].featured sections. Remove it.",
-                summary=err_summary,
-            )
+        # A standalone page carries no date and needs only its filename-derived
+        # slug, so it is exempt from the title/description/date requirement below.
         return
     for key in ("title", "description"):
         if not str(meta.get(key, "")).strip():
@@ -351,7 +342,6 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
         description=str(meta.get("description", "")),
         date=_coerce_date(item_date),
         draft=bool(meta.get("draft", False)),
-        featured=bool(meta.get("featured", False)),
         body_html=body_html,
         taxonomies=taxonomies,
         params=_custom_params(meta, config),

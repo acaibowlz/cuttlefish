@@ -19,9 +19,9 @@ to surface it. Delete this file to remove the example.
 ## Front matter
 
 Projects share the same front-matter rules as posts — `title`,
-`description`, and `date` are required, and `tags`, `draft`, `featured`,
-and a custom `slug` all behave the same way. What's unique here is the
-optional `url` field shown above:
+`description`, and `date` are required, and `tags`, `draft`, and a custom
+`slug` all behave the same way. What's unique here is the optional `url`
+field shown above:
 
 ```toml
 +++

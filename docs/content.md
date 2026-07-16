@@ -61,7 +61,6 @@ This is a standalone page.
 |-------|---------|
 | `slug` | Override the filename-derived slug. Sets the URL. |
 | `draft` | `draft = true` hides the file from `ctf build`. `ctf serve` still shows it. |
-| `featured` | `featured = true` marks the item for the home page's `featured` sections. Applies to content types only. |
 
 ### Taxonomies
 
@@ -76,7 +75,7 @@ A mismatch — a list where a single term is expected, or vice versa — is an e
 
 ### Custom fields {#custom-fields}
 
-Any front-matter field that isn't a built-in (`title`, `date`, `description`, `slug`, `draft`, `featured`) or a configured taxonomy is a **custom field**. Custom fields are collected into `page.params` and made available to that item's template:
+Any front-matter field that isn't a built-in (`title`, `date`, `description`, `slug`, `draft`) or a configured taxonomy is a **custom field**. Custom fields are collected into `page.params` and made available to that item's template:
 
 ```markdown
 +++

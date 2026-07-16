@@ -234,30 +234,24 @@ class Renderer:
         self,
         recent: dict[str, list[ContentItem]],
         taxonomies: dict[str, list[HomeTerm]] | None = None,
-        featured: dict[str, list[ContentItem]] | None = None,
     ) -> str | None:
         """Render the landing page (recent items per type, summary-only).
 
         ``recent`` is exposed to the template as a mapping of content-type name
         to its summary items, so the template addresses sections by key
         (``recent.blog``) rather than being forced to loop over them.
-        ``featured`` is the parallel mapping of curated (``featured = true``)
-        items, addressed as ``featured.<type>``. ``taxonomies`` maps a taxonomy
-        name to its sorted terms (each with ``name``, ``count`` and ``url``),
-        addressed as ``taxonomies.tags``. Author details are available via the
-        site-wide ``site.profile`` global, not passed here.
+        ``taxonomies`` maps a taxonomy name to its sorted terms (each with
+        ``name``, ``count`` and ``url``), addressed as ``taxonomies.tags``.
+        Author details are available via the site-wide ``site.profile`` global,
+        not passed here.
         """
         home = self.config.home
         if home is None:
             return None
         sections = {name: [i.summary for i in items] for name, items in recent.items()}
-        featured_sections = {
-            name: [i.summary for i in items] for name, items in (featured or {}).items()
-        }
         with _render_step("index.html"):
             html = self.env.get_template(home.template).render(
                 recent=sections,
-                featured=featured_sections,
                 taxonomies=taxonomies or {},
             )
             self._write("index.html", html)

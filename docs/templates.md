@@ -42,15 +42,15 @@ Each template kind receives a different context. The most important distinction 
 | Type index (`blog.index.html`) | `content_types.<t>.index_template` | `items` (summaries), `page` (pagination), `type` |
 | Taxonomy term (`taxonomy.html`) | `taxonomies.<t>.template` | `taxonomy`, `term`, `items` (summaries) |
 | Taxonomy index (`taxonomy.index.html`) | `taxonomies.<t>.index_template` | `taxonomy`, `terms` |
-| Home (`home.html`) | `home.template` | `recent.<type>`, `featured.<type>`, `taxonomies.<name>` |
+| Home (`home.html`) | `home.template` | `recent.<type>`, `taxonomies.<name>` |
 
-On the home page, `recent.blog` and `featured.blog` are lists of summaries; `taxonomies.tags` is a list of terms (each with `name`, `count`, `url`) for any taxonomy configured with `home = true`. Author details come from `site.profile`, available everywhere.
+On the home page, `recent.blog` is a list of summaries; `taxonomies.tags` is a list of terms (each with `name`, `count`, `url`) for any taxonomy configured with `home = true`. Author details come from `site.profile`, available everywhere.
 
 ### Page variables (single content) {#page-variables}
 
 Single-content and page templates get the full item as `page` (also aliased `item`):
 
-- `page.title`, `page.date`, `page.description`, `page.slug`, `page.url`, `page.draft`, `page.featured`
+- `page.title`, `page.date`, `page.description`, `page.slug`, `page.url`, `page.draft`
 - `page.body_html` — the rendered Markdown body (use `| safe`)
 - `page.taxonomies` — a map of taxonomy name to the item's terms
 - `page.params` — the item's [custom fields](content.md#custom-fields)

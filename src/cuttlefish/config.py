@@ -40,7 +40,7 @@ _TAXONOMY_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "multiple",
      "sort_by", "order", "home"}
 )
-_HOME_KEYS = frozenset({"template", "recent", "featured"})
+_HOME_KEYS = frozenset({"template", "recent"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
 
@@ -125,9 +125,6 @@ class HomeConfig:
     #: Landing-page sections: content-type name -> number of recent items to
     #: pass to the template (exposed as ``recent.<type>``).
     recent: dict[str, int] = field(default_factory=dict)
-    #: Curated sections: content-type name -> number of ``featured = true``
-    #: items to pass (exposed as ``featured.<type>``). Newest first, like recent.
-    featured: dict[str, int] = field(default_factory=dict)
 
 
 @dataclass(frozen=True)
@@ -259,16 +256,14 @@ def _parse_home(data: dict) -> HomeConfig:
         raise ConfigError(f"{where} must be a table.")
     _reject_unknown_keys(data, _HOME_KEYS, where)
     recent = _parse_count_table(data, "recent", where)
-    featured = _parse_count_table(data, "featured", where)
     return HomeConfig(
         template=str(_require(data, "template", where)),
         recent=recent,
-        featured=featured,
     )
 
 
 def _parse_count_table(data: dict, key: str, where: str) -> dict[str, int]:
-    """Parse a ``content-type = count`` table (recent/featured); count >= 0."""
+    """Parse a ``content-type = count`` table (e.g. recent); count >= 0."""
     raw = data.get(key) or {}
     if not isinstance(raw, dict):
         raise ConfigError(
@@ -361,12 +356,11 @@ def parse_config(raw: dict) -> SiteConfig:
             "declare 'index_template'/'index_permalink'."
         )
     if home is not None:
-        for key, section in (("recent", home.recent), ("featured", home.featured)):
-            for type_name in section:
-                if type_name not in content_types:
-                    raise ConfigError(
-                        f"[home] {key!r} references unknown content type {type_name!r}."
-                    )
+        for type_name in home.recent:
+            if type_name not in content_types:
+                raise ConfigError(
+                    f"[home] 'recent' references unknown content type {type_name!r}."
+                )
 
     base_url = str(raw.get("base_url", "")).rstrip("/")
     return SiteConfig(
