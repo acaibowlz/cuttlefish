@@ -1,6 +1,8 @@
 site_name: cuttlefish
 site_description: Agentic static site generator — agent-driven sites from config, templates, and Markdown
 docs_dir: docs
+repo_url: https://github.com/acaibowlz/cuttlefish
+repo_name: acaibowlz/cuttlefish
 
 theme:
   name: material
