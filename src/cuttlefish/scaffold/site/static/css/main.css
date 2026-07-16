@@ -327,6 +327,18 @@ time { color: var(--muted); font-size: 0.85rem; }
 .post-list time { display: block; margin-top: 0.2rem; }
 .post-list p, .project-list p { margin: 0.4rem 0 0; color: var(--muted); }
 
+/* Content-type label prefixing an item on a taxonomy term page (a tag can span
+   types), rendered as a small uppercase tag before the title. */
+.content-type {
+  display: inline-block;
+  margin-right: 0.5rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
 .term-list li { margin-bottom: 0.5rem; }
 
 /* -- tags ---------------------------------------------------------------- */

@@ -16,6 +16,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Generate `public/robots.txt` when `base_url` is set: it permits all crawlers
   and advertises the sitemap (`Sitemap: <base_url>/sitemap.xml`). A site that
   ships its own `static/robots.txt` overrides the generated one.
+- Listing summaries now expose `item.type`, so listing templates can label an
+  item with its content type — handy on taxonomy term pages, where a tag may
+  span types. The scaffold's `taxonomy.html` renders it as a small prefix.
 
 ### Removed
 

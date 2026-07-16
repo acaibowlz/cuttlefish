@@ -266,13 +266,14 @@ Variables per template kind:
 |----------|-----------|
 | single content (`blog.html`) | `page` / `item` (full, incl. `page.body_html`, `page.toc`, and `page.params` free-form fields), `type`, `terms` |
 | type index (`blog.index.html`) | `items` (summary only), `page` (pagination), `type` |
-| taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only) |
+| taxonomy term (`taxonomy.html`) | `taxonomy`, `term`, `items` (summary only; each has `item.type`, handy when a taxonomy spans content types) |
 | taxonomy index (`taxonomy.index.html`) | `taxonomy`, `terms` |
 | home (`home.html`) | `recent` — map of content-type → summary-only items (`recent.blog`); `taxonomies` — map of taxonomy → terms with `name`/`count`/`url` (`taxonomies.tags`). Author details come from `site.profile` (on every page), not a home-only variable. |
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
-> home) may use only **listing fields** — `title`, `date`, `description`,
-> `slug`, `url`, `taxonomies`, `draft`. The full rendered body (`body_html`) is
+> home) may use only **listing fields** — `type`, `title`, `date`,
+> `description`, `slug`, `url`, `taxonomies`, `draft`. The full rendered body
+> (`body_html`) is
 > available **only** in single-content and page templates. This keeps
 > incremental builds correct: editing a post's body never forces listings to
 > rebuild.

@@ -36,7 +36,7 @@ FRONT_MATTER_FENCE = "+++"
 
 #: The fields that make up a content summary — everything an aggregate/listing
 #: template is allowed to render; ``body_html`` is intentionally excluded.
-SUMMARY_FIELDS = ("title", "date", "description", "slug", "url", "taxonomies", "draft")
+SUMMARY_FIELDS = ("type", "title", "date", "description", "slug", "url", "taxonomies", "draft")
 
 #: Front-matter keys promoted to typed :class:`ContentItem` fields. They are
 #: read as attributes (never a raw dict), excluded from the free-form
@@ -116,6 +116,7 @@ class ContentSummary:
     never ``body_html``. That omission is what keeps incremental builds correct.
     """
 
+    type: str
     title: str
     date: date | None
     description: str
@@ -182,6 +183,7 @@ class ContentItem:
         from cuttlefish.cache import hash_text
 
         payload = {
+            "type": self.type,
             "title": self.title,
             "date": self.date.isoformat() if self.date else None,
             "description": self.description,
@@ -195,6 +197,7 @@ class ContentItem:
     @property
     def summary(self) -> ContentSummary:
         return ContentSummary(
+            type=self.type,
             title=self.title,
             date=self.date,
             description=self.description,

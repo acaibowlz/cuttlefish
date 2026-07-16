@@ -125,6 +125,14 @@ def test_content_terms_link_to_term_pages(site: Path, build):
     assert '<a href="/tags/python/">python</a>' in post
 
 
+def test_term_page_shows_item_content_type(site: Path, build):
+    """A summary exposes `item.type`, so the term page can label each item with
+    its content type (a taxonomy may span types)."""
+    build(site)
+    term = read(site, "tags/meta/index.html")  # meta tags blog posts
+    assert '<span class="content-type">blog</span>' in term
+
+
 def test_featured_is_a_taxonomy_term(site: Path, build):
     """Curated 'featured' items are just a tag: the term page lists them and the
     home tag cloud links to it — there is no dedicated featured mechanism."""

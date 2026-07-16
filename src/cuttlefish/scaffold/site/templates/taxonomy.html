@@ -5,9 +5,13 @@
 {% block content %}
   <h1>{{ taxonomy }}: {{ term.name }}</h1>
   <p>{{ term.count }} item(s).</p>
+  {# A taxonomy can span content types (a tag on both blog posts and projects),
+     so each item exposes its `type` — prefix the title with it to disambiguate.
+     Drop the span if a taxonomy only ever covers one type. #}
   <ul class="post-list">
     {% for item in items %}
     <li>
+      <span class="content-type">{{ item.type }}</span>
       <a href="{{ item.url }}">{{ item.title }}</a>
       {% if item.date %}<time>{{ item.date }}</time>{% endif %}
     </li>

@@ -40,7 +40,7 @@ Each template kind receives a different context. The most important distinction 
 |----------|---------------|----------|
 | Single content (`blog.html`) | `content_types.<t>.template` | `page` / `item` (full), `type`, `terms` |
 | Type index (`blog.index.html`) | `content_types.<t>.index_template` | `items` (summaries), `page` (pagination), `type` |
-| Taxonomy term (`taxonomy.html`) | `taxonomies.<t>.template` | `taxonomy`, `term`, `items` (summaries) |
+| Taxonomy term (`taxonomy.html`) | `taxonomies.<t>.template` | `taxonomy`, `term`, `items` (summaries; each has `item.type`, useful when the taxonomy spans content types) |
 | Taxonomy index (`taxonomy.index.html`) | `taxonomies.<t>.index_template` | `taxonomy`, `terms` |
 | Home (`home.html`) | `home.template` | `recent.<type>`, `taxonomies.<name>` |
 
@@ -61,7 +61,7 @@ Single-content and page templates get the full item as `page` (also aliased `ite
 
 Listing templates — every index, taxonomy term, taxonomy index, and the home page — receive **summaries**, not full items. A summary carries only:
 
-> `title`, `date`, `description`, `slug`, `url`, `taxonomies`, `draft`
+> `type`, `title`, `date`, `description`, `slug`, `url`, `taxonomies`, `draft`
 
 It deliberately omits `body_html`. This isn't only tidiness: it's what keeps [incremental builds](incremental-builds.md) correct. Because no listing can render a body, editing a post's body provably can't change any listing, so listings are skipped on a body-only edit. A single-content template can render the body; a listing template cannot.
 
