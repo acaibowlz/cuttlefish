@@ -55,7 +55,7 @@ slug = "about"
 This is a standalone page.
 ```
 
-A page belongs to no index and no taxonomy, so a configured taxonomy key (e.g. `tags`) on a page is **rejected** rather than silently ignored — it would otherwise leak the page into that taxonomy's term listings.
+The [optional fields](#optional-fields) below still apply: `slug` overrides the filename-derived URL (as above) and `draft = true` hides the page from `ctf build`. What a page can't do is join a taxonomy: because it belongs to no index and no taxonomy, a configured taxonomy key (e.g. `tags`) on a page is **rejected** rather than silently ignored — it would otherwise leak the page into that taxonomy's term listings.
 
 ### Optional fields
 
