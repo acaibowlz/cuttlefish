@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from cuttlefish.config import parse_config
-from cuttlefish.taxonomy import Term, TaxonomyData, home_taxonomy_terms
+from cuttlefish.taxonomy import TaxonomyData, Term, home_taxonomy_terms
 
 
 def test_taxonomy_term_ordering():

@@ -88,7 +88,7 @@ class Manifest:
         }
 
     @classmethod
-    def from_dict(cls, data: dict) -> "Manifest":
+    def from_dict(cls, data: dict) -> Manifest:
         return cls(
             version=data.get("version", MANIFEST_VERSION),
             config_hash=data.get("config_hash", ""),

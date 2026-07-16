@@ -19,10 +19,9 @@ from rich.console import Console
 from rich.markup import escape
 from watchfiles import watch
 
-from cuttlefish.errors import CuttlefishError
-
 from cuttlefish.build import PUBLIC_DIR, STATIC_DIR, build_site
 from cuttlefish.config import CONFIG_FILENAME
+from cuttlefish.errors import CuttlefishError
 
 RELOAD_PATH = "/__reload"
 

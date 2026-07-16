@@ -42,6 +42,24 @@ line-ending = "lf"
 skip-magic-trailing-comma = false # a trailing comma pins a collection open, one per line
 docstring-code-format = false     # docstrings hold +++/markdown examples, not Python
 
+[tool.ruff.lint]
+select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # Pyflakes — unused imports/names, undefined names
+    "I",  # isort — import sorting
+    "UP", # pyupgrade — modernize syntax for target-version
+    "B",  # flake8-bugbear — likely-bug patterns
+]
+ignore = [
+    "E501", # line length is the formatter's job (it won't split long strings)
+]
+
+[tool.ruff.lint.flake8-bugbear]
+# Typer's API *is* calling these in parameter defaults, so B008 (function call
+# in default argument) is a false positive for them — whitelist, don't suppress.
+extend-immutable-calls = ["typer.Argument", "typer.Option"]
+
 [dependency-groups]
 dev = [
     "pytest>=8.0",

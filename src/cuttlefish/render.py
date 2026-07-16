@@ -16,8 +16,13 @@ from dataclasses import dataclass
 from pathlib import Path
 from types import SimpleNamespace
 
-from jinja2 import Environment, FileSystemLoader, StrictUndefined, select_autoescape
-from jinja2 import TemplateSyntaxError
+from jinja2 import (
+    Environment,
+    FileSystemLoader,
+    StrictUndefined,
+    TemplateSyntaxError,
+    select_autoescape,
+)
 
 from cuttlefish.config import ContentType, SiteConfig
 from cuttlefish.content import ContentItem, ContentSummary

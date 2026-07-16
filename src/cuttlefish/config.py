@@ -332,7 +332,10 @@ def _parse_nav(data: dict) -> NavConfig:
             f"{where} 'labels' ({len(labels)}) and 'links' ({len(links)}) "
             "must have the same number of entries."
         )
-    items = tuple(NavItem(label=str(label), link=str(link)) for label, link in zip(labels, links))
+    items = tuple(
+        NavItem(label=str(label), link=str(link))
+        for label, link in zip(labels, links, strict=True)  # lengths checked above
+    )
     return NavConfig(enabled=bool(data.get("enabled", True)), items=items)
 
 
