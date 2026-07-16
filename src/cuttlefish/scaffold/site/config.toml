@@ -68,3 +68,11 @@ order = "desc"
 # (a list of terms with `name`, `count`, `url`; all terms passed, slice in the
 # template). Omit or set false to keep it off the home page.
 home = true
+
+# How ITEMS are ordered on a term page (e.g. /tags/python/) — a separate axis
+# from the term ordering above. `sort_by` is any front-matter field (like a
+# content type's), `order` is "asc"/"desc". Defaults to date/desc (newest
+# first); this sub-table is optional.
+[taxonomies.tags.items]
+sort_by = "date"
+order = "desc"

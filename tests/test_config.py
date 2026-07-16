@@ -129,8 +129,27 @@ def test_taxonomy_sort_parsed_with_defaults():
     })
     tags = cfg.taxonomies["tags"]
     assert (tags.sort_by, tags.order, tags.home) == ("name", "asc", False)  # defaults
+    # Term-page item order defaults to newest-first, like a type index.
+    assert (tags.item_sort_by, tags.item_order) == ("date", "desc")
     category = cfg.taxonomies["category"]
     assert (category.sort_by, category.order, category.home) == ("count", "desc", True)
+
+
+def test_taxonomy_item_sort_parsed_and_validated():
+    def tax(items):
+        return {"taxonomies": {"tags": {
+            "template": "t.html", "permalink": "/t/{term}/", "items": items,
+        }}}
+
+    cfg = parse_config(tax({"sort_by": "weight", "order": "asc"}))
+    tags = cfg.taxonomies["tags"]
+    assert (tags.item_sort_by, tags.item_order) == ("weight", "asc")
+
+    # order is validated (asc/desc); unknown keys in the sub-table are rejected.
+    # sort_by stays open-ended, so it is NOT checked against a closed set here.
+    for items in ({"order": "up"}, {"limit": 5}):
+        with pytest.raises(ConfigError):
+            parse_config(tax(items))
 
 
 def test_taxonomy_sort_validation():

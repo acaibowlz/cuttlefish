@@ -133,6 +133,44 @@ def test_term_page_shows_item_content_type(site: Path, build):
     assert '<span class="content-type">blog</span>' in term
 
 
+def test_term_page_items_default_newest_first(site: Path, build):
+    """Term-page items default to date desc — the same order a type index uses,
+    not the filename/discovery order they used to fall back to."""
+    build(site)
+    term = read(site, "tags/meta/index.html")
+    # meta tags front-matter (2026-06-15) and hello-world (2026-06-01).
+    assert term.index("Front Matter") < term.index("Hello, World")
+
+
+def test_term_page_item_order_is_configurable(site: Path, build):
+    """[taxonomies.tags.items] order flips the term-page item ordering."""
+    config = site / "config.toml"
+    config.write_text(
+        config.read_text().replace(
+            '[taxonomies.tags.items]\nsort_by = "date"\norder = "desc"',
+            '[taxonomies.tags.items]\nsort_by = "date"\norder = "asc"',
+        ),
+        encoding="utf-8",
+    )
+    build(site)
+    term = read(site, "tags/meta/index.html")
+    assert term.index("Hello, World") < term.index("Front Matter")  # oldest first now
+
+
+def test_check_catches_bad_item_sort_field(site: Path):
+    # An open-ended item sort_by that matches no item is a build error.
+    config = site / "config.toml"
+    config.write_text(
+        config.read_text().replace(
+            '[taxonomies.tags.items]\nsort_by = "date"',
+            '[taxonomies.tags.items]\nsort_by = "nope"',
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ConfigError):
+        _quiet_check(site)
+
+
 def test_featured_is_a_taxonomy_term(site: Path, build):
     """Curated 'featured' items are just a tag: the term page lists them and the
     home tag cloud links to it — there is no dedicated featured mechanism."""

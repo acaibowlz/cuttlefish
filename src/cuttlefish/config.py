@@ -38,8 +38,11 @@ _CONTENT_TYPE_KEYS = frozenset(
 )
 _TAXONOMY_KEYS = frozenset(
     {"template", "permalink", "index_template", "index_permalink", "multiple",
-     "sort_by", "order", "home"}
+     "sort_by", "order", "home", "items"}
 )
+#: Keys allowed in the nested ``[taxonomies.<name>.items]`` sub-table, which sets
+#: how *items* are ordered on a term page (distinct from the term ordering above).
+_TAXONOMY_ITEMS_KEYS = frozenset({"sort_by", "order"})
 _HOME_KEYS = frozenset({"template", "recent"})
 _NAV_KEYS = frozenset({"enabled", "labels", "links"})
 
@@ -103,6 +106,12 @@ class Taxonomy:
     #: ``"count"`` (most-used first), each ``"asc"``/``"desc"``.
     sort_by: str = "name"
     order: str = "asc"
+    #: How *items* are ordered on a term page — a separate axis from the term
+    #: ordering above, set under ``[taxonomies.<name>.items]``. Open-ended like a
+    #: content type's ``sort_by`` (any front-matter field, validated against real
+    #: items at build time); defaults to newest-first, matching a type index.
+    item_sort_by: str = "date"
+    item_order: str = "desc"
     #: Surface this taxonomy's terms on the landing page. When ``True`` the home
     #: template receives its terms as ``taxonomies.<name>`` (each with ``name``,
     #: ``count`` and ``url``), ordered by ``sort_by``/``order`` above.
@@ -237,6 +246,7 @@ def _parse_taxonomy(name: str, data: dict) -> Taxonomy:
     home = data.get("home", False)
     if not isinstance(home, bool):
         raise ConfigError(f"{where} 'home' must be a boolean, got {home!r}.")
+    item_sort_by, item_order = _parse_item_sort(data.get("items", {}), f"{where}.items")
     return Taxonomy(
         name=name,
         template=str(_require(data, "template", where)),
@@ -246,8 +256,27 @@ def _parse_taxonomy(name: str, data: dict) -> Taxonomy:
         multiple=multiple,
         sort_by=sort_by,
         order=order,
+        item_sort_by=item_sort_by,
+        item_order=item_order,
         home=home,
     )
+
+
+def _parse_item_sort(data: dict, where: str) -> tuple[str, str]:
+    """Parse a ``[taxonomies.<name>.items]`` sub-table into ``(sort_by, order)``.
+
+    ``sort_by`` is a front-matter field name — open-ended like a content type's,
+    so it is *not* checked against a closed set here (a field present on no item
+    is flagged at build time, where the items are known). ``order`` is validated.
+    """
+    if not isinstance(data, dict):
+        raise ConfigError(f"{where} must be a table.")
+    _reject_unknown_keys(data, _TAXONOMY_ITEMS_KEYS, where)
+    sort_by = str(data.get("sort_by", "date"))
+    order = str(data.get("order", "desc")).lower()
+    if order not in ("asc", "desc"):
+        raise ConfigError(f"{where} 'order' must be \"asc\" or \"desc\", got {order!r}.")
+    return sort_by, order
 
 
 def _parse_home(data: dict) -> HomeConfig:

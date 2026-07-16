@@ -75,6 +75,10 @@ multiple = true
 sort_by = "count"
 order = "desc"
 home = true
+
+[taxonomies.tags.items]   # how items are ordered on a term page
+sort_by = "date"
+order = "desc"
 ```
 
 | Key | Required | Default | Meaning |
@@ -84,9 +88,20 @@ home = true
 | `index_template` | no | — | Template for the taxonomy index (all terms). |
 | `index_permalink` | no | — | URL of the taxonomy index. |
 | `multiple` | no | `true` | Front-matter shape: `true` expects a list (`tags = ["a", "b"]`); `false` expects a single string (`category = "AI"`). |
-| `sort_by` | no | `"name"` | Term ordering: `"name"` (alphabetical) or `"count"` (most-used first). |
-| `order` | no | `"asc"` | `"asc"` or `"desc"`. Applies to `sort_by`. |
+| `sort_by` | no | `"name"` | **Term** ordering (the index page and home cloud): `"name"` (alphabetical) or `"count"` (most-used first). |
+| `order` | no | `"asc"` | `"asc"` or `"desc"`. Applies to the term `sort_by`. |
 | `home` | no | `false` | When `true`, the home template receives this taxonomy's terms as `taxonomies.<name>`. |
+
+### Item order on a term page
+
+`sort_by`/`order` above order the **terms**. To order the **items** shown on a single term page (e.g. `/tags/python/`), use the nested `[taxonomies.<name>.items]` sub-table:
+
+| Key | Required | Default | Meaning |
+|-----|----------|---------|---------|
+| `sort_by` | no | `"date"` | Any front-matter field, exactly like a content type's `sort_by` — a [custom field](content.md#custom-fields) works too. A field present on none of the taxonomy's items fails the build. |
+| `order` | no | `"desc"` | `"asc"` or `"desc"`. |
+
+Omit the sub-table and items default to newest-first (`date` desc), matching a type index. Because a term can span content types, this one ordering applies to all of a term's items regardless of type.
 
 ## Home
 

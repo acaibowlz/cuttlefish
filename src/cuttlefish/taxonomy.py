@@ -9,8 +9,8 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 
-from cuttlefish.config import SiteConfig, Taxonomy
-from cuttlefish.content import ContentItem
+from cuttlefish.config import ConfigError, SiteConfig, Taxonomy
+from cuttlefish.content import ContentItem, sort_items
 from cuttlefish.permalink import resolve_permalink, slugify
 
 
@@ -145,4 +145,25 @@ def build_taxonomies(items: list[ContentItem], config: SiteConfig) -> dict[str, 
                     )
                     data.terms[term_name] = term
                 term.items.append(item)
+
+    # Order each term page's items by the taxonomy's item sort. `sort_by` is
+    # open-ended (any front-matter field), so — as with a content type — a key
+    # present on none of a taxonomy's items is almost certainly a typo; surface
+    # it rather than leave the page in discovery (filename) order. `date` is
+    # always valid, even for a taxonomy with no items yet.
+    for name, data in result.items():
+        taxonomy = data.taxonomy
+        members = [item for term in data.terms.values() for item in term.items]
+        if members and taxonomy.item_sort_by != "date" and not any(
+            item.has_sort_field(taxonomy.item_sort_by) for item in members
+        ):
+            raise ConfigError(
+                f"[taxonomies.{name}.items] 'sort_by' = {taxonomy.item_sort_by!r} is not a "
+                f"field on any item under this taxonomy. Use \"date\" or a front-matter "
+                "field present on your items."
+            )
+        for term in data.terms.values():
+            term.items = sort_items(
+                term.items, sort_by=taxonomy.item_sort_by, order=taxonomy.item_order
+            )
     return result

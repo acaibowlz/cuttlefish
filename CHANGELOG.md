@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Listing summaries now expose `item.type`, so listing templates can label an
   item with its content type — handy on taxonomy term pages, where a tag may
   span types. The scaffold's `taxonomy.html` renders it as a small prefix.
+- Configurable item order on taxonomy term pages via a nested
+  `[taxonomies.<name>.items]` sub-table (`sort_by`/`order`). `sort_by` is
+  open-ended like a content type's — any front-matter field, validated against
+  real items at build time. This also **fixes** term pages previously emitting
+  items in filename order; they now default to newest-first (`date` desc),
+  matching a type index.
 
 ### Removed
 

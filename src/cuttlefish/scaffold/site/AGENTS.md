@@ -92,9 +92,13 @@ index_template = "taxonomy.index.html"  # all-terms page (optional)
 permalink = "/categories/{term}/"     # required
 index_permalink = "/categories/"      # required if index_template is set
 multiple = false                      # single term (default true = list)
-sort_by = "name"                      # term ordering: "name" (default) or "count"
+sort_by = "name"                      # TERM ordering: "name" (default) or "count"
 order   = "asc"                       # "asc" (default) or "desc"
 home    = true                        # also surface its terms on the home page
+
+[taxonomies.category.items]           # optional: how ITEMS sort on a term page
+sort_by = "date"                      # any front-matter field (like a content type's)
+order   = "desc"                      # "asc" or "desc"; default is date/desc
 ```
 
 It is applied by adding the key to a content file's front matter (the author
@@ -102,11 +106,17 @@ does this). `multiple` decides the front-matter shape: `true` (default) requires
 (`tags = ["python", "ssg"]`); `false` requires a single string
 (`category = "AI"`). The wrong shape is a build error.
 
-`sort_by`/`order` set how this taxonomy's terms are ordered **wherever they are
-listed** — the term index page *and* the home list (below) share one ordering.
-`sort_by` is `"name"` (the term text, default) or `"count"` (most-used first);
-`order` is `"asc"` (default) or `"desc"`. Equal counts fall back to name. Set
-`home = true` (default `false`) to also surface the terms on the landing page.
+`sort_by`/`order` set how this taxonomy's **terms** are ordered **wherever they
+are listed** — the term index page *and* the home list (below) share one
+ordering. `sort_by` is `"name"` (the term text, default) or `"count"` (most-used
+first); `order` is `"asc"` (default) or `"desc"`. Equal counts fall back to name.
+Set `home = true` (default `false`) to also surface the terms on the landing page.
+
+The nested `[taxonomies.<name>.items]` sub-table orders the **items** on a term
+page (e.g. `/categories/ai/`) — a separate axis. Its `sort_by` is open-ended like
+a content type's (any front-matter field; one present on no item fails the
+build), defaulting to `date`/`desc` (newest first). A term can span content
+types, so this single order applies to all its items.
 
 ### The `pages` type
 
