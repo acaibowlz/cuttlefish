@@ -1,18 +1,16 @@
 {% extends "base.html" %}
 
-{# Widen the container for the two-column landing layout (see main.css). #}
-{% block body_class %}layout-wide{% endblock %}
-
 {% block content %}
-  <section class="hero">
-    <h1>{{ site.title }}</h1>
-    <p>A placeholder landing page — replace this intro, or make the whole page your own.</p>
-  </section>
+  {# Two columns: centered content on the left, taxonomy widgets in a narrow
+     full-height side panel on the right. Collapses to a single column on small
+     screens (see main.css). #}
+  <div class="panel-grid">
+    <div class="panel-main">
+      <section class="hero">
+        <h1>{{ site.title }}</h1>
+        <p>A placeholder landing page — replace this intro, or make the whole page your own.</p>
+      </section>
 
-  {# Two columns: content on the left, taxonomy widgets in a sticky sidebar on
-     the right. Collapses to a single column on small screens (see main.css). #}
-  <div class="home-grid">
-    <div class="home-main">
       {# Each section is addressed by content-type key — no forced loop, so you
          can title and order them however you like. Keys come from [home].recent. #}
       <section class="recent">
@@ -42,7 +40,8 @@
     </div>
 
     {% if site.profile or taxonomies.tags %}
-    <aside class="home-aside">
+    <aside class="panel-aside">
+      <div class="panel-aside-inner">
       {# Author card from [profile]. It's a site-wide global, so `site.profile`
          is available on every page; the home page renders it here. It has
          name, bio, avatar, email and socials (platform -> url). #}
@@ -78,6 +77,7 @@
         </ul>
       </section>
       {% endif %}
+      </div>
     </aside>
     {% endif %}
   </div>

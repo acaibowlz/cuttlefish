@@ -5,7 +5,8 @@
 
 :root {
   --max-width: 44rem;    /* default container width: the reading column */
-  --width-wide: 64rem;   /* wider container for the home landing page */
+  --width-wide: 64rem;   /* wider container for the side-panel layouts */
+  --panel-width: 17rem;  /* the full-height side panel (home widgets, post TOC) */
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
@@ -131,6 +132,21 @@ body.layout-wide { --max-width: var(--width-wide); }
 .site-header nav a { color: var(--muted); }
 .site-header nav a:hover { color: var(--fg); }
 
+/* On side-panel pages, right-align the nav to the panel's left edge so the header
+   lines up with the layout below it. The nav is lifted out of the centered header
+   inner and pinned to the sticky, full-bleed .site-header (its containing block),
+   `--panel-width` in from the right edge — exactly the panel's left edge — while
+   the logo keeps its place. Only while the panel sits beside the content: below
+   the collapse breakpoint the nav returns to normal flow for the burger menu. */
+@media (min-width: 48rem) {
+  body:has(main > .panel-grid) .site-header nav {
+    position: absolute;
+    inset-block: 0;                             /* fill the header height... */
+    align-items: center;                        /* ...and center the links in it */
+    right: calc(var(--panel-width) + 1.5rem);   /* clear of the panel's edge */
+  }
+}
+
 /* Burger menu — pure CSS via a visually-hidden checkbox (no JavaScript).
    Hidden on desktop; on small screens it toggles the nav into a dropdown. */
 .nav-toggle { position: absolute; width: 1px; height: 1px; opacity: 0; }
@@ -194,6 +210,11 @@ h3 { font-size: 1.2rem; }
 .body h3 { font-size: 1.1rem; }
 .body h4 { font-size: 0.95rem; }
 
+/* Headings are the anchor targets for TOC links. Offset the scroll landing by
+   the sticky header's height, so a jumped-to heading stops just below the bar
+   instead of hiding behind it. */
+.body :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 5rem; }
+
 p, ul, ol { margin: 0 0 1.25rem; }
 
 .body :is(ul, ol) { padding-left: 1.4rem; }
@@ -224,8 +245,8 @@ time { color: var(--muted); font-size: 0.85rem; }
    small uppercase "eyebrow" on a divider rule — the same section-label language
    as the sidebar's .widget-title — and a clear gap between sections, so the
    three blocks separate at a glance. */
-.home-main > section + section { margin-top: 3rem; }
-.home-main > section > h2 {
+.panel-main > .recent + .recent { margin-top: 3rem; }
+.panel-main > .recent > h2 {
   margin: 0 0 0.75rem;
   padding-bottom: 0.5rem;
   font-size: 0.8rem;
@@ -236,29 +257,69 @@ time { color: var(--muted); font-size: 0.85rem; }
   border-bottom: 1px solid var(--border);
 }
 
-/* Home layout: a genuine two-column landing page. The home page uses the
-   default full page width (no `content` class), so the reading column and the
-   sidebar both get real room. Collapses to one column on narrow screens. */
+/* Side-panel layout (home widgets, single-post TOC). A narrow panel with the
+   --surface background sits at the right edge and runs the *full height* of the
+   page — header to footer — while the main content is centered in the space to
+   its left. Collapses to one column on narrow screens. Both the home page and
+   blog posts opt in by wrapping their content in `.panel-grid`. */
 
-.home-grid {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) 17rem;
-  gap: 3rem;
-  align-items: start;
-}
-.home-aside {
-  position: sticky;
-  top: 5rem;   /* clear the sticky header */
+/* The panel page fills its <main> edge to edge: drop the reading-column cap and
+   padding from `.container` and become a flex column, so the panel row below can
+   stretch down to the footer even when the content is short. */
+main:has(> .panel-grid) {
+  display: flex;
+  flex-direction: column;
+  max-width: none;
+  padding: 0;
 }
 
-/* Sidebar widgets: a subtle card so the sidebar reads as a distinct column. */
-.widget {
+.panel-grid {
+  flex: 1;                 /* fill the main, so the panel reaches the footer */
+  display: flex;
+  align-items: stretch;    /* the panel fills the full height of the row */
+}
+
+/* The content column. It grows to fill the space beside the panel; its children
+   are capped at the reading width and centered, so the main content sits centered
+   in that space rather than hugging the panel. */
+.panel-main {
+  flex: 1;
+  min-width: 0;
+  padding: 3rem clamp(1.25rem, 4vw, 3rem);
+}
+.panel-main > * { max-width: var(--max-width); margin-inline: auto; }
+
+.panel-aside {
+  flex: 0 0 var(--panel-width);   /* narrow, fixed width */
   background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 1.1rem 1.25rem 1.25rem;
+  border-left: 1px solid var(--border);
+  padding: 3rem 1.5rem;
 }
-.widget + .widget { margin-top: 1.5rem; }
+/* Widgets/TOC stay in view as you scroll the taller content column. */
+.panel-aside-inner { position: sticky; top: 5rem; }   /* clear the sticky header */
+
+/* The footer's usual top margin would leave a gap below the full-height panel,
+   so drop it: the panel band should meet the footer directly. */
+main:has(> .panel-grid) + .site-footer { margin-top: 0; }
+
+/* On the panel's --surface background, widgets drop their card and separate with
+   a hairline rule instead (a card would be surface-on-surface). */
+.panel-aside .widget {
+  background: none;
+  border: none;
+  border-radius: 0;
+  padding: 0;
+}
+.panel-aside .widget + .widget {
+  margin-top: 1.75rem;
+  padding-top: 1.75rem;
+  border-top: 1px solid var(--border);
+}
+.widget .tags { margin: 0; }
+/* Pills sit on the panel, so give them the page background to stand out against
+   the panel's surface fill (the two share var(--surface) otherwise). */
+.widget .tags li a { background: var(--bg); }
+.tag-count { color: var(--muted); font-size: 0.75em; }
 .widget-title {
   margin: 0 0 0.9rem;
   font-size: 0.8rem;
@@ -267,11 +328,6 @@ time { color: var(--muted); font-size: 0.85rem; }
   letter-spacing: 0.05em;
   color: var(--muted);
 }
-.widget .tags { margin: 0; }
-/* Pills sit on the card, so give them the page background to stand out against
-   the card's surface fill (the two share var(--surface) otherwise). */
-.widget .tags li a { background: var(--bg); }
-.tag-count { color: var(--muted); font-size: 0.75em; }
 
 /* Profile / author card — [profile] rendered on the home page via site.profile. */
 .profile-card { text-align: center; }
@@ -299,9 +355,12 @@ time { color: var(--muted); font-size: 0.85rem; }
 .socials a { color: var(--muted); }
 .socials a:hover { color: var(--accent); }
 
+/* On small screens the panel is hidden entirely and the content takes the full
+   width — a narrow viewport has no room for a side panel. */
 @media (max-width: 48rem) {
-  .home-grid { grid-template-columns: 1fr; gap: 2rem; }
-  .home-aside { position: static; }
+  .panel-main { padding: 2rem 1.25rem; }
+  .panel-main > * { max-width: none; }
+  .panel-aside { display: none; }
 }
 
 /* -- listings ------------------------------------------------------------ */
@@ -365,22 +424,15 @@ time { color: var(--muted); font-size: 0.85rem; }
 .post header h1, .page h1, .project h1 { margin-bottom: 0.5rem; }
 .body { margin-top: 1.5rem; }
 
-/* Table of contents: a full-width "band" between the post header and body,
-   fenced by thin hairline rules top and bottom and open on the sides. The
-   outline runs as a single column; the uppercase eyebrow matches the sidebar
-   and home sections, and entries indent by heading level. */
-.toc {
-  margin: 0 0 2.75rem;
-  padding: 1.2rem 0 1.3rem;
-  border-top: 1px solid var(--border);
-  border-bottom: 1px solid var(--border);
-  font-size: 0.9rem;
-}
+/* Table of contents: the single-post side panel's contents (see .panel-aside).
+   The outline runs as a single column; the uppercase eyebrow matches the home
+   widget titles, and entries indent by heading level. */
+.toc { font-size: 0.9rem; }
 .toc::before {
   content: "In this post";
   display: block;
   margin-bottom: 0.85rem;
-  font-size: 0.85rem;
+  font-size: 0.8rem;
   font-weight: 600;
   letter-spacing: 0.05em;
   text-transform: uppercase;
