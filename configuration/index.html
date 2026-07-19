@@ -1,0 +1,1210 @@
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="Agentic static site generator — agent-driven sites from config, templates, and Markdown">
+      
+      
+      
+      
+        <link rel="prev" href="../working-with-an-agent/">
+      
+      
+        <link rel="next" href="../content/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../assets/images/favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+    
+      
+        <title>Configuration - cuttlefish</title>
+      
+    
+    
+      <link rel="stylesheet" href="../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+      
+        
+        
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Roboto:300,300i,400,400i,700,700i%7CRoboto+Mono:400,400i,700,700i&display=fallback">
+        <style>:root{--md-text-font:"Roboto";--md-code-font:"Roboto Mono"}</style>
+      
+    
+    
+    <script>__md_scope=new URL("..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+      
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#configuration" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+  
+
+<header class="md-header md-header--shadow" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href=".." title="cuttlefish" class="md-header__button md-logo" aria-label="cuttlefish" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            cuttlefish
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Configuration
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+        <form class="md-header__option" data-md-component="palette">
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="default" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to dark mode"  type="radio" name="__palette" id="__palette_0">
+    
+      <label class="md-header__button md-icon" title="Switch to dark mode" for="__palette_1" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="m17.75 4.09-2.53 1.94.91 3.06-2.63-1.81-2.63 1.81.91-3.06-2.53-1.94L12.44 4l1.06-3 1.06 3zm3.5 6.91-1.64 1.25.59 1.98-1.7-1.17-1.7 1.17.59-1.98L15.75 11l2.06-.05L18.5 9l.69 1.95zm-2.28 4.95c.83-.08 1.72 1.1 1.19 1.85-.32.45-.66.87-1.08 1.27C15.17 23 8.84 23 4.94 19.07c-3.91-3.9-3.91-10.24 0-14.14.4-.4.82-.76 1.27-1.08.75-.53 1.93.36 1.85 1.19-.27 2.86.69 5.83 2.89 8.02a9.96 9.96 0 0 0 8.02 2.89m-1.64 2.02a12.08 12.08 0 0 1-7.8-3.47c-2.17-2.19-3.33-5-3.49-7.82-2.81 3.14-2.7 7.96.31 10.98 3.02 3.01 7.84 3.12 10.98.31"/></svg>
+      </label>
+    
+  
+    
+    
+    
+    <input class="md-option" data-md-color-media="" data-md-color-scheme="slate" data-md-color-primary="black" data-md-color-accent="indigo"  aria-label="Switch to light mode"  type="radio" name="__palette" id="__palette_1">
+    
+      <label class="md-header__button md-icon" title="Switch to light mode" for="__palette_0" hidden>
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 7a5 5 0 0 1 5 5 5 5 0 0 1-5 5 5 5 0 0 1-5-5 5 5 0 0 1 5-5m0 2a3 3 0 0 0-3 3 3 3 0 0 0 3 3 3 3 0 0 0 3-3 3 3 0 0 0-3-3m0-7 2.39 3.42C13.65 5.15 12.84 5 12 5s-1.65.15-2.39.42zM3.34 7l4.16-.35A7.2 7.2 0 0 0 5.94 8.5c-.44.74-.69 1.5-.83 2.29zm.02 10 1.76-3.77a7.131 7.131 0 0 0 2.38 4.14zM20.65 7l-1.77 3.79a7.02 7.02 0 0 0-2.38-4.15zm-.01 10-4.14.36c.59-.51 1.12-1.14 1.54-1.86.42-.73.69-1.5.83-2.29zM12 22l-2.41-3.44c.74.27 1.55.44 2.41.44.82 0 1.63-.17 2.37-.44z"/></svg>
+      </label>
+    
+  
+</form>
+      
+    
+    
+      <script>var palette=__md_get("__palette");if(palette&&palette.color){if("(prefers-color-scheme)"===palette.color.media){var media=matchMedia("(prefers-color-scheme: light)"),input=document.querySelector(media.matches?"[data-md-color-media='(prefers-color-scheme: light)']":"[data-md-color-media='(prefers-color-scheme: dark)']");palette.color.media=input.getAttribute("data-md-color-media"),palette.color.scheme=input.getAttribute("data-md-color-scheme"),palette.color.primary=input.getAttribute("data-md-color-primary"),palette.color.accent=input.getAttribute("data-md-color-accent")}for(var[key,value]of Object.entries(palette.color))document.body.setAttribute("data-md-color-"+key,value)}</script>
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/acaibowlz/cuttlefish" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    acaibowlz/cuttlefish
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+
+<nav class="md-nav md-nav--primary" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href=".." title="cuttlefish" class="md-nav__button md-logo" aria-label="cuttlefish" data-md-component="logo">
+      
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M12 8a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3 3 3 0 0 0 3 3m0 3.54C9.64 9.35 6.5 8 3 8v11c3.5 0 6.64 1.35 9 3.54 2.36-2.19 5.5-3.54 9-3.54V8c-3.5 0-6.64 1.35-9 3.54"/></svg>
+
+    </a>
+    cuttlefish
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/acaibowlz/cuttlefish" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M439.6 236.1 244 40.5c-5.4-5.5-12.8-8.5-20.4-8.5s-15 3-20.4 8.4L162.5 81l51.5 51.5c27.1-9.1 52.7 16.8 43.4 43.7l49.7 49.7c34.2-11.8 61.2 31 35.5 56.7-26.5 26.5-70.2-2.9-56-37.3L240.3 199v121.9c25.3 12.5 22.3 41.8 9.1 55-6.4 6.4-15.2 10.1-24.3 10.1s-17.8-3.6-24.3-10.1c-17.6-17.6-11.1-46.9 11.2-56v-123c-20.8-8.5-24.6-30.7-18.6-45L142.6 101 8.5 235.1C3 240.6 0 247.9 0 255.5s3 15 8.5 20.4l195.6 195.7c5.4 5.4 12.7 8.4 20.4 8.4s15-3 20.4-8.4l194.7-194.7c5.4-5.4 8.4-12.8 8.4-20.4s-3-15-8.4-20.4"/></svg>
+  </div>
+  <div class="md-source__repository">
+    acaibowlz/cuttlefish
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href=".." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../getting-started/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Getting started
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../working-with-an-agent/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Working with an agent
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Configuration
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-validation-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How validation works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#top-level-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Top-level keys
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#content-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Content types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Content types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rss-feed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RSS feed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-pages-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The pages type
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#taxonomies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Taxonomies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Taxonomies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#item-order-on-a-term-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Item order on a term page
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#home" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Home
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-values-params" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom values ([params])
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../content/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Authoring content
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../templates/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Templates & theming
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../cli/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    CLI reference
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../deployment/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Deployment
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../incremental-builds/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Incremental builds
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../recipes/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Recipes
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#how-validation-works" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        How validation works
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#top-level-keys" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Top-level keys
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#content-types" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Content types
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Content types">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#rss-feed" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        RSS feed
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#the-pages-type" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        The pages type
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#taxonomies" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Taxonomies
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Taxonomies">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#item-order-on-a-term-page" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Item order on a term page
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#home" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Home
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#navigation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Navigation
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#profile" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Profile
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#custom-values-params" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Custom values ([params])
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+
+
+  
+  
+
+
+<h1 id="configuration">Configuration<a class="headerlink" href="#configuration" title="Permanent link">&para;</a></h1>
+<p>The whole site is configured by a single <code>config.toml</code> at its root. This page documents every key.</p>
+<h2 id="how-validation-works">How validation works<a class="headerlink" href="#how-validation-works" title="Permanent link">&para;</a></h2>
+<p><code>config.toml</code> is strictly validated. An unknown key is an <strong>error</strong>, not a silent no-op — the build stops and names the offending key, with a "did you mean…?" suggestion when one is close. This is deliberate: a mistyped key that's quietly ignored is the worst way for a config to fail, especially one an agent edits.</p>
+<p>The single exception is the <code>[params]</code> table, whose keys are intentionally free-form (see <a href="#custom-values-params">Custom values</a>).</p>
+<h2 id="top-level-keys">Top-level keys<a class="headerlink" href="#top-level-keys" title="Permanent link">&para;</a></h2>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a><span class="n">title</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Demo Site&quot;</span>
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a><span class="n">base_url</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;https://example.com&quot;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>title</code></td>
+<td>The site name. Available to every template as <code>site.title</code>. Defaults to <code>"Untitled Site"</code>.</td>
+</tr>
+<tr>
+<td><code>base_url</code></td>
+<td>The site's public URL. Sets absolute links in <code>sitemap.xml</code>, and its path component becomes the prefix for internal links (see <a href="../deployment/">Deployment</a>).</td>
+</tr>
+</tbody>
+</table>
+<p>The remaining configuration lives in tables: <code>[content_types.*]</code>, <code>[taxonomies.*]</code>, <code>[home]</code>, <code>[nav]</code>, <code>[profile]</code>, and <code>[params]</code>.</p>
+<h2 id="content-types">Content types<a class="headerlink" href="#content-types" title="Permanent link">&para;</a></h2>
+<p>A content type is a category of content with its own templates and URL scheme. Each maps to a folder under <code>content/</code> — <code>[content_types.blog]</code> reads <code>content/blog/*.md</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="k">[content_types.blog]</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a><span class="n">template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;blog.html&quot;</span>
+<a id="__codelineno-1-3" name="__codelineno-1-3" href="#__codelineno-1-3"></a><span class="n">index_template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;blog.index.html&quot;</span>
+<a id="__codelineno-1-4" name="__codelineno-1-4" href="#__codelineno-1-4"></a><span class="n">permalink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/blog/{slug}/&quot;</span>
+<a id="__codelineno-1-5" name="__codelineno-1-5" href="#__codelineno-1-5"></a><span class="n">index_permalink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/blog/&quot;</span>
+<a id="__codelineno-1-6" name="__codelineno-1-6" href="#__codelineno-1-6"></a><span class="n">paginate</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="mi">10</span>
+<a id="__codelineno-1-7" name="__codelineno-1-7" href="#__codelineno-1-7"></a><span class="n">sort_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;date&quot;</span>
+<a id="__codelineno-1-8" name="__codelineno-1-8" href="#__codelineno-1-8"></a><span class="n">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;desc&quot;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Required</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template</code></td>
+<td>yes</td>
+<td>—</td>
+<td>Template for a single item of this type.</td>
+</tr>
+<tr>
+<td><code>permalink</code></td>
+<td>yes</td>
+<td>—</td>
+<td>URL pattern for a single item. See <a href="../templates/#permalink-tokens">permalink tokens</a>.</td>
+</tr>
+<tr>
+<td><code>index_template</code></td>
+<td>no</td>
+<td>—</td>
+<td>Template for the type's index (listing) page.</td>
+</tr>
+<tr>
+<td><code>index_permalink</code></td>
+<td>no</td>
+<td>—</td>
+<td>URL of the index page.</td>
+</tr>
+<tr>
+<td><code>paginate</code></td>
+<td>no</td>
+<td><code>0</code></td>
+<td>Items per index page; <code>0</code> (or omitted) disables pagination. Must be a non-negative integer.</td>
+</tr>
+<tr>
+<td><code>sort_by</code></td>
+<td>no</td>
+<td><code>"date"</code></td>
+<td>Front-matter field to sort the index by. Any field works, including a <a href="../content/#custom-fields">custom one</a>.</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>no</td>
+<td><code>"desc"</code></td>
+<td><code>"desc"</code> (newest/largest first) or <code>"asc"</code>.</td>
+</tr>
+<tr>
+<td><code>feed</code></td>
+<td>no</td>
+<td><code>false</code></td>
+<td>Publish an RSS feed of this type's recent posts (see below).</td>
+</tr>
+</tbody>
+</table>
+<p><code>index_template</code> and <code>index_permalink</code> travel together: define both to get an index page, or neither for a type that has individual pages but no listing.</p>
+<h4 id="rss-feed">RSS feed<a class="headerlink" href="#rss-feed" title="Permanent link">&para;</a></h4>
+<p>Set <code>feed = true</code> on a content type to publish an RSS 2.0 feed of its recent items at <code>&lt;index_permalink&gt;feed.xml</code> — e.g. a blog with <code>index_permalink = "/blog/"</code> gets <code>/blog/feed.xml</code>. It's a <strong>summary</strong> feed: each entry carries the post's title, link, date and <code>description</code>, not the body. The newest 20 items are included, newest first.</p>
+<p>Two conditions gate it, both mirroring the <a href="../deployment/#sitemap-and-robotstxt">sitemap</a>: the feed's links are absolute, so it's only emitted when <code>base_url</code> is set; and it lives at the index URL, so the type must have an index (<code>feed = true</code> without one is a config error). Multiple types can each set <code>feed = true</code> for separate feeds. The starter <code>base.html</code> advertises every feed with a <code>&lt;link rel="alternate"&gt;</code> autodiscovery tag, driven by the <a href="../templates/#the-global-site-object"><code>site.feeds</code></a> template variable — so feed readers and browsers find it automatically. The feed is regenerated only when a listed post's metadata changes (like the HTML listings) and never appears in <code>sitemap.xml</code>.</p>
+<h3 id="the-pages-type">The <code>pages</code> type<a class="headerlink" href="#the-pages-type" title="Permanent link">&para;</a></h3>
+<p><code>pages</code> is a reserved type for standalone pages — an about page, a colophon — that belong to no index and no taxonomy.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a><span class="k">[content_types.pages]</span>
+<a id="__codelineno-2-2" name="__codelineno-2-2" href="#__codelineno-2-2"></a><span class="n">template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;page.html&quot;</span>
+<a id="__codelineno-2-3" name="__codelineno-2-3" href="#__codelineno-2-3"></a><span class="n">permalink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/{slug}/&quot;</span>
+</code></pre></div>
+<p>It takes only <code>template</code> and <code>permalink</code>. Declaring <code>index_template</code> or <code>index_permalink</code> on it is an error. Content in <code>content/pages/</code> needs only a <code>title</code> and may not use taxonomies (see <a href="../content/">Authoring content</a>).</p>
+<h2 id="taxonomies">Taxonomies<a class="headerlink" href="#taxonomies" title="Permanent link">&para;</a></h2>
+<p>A taxonomy is a user-defined classification — tags, categories — applied by adding terms to a content file's front matter.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a><span class="k">[taxonomies.tags]</span>
+<a id="__codelineno-3-2" name="__codelineno-3-2" href="#__codelineno-3-2"></a><span class="n">template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;taxonomy.html&quot;</span>
+<a id="__codelineno-3-3" name="__codelineno-3-3" href="#__codelineno-3-3"></a><span class="n">index_template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;taxonomy.index.html&quot;</span>
+<a id="__codelineno-3-4" name="__codelineno-3-4" href="#__codelineno-3-4"></a><span class="n">permalink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/tags/{term}/&quot;</span>
+<a id="__codelineno-3-5" name="__codelineno-3-5" href="#__codelineno-3-5"></a><span class="n">index_permalink</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/tags/&quot;</span>
+<a id="__codelineno-3-6" name="__codelineno-3-6" href="#__codelineno-3-6"></a><span class="n">multiple</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-3-7" name="__codelineno-3-7" href="#__codelineno-3-7"></a><span class="n">sort_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;count&quot;</span>
+<a id="__codelineno-3-8" name="__codelineno-3-8" href="#__codelineno-3-8"></a><span class="n">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;desc&quot;</span>
+<a id="__codelineno-3-9" name="__codelineno-3-9" href="#__codelineno-3-9"></a><span class="n">home</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-3-10" name="__codelineno-3-10" href="#__codelineno-3-10"></a>
+<a id="__codelineno-3-11" name="__codelineno-3-11" href="#__codelineno-3-11"></a><span class="k">[taxonomies.tags.items]</span><span class="w">   </span><span class="c1"># how items are ordered on a term page</span>
+<a id="__codelineno-3-12" name="__codelineno-3-12" href="#__codelineno-3-12"></a><span class="n">sort_by</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;date&quot;</span>
+<a id="__codelineno-3-13" name="__codelineno-3-13" href="#__codelineno-3-13"></a><span class="n">order</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;desc&quot;</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Required</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template</code></td>
+<td>yes</td>
+<td>—</td>
+<td>Template for a single term's page (the items tagged with it).</td>
+</tr>
+<tr>
+<td><code>permalink</code></td>
+<td>yes</td>
+<td>—</td>
+<td>URL pattern for a term page; use the <code>{term}</code> token.</td>
+</tr>
+<tr>
+<td><code>index_template</code></td>
+<td>no</td>
+<td>—</td>
+<td>Template for the taxonomy index (all terms).</td>
+</tr>
+<tr>
+<td><code>index_permalink</code></td>
+<td>no</td>
+<td>—</td>
+<td>URL of the taxonomy index.</td>
+</tr>
+<tr>
+<td><code>multiple</code></td>
+<td>no</td>
+<td><code>true</code></td>
+<td>Front-matter shape: <code>true</code> expects a list (<code>tags = ["a", "b"]</code>); <code>false</code> expects a single string (<code>category = "AI"</code>).</td>
+</tr>
+<tr>
+<td><code>sort_by</code></td>
+<td>no</td>
+<td><code>"name"</code></td>
+<td><strong>Term</strong> ordering (the index page and home cloud): <code>"name"</code> (alphabetical) or <code>"count"</code> (most-used first).</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>no</td>
+<td><code>"asc"</code></td>
+<td><code>"asc"</code> or <code>"desc"</code>. Applies to the term <code>sort_by</code>.</td>
+</tr>
+<tr>
+<td><code>home</code></td>
+<td>no</td>
+<td><code>false</code></td>
+<td>When <code>true</code>, the home template receives this taxonomy's terms as <code>taxonomies.&lt;name&gt;</code>.</td>
+</tr>
+</tbody>
+</table>
+<h3 id="item-order-on-a-term-page">Item order on a term page<a class="headerlink" href="#item-order-on-a-term-page" title="Permanent link">&para;</a></h3>
+<p><code>sort_by</code>/<code>order</code> above order the <strong>terms</strong>. To order the <strong>items</strong> shown on a single term page (e.g. <code>/tags/python/</code>), use the nested <code>[taxonomies.&lt;name&gt;.items]</code> sub-table:</p>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Required</th>
+<th>Default</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sort_by</code></td>
+<td>no</td>
+<td><code>"date"</code></td>
+<td>Any front-matter field, exactly like a content type's <code>sort_by</code> — a <a href="../content/#custom-fields">custom field</a> works too. A field present on none of the taxonomy's items fails the build.</td>
+</tr>
+<tr>
+<td><code>order</code></td>
+<td>no</td>
+<td><code>"desc"</code></td>
+<td><code>"asc"</code> or <code>"desc"</code>.</td>
+</tr>
+</tbody>
+</table>
+<p>Omit the sub-table and items default to newest-first (<code>date</code> desc), matching a type index. Because a term can span content types, this one ordering applies to all of a term's items regardless of type.</p>
+<h2 id="home">Home<a class="headerlink" href="#home" title="Permanent link">&para;</a></h2>
+<p>The landing page.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a><span class="k">[home]</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="n">template</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;home.html&quot;</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="n">recent</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">blog</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">5</span><span class="p">,</span><span class="w"> </span><span class="n">project</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="mi">3</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Key</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>template</code></td>
+<td>Required. The landing-page template.</td>
+</tr>
+<tr>
+<td><code>recent</code></td>
+<td>A <code>content-type = count</code> table. The template receives each as <code>recent.&lt;type&gt;</code> — the newest <em>count</em> items of that type.</td>
+</tr>
+</tbody>
+</table>
+<p>Every content type <code>recent</code> references must exist.</p>
+<h2 id="navigation">Navigation<a class="headerlink" href="#navigation" title="Permanent link">&para;</a></h2>
+<p>The site nav bar. <code>labels</code> and <code>links</code> are two arrays paired by position, so they <strong>must be the same length</strong>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="k">[nav]</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a><span class="n">enabled</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a><span class="n">labels</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;Blog&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Projects&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;Tags&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;About&quot;</span><span class="p">]</span>
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a><span class="n">links</span><span class="w">  </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;/blog/&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/projects/&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/tags/&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;/about/&quot;</span><span class="p">]</span>
+</code></pre></div>
+<p>Templates read the paired result as <code>site.nav</code>, a list of items with <code>.label</code> and <code>.link</code>. Set <code>enabled = false</code> to hide the nav without deleting its entries.</p>
+<h2 id="profile">Profile<a class="headerlink" href="#profile" title="Permanent link">&para;</a></h2>
+<p>Author/owner details, exposed to every template as <code>site.profile</code>.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="k">[profile]</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;Demo User&quot;</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="n">bio</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;A line or two about who you are.&quot;</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a><span class="n">avatar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;/img/avatar.svg&quot;</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a><span class="n">email</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;you@example.com&quot;</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a><span class="n">socials</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">{</span><span class="w"> </span><span class="n">github</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;https://github.com/you&quot;</span><span class="p">,</span><span class="w"> </span><span class="n">mastodon</span><span class="w"> </span><span class="p">=</span><span class="w"> </span><span class="s2">&quot;https://mastodon.social/@you&quot;</span><span class="w"> </span><span class="p">}</span>
+</code></pre></div>
+<p><code>avatar</code> is a path under <code>static/</code>. <code>socials</code> maps a platform key to its URL and keeps its written order, so links render in order and the key is available for icon or label lookup. Every field is optional.</p>
+<h2 id="custom-values-params">Custom values (<code>[params]</code>)<a class="headerlink" href="#custom-values-params" title="Permanent link">&para;</a></h2>
+<p><code>[params]</code> is the one table whose keys are <strong>not</strong> validated — the escape hatch for arbitrary site-wide values.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="k">[params]</span>
+<a id="__codelineno-7-2" name="__codelineno-7-2" href="#__codelineno-7-2"></a><span class="n">accent</span><span class="w">       </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;teal&quot;</span>
+<a id="__codelineno-7-3" name="__codelineno-7-3" href="#__codelineno-7-3"></a><span class="n">show_sidebar</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
+<a id="__codelineno-7-4" name="__codelineno-7-4" href="#__codelineno-7-4"></a><span class="n">analytics_id</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;UA-123&quot;</span>
+</code></pre></div>
+<p>Read them in any template as <code>site.params.&lt;key&gt;</code>, e.g. <code>{{ site.params.accent }}</code> or <code>{% if site.params.show_sidebar %}</code>. For <em>per-page</em> custom values, use front matter and <code>page.params</code> instead — see <a href="../content/#custom-fields">Custom fields</a>.</p>
+<p>The raw parsed config is also available to templates as <code>site.config</code>, if a template needs a value no dedicated variable exposes.</p>
+
+
+
+
+
+
+
+
+
+
+
+
+                
+              </article>
+            </div>
+          
+          
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "..", "features": ["navigation.sections", "navigation.top", "content.code.copy", "toc.follow"], "search": "../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+    
+  </body>
+</html>
