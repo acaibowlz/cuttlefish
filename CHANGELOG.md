@@ -94,6 +94,7 @@ as `cuttlefish-ssg` with the `ctf` CLI.
 - Recipes: a gallery of copy-in feature guides (e.g. reading time, breadcrumbs).
 - MIT license.
 
-[Unreleased]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.1...HEAD
+[Unreleased]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.2...HEAD
+[0.1.2]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.0...v0.1.1
 [0.1.0]: https://github.com/acaibowlz/cuttlefish/releases/tag/v0.1.0
