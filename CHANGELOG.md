@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Starter theme: the home page and single blog posts now use a narrow,
+  full-height side panel on the right — the author profile and tags on home, the
+  table of contents on posts — with the main content centered beside it, in
+  place of the earlier floating-card sidebar. The panel runs from the header to
+  the footer and is hidden below the mobile breakpoint; posts with no headings
+  keep the plain reading column. On these pages the nav right-aligns to the
+  panel's left edge, and TOC anchors now land clear of the sticky header.
+  (Scaffold-only — no change to the generator.)
+
 ## [0.1.2] - 2026-07-16
 
 ### Added
