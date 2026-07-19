@@ -64,6 +64,27 @@ def test_config_paginate_default_and_validation():
             parse_config(ct(paginate=bad))
 
 
+def test_config_feed_requires_index_and_bool():
+    def ct(**extra):
+        return {
+            "content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/", **extra}}
+        }
+
+    indexed = {"index_template": "i.html", "index_permalink": "/b/"}
+
+    # Defaults off; on with an index is accepted.
+    assert parse_config(ct()).content_types["blog"].feed is False
+    assert parse_config(ct(feed=True, **indexed)).content_types["blog"].feed is True
+
+    # feed = true without an index is rejected (nowhere to publish it).
+    with pytest.raises(ConfigError):
+        parse_config(ct(feed=True))
+
+    # Non-boolean feed is rejected.
+    with pytest.raises(ConfigError):
+        parse_config(ct(feed="yes", **indexed))
+
+
 def test_config_unknown_keys_rejected():
     ct = {"template": "b.html", "permalink": "/b/{slug}/"}
 

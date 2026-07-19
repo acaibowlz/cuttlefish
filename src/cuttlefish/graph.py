@@ -21,7 +21,8 @@ from dataclasses import dataclass
 
 from cuttlefish.cache import hash_text
 from cuttlefish.config import SiteConfig
-from cuttlefish.content import ContentItem
+from cuttlefish.content import ContentItem, sort_items
+from cuttlefish.feed import FEED_MAX_ITEMS, feed_url_path, write_feed
 from cuttlefish.render import Renderer
 from cuttlefish.taxonomy import TaxonomyData, home_taxonomy_terms
 
@@ -127,6 +128,59 @@ def build_aggregate_specs(
             )
         )
 
+    return specs
+
+
+def build_feed_specs(
+    config: SiteConfig,
+    grouped: dict[str, list[ContentItem]],
+    renderer: Renderer,
+) -> list[AggregateSpec]:
+    """Enumerate an RSS feed per content type that opts in with ``feed = true``.
+
+    A feed's links are absolute, so none are produced without ``base_url`` — the
+    same rule as the sitemap. Each feed is a *summary* aggregate: fingerprinted
+    over its items' metadata (newest-first, capped), never their bodies, so it
+    rebuilds precisely when the listed items' summaries change. Feeds reuse
+    :class:`AggregateSpec` but are tracked in their own manifest section (like
+    error pages) so they are pruned yet never leak into ``sitemap.xml``.
+    """
+    specs: list[AggregateSpec] = []
+    if not config.base_url:
+        return specs
+    for name, content_type in config.content_types.items():
+        if not (content_type.feed and content_type.has_index):
+            continue
+        # Feeds are reverse-chronological by convention, independent of how the
+        # type's index is sorted; cap to the newest handful.
+        items = sort_items(grouped.get(name, []), sort_by="date", order="desc")[:FEED_MAX_ITEMS]
+        channel_path = content_type.index_permalink  # type: ignore[assignment]  # has_index
+        self_path = feed_url_path(channel_path)
+        output_rel = self_path.lstrip("/")
+        specs.append(
+            AggregateSpec(
+                key=f"feed:{name}",
+                # No Jinja template backs a feed (it is core-rendered), so give it
+                # a template that can never be in the affected set — only the
+                # fingerprint decides a feed's rebuild.
+                template="",
+                fingerprint=_members_fingerprint(items, f"feed:{name}:{config.base_url}"),
+                outputs=[output_rel],
+                render=(
+                    lambda it=items, cp=channel_path, sp=self_path, o=output_rel: [
+                        write_feed(
+                            renderer.public_dir,
+                            o,
+                            it,
+                            site_title=config.title,
+                            base_url=config.base_url,
+                            channel_path=cp,
+                            self_path=sp,
+                        )
+                    ]
+                ),
+            )
+        )
     return specs
 
 

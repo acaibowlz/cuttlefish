@@ -34,7 +34,16 @@ _TOP_LEVEL_KEYS = frozenset(
 )
 _PROFILE_KEYS = frozenset({"name", "bio", "avatar", "email", "socials"})
 _CONTENT_TYPE_KEYS = frozenset(
-    {"template", "permalink", "index_template", "index_permalink", "paginate", "sort_by", "order"}
+    {
+        "template",
+        "permalink",
+        "index_template",
+        "index_permalink",
+        "paginate",
+        "sort_by",
+        "order",
+        "feed",
+    }
 )
 _TAXONOMY_KEYS = frozenset(
     {
@@ -87,6 +96,10 @@ class ContentType:
     paginate: int = 0
     sort_by: str = "date"
     order: str = "desc"  # "desc" (newest/largest first) or "asc"
+    #: Publish an RSS feed of this type's recent items at ``<index_permalink>feed.xml``.
+    #: Requires an index (that's where the feed lives) and ``base_url`` (its links
+    #: are absolute), so it only takes effect when both are present.
+    feed: bool = False
 
     @property
     def descending(self) -> bool:
@@ -226,7 +239,10 @@ def _parse_content_type(name: str, data: dict) -> ContentType:
             f"{where} 'paginate' must be a non-negative integer "
             f"(omit it or use 0 to disable pagination), got {paginate!r}."
         )
-    return ContentType(
+    feed = data.get("feed", False)
+    if not isinstance(feed, bool):
+        raise ConfigError(f"{where} 'feed' must be a boolean, got {feed!r}.")
+    content_type = ContentType(
         name=name,
         template=str(_require(data, "template", where)),
         permalink=str(_require(data, "permalink", where)),
@@ -235,7 +251,16 @@ def _parse_content_type(name: str, data: dict) -> ContentType:
         paginate=paginate,
         sort_by=str(data.get("sort_by", "date")),
         order=order,
+        feed=feed,
     )
+    # A feed lists a type's items and is published *at* its index URL, so it needs
+    # one. Reject 'feed = true' without an index rather than silently emit nothing.
+    if content_type.feed and not content_type.has_index:
+        raise ConfigError(
+            f"{where} 'feed = true' needs an index — set 'index_template' and "
+            "'index_permalink'; the feed is published at <index_permalink>feed.xml."
+        )
+    return content_type
 
 
 def _parse_taxonomy(name: str, data: dict) -> Taxonomy:

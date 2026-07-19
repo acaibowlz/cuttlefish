@@ -39,6 +39,9 @@ index_permalink = "/blog/"
 paginate = 10
 sort_by = "date"
 order = "desc"
+# Publish an RSS feed of recent posts at /blog/feed.xml (needs base_url). The
+# <head> in base.html advertises it via `site.feeds`. Omit or set false for none.
+feed = true
 
 [content_types.project]
 template = "project.html"

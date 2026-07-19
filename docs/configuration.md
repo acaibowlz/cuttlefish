@@ -46,8 +46,15 @@ order = "desc"
 | `paginate` | no | `0` | Items per index page; `0` (or omitted) disables pagination. Must be a non-negative integer. |
 | `sort_by` | no | `"date"` | Front-matter field to sort the index by. Any field works, including a [custom one](content.md#custom-fields). |
 | `order` | no | `"desc"` | `"desc"` (newest/largest first) or `"asc"`. |
+| `feed` | no | `false` | Publish an RSS feed of this type's recent posts (see below). |
 
 `index_template` and `index_permalink` travel together: define both to get an index page, or neither for a type that has individual pages but no listing.
+
+#### RSS feed
+
+Set `feed = true` on a content type to publish an RSS 2.0 feed of its recent items at `<index_permalink>feed.xml` — e.g. a blog with `index_permalink = "/blog/"` gets `/blog/feed.xml`. It's a **summary** feed: each entry carries the post's title, link, date and `description`, not the body. The newest 20 items are included, newest first.
+
+Two conditions gate it, both mirroring the [sitemap](deployment.md#sitemap-and-robotstxt): the feed's links are absolute, so it's only emitted when `base_url` is set; and it lives at the index URL, so the type must have an index (`feed = true` without one is a config error). Multiple types can each set `feed = true` for separate feeds. The starter `base.html` advertises every feed with a `<link rel="alternate">` autodiscovery tag, driven by the [`site.feeds`](templates.md#the-global-site-object) template variable — so feed readers and browsers find it automatically. The feed is regenerated only when a listed post's metadata changes (like the HTML listings) and never appears in `sitemap.xml`.
 
 ### The `pages` type
 

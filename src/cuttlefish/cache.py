@@ -14,7 +14,7 @@ from pathlib import Path
 
 CACHE_DIR = ".ctf"
 CACHE_FILE = "cache.json"
-MANIFEST_VERSION = 3
+MANIFEST_VERSION = 4
 
 
 def hash_bytes(data: bytes) -> str:
@@ -45,6 +45,10 @@ class Manifest:
     aggregates: dict[str, dict] = field(default_factory=dict)
     #: error-page template name (e.g. "404.html") -> {"output"}
     error_pages: dict[str, dict] = field(default_factory=dict)
+    #: feed key (e.g. "feed:blog") -> {"fingerprint", "template", "outputs": [...]}.
+    #: Kept apart from ``aggregates`` so feeds are pruned via ``all_outputs`` but
+    #: never counted as pages in ``page_outputs`` (they must not enter the sitemap).
+    feeds: dict[str, dict] = field(default_factory=dict)
 
     # -- derived -----------------------------------------------------------
 
@@ -59,6 +63,8 @@ class Manifest:
             out = entry.get("output")
             if out:
                 outputs.add(out)
+        for entry in self.feeds.values():
+            outputs.update(entry.get("outputs", []))
         return outputs
 
     def page_outputs(self) -> set[str]:
@@ -85,6 +91,7 @@ class Manifest:
             "static": self.static,
             "aggregates": self.aggregates,
             "error_pages": self.error_pages,
+            "feeds": self.feeds,
         }
 
     @classmethod
@@ -97,6 +104,7 @@ class Manifest:
             static=data.get("static", {}),
             aggregates=data.get("aggregates", {}),
             error_pages=data.get("error_pages", {}),
+            feeds=data.get("feeds", {}),
         )
 
 

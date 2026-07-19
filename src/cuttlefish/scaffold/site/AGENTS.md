@@ -30,7 +30,9 @@ runs the same pipeline as a build and exits non-zero on the first error, so it's
 a quick way to confirm an edit is sound. When `base_url` is set, the build also emits a
 `public/sitemap.xml` of every page and a `public/robots.txt` that points at it.
 To supply your own crawl rules, drop a `robots.txt` in `static/` and the
-generated one steps aside.
+generated one steps aside. A content type with `feed = true` also gets an RSS
+feed at `<index_permalink>feed.xml` (also `base_url`-gated); the `<head>` in
+`base.html` advertises each via `site.feeds`.
 
 ## Recipes
 
@@ -78,7 +80,14 @@ index_permalink = "/notes/"       # required if index_template is set
 paginate = 10                     # optional; 0/absent = no pagination
 sort_by = "date"                  # front-matter field to sort by
 order = "desc"                    # "desc" = newest/largest first, "asc" = oldest/smallest
+feed = true                       # optional; publish an RSS feed at /notes/feed.xml
 ```
+
+`feed = true` publishes an RSS 2.0 feed of the type's recent posts (title, link,
+date, description — a summary feed) at `<index_permalink>feed.xml`. It needs an
+index (that's where it lives) and `base_url` (absolute links), and is exposed to
+templates via `site.feeds` for autodiscovery `<link>` tags. Kept out of the
+sitemap.
 
 Then create `templates/note.html` and `templates/note.index.html`. The author
 adds the content under `content/note/*.md`.
@@ -271,8 +280,9 @@ Usable in any `permalink`/`index_permalink`: `{slug}`, `{type}`, `{year}`,
 Templates are Jinja2 and live in `templates/`. `base.html` is the shared layout;
 others `{% extends "base.html" %}`. A global `site` object is available
 everywhere: `site.title`, `site.base_url`, `site.nav`, `site.profile`,
-`site.params` (your free-form `[params]` table), and `site.config` (the raw
-parsed `config.toml`).
+`site.params` (your free-form `[params]` table), `site.feeds` (published RSS
+feeds, each with `.type` and a root-relative `.url`; empty unless a type sets
+`feed = true`), and `site.config` (the raw parsed `config.toml`).
 
 Variables per template kind:
 

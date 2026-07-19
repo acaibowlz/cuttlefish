@@ -6,6 +6,11 @@
   <title>{% block title %}{{ site.title }}{% endblock %}</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/main.css">
+  {# RSS autodiscovery: feed readers and browsers find these. `site.feeds` lists
+     one per content type with `feed = true` (empty until base_url is set). #}
+  {% for feed in site.feeds %}
+  <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ feed.url }}">
+  {% endfor %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <header class="site-header">

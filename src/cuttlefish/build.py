@@ -30,7 +30,12 @@ from cuttlefish.cache import (
 )
 from cuttlefish.config import CONFIG_FILENAME, ConfigError, SiteConfig, load_config
 from cuttlefish.content import ContentItem, discover, sort_items
-from cuttlefish.graph import AggregateSpec, aggregate_is_dirty, build_aggregate_specs
+from cuttlefish.graph import (
+    AggregateSpec,
+    aggregate_is_dirty,
+    build_aggregate_specs,
+    build_feed_specs,
+)
 from cuttlefish.render import ERROR_TEMPLATES, Renderer
 from cuttlefish.robots import ROBOTS_FILENAME, write_robots
 from cuttlefish.sitemap import write_sitemap
@@ -53,6 +58,8 @@ class BuildStats:
     error_pages: int = 0
     static: int = 0
     pruned: int = 0
+    feeds: int = 0
+    feeds_skipped: int = 0
     sitemap: bool = False
     robots: bool = False
     mode: str = "full"
@@ -95,6 +102,8 @@ class BuildStats:
             segs.append(f"{self.error_pages} error")
         if self.static:
             segs.append(f"{self.static} static")
+        if self.feeds:
+            segs.append(f"{self.feeds} feed{'s' if self.feeds != 1 else ''}")
         if self.sitemap:
             segs.append("sitemap")
         if self.robots:
@@ -379,6 +388,23 @@ def _run_build(
             stats.error_pages += 1
         new_error_pages[template_name] = {"output": template_name}
 
+    # RSS feeds: one summary aggregate per content type with feed = true (and an
+    # index), rebuilt only when its listed items' metadata changed. Tracked in
+    # their own manifest section so they are pruned but never enter the sitemap —
+    # the same treatment as error pages. Absent entirely unless base_url is set.
+    new_feeds: dict[str, dict] = {}
+    for spec in build_feed_specs(config, grouped, renderer):
+        if aggregate_is_dirty(spec, manifest.feeds, affected_templates):
+            spec.render()
+            stats.feeds += 1
+        else:
+            stats.feeds_skipped += 1
+        new_feeds[spec.key] = {
+            "fingerprint": spec.fingerprint,
+            "template": spec.template,
+            "outputs": spec.outputs,
+        }
+
     # Static: copy new/changed files; track for pruning.
     new_static: dict[str, dict] = {}
     for src_rel, out_rel in _static_files(root).items():
@@ -399,6 +425,7 @@ def _run_build(
         static=new_static,
         aggregates=_aggregates_manifest(specs),
         error_pages=new_error_pages,
+        feeds=new_feeds,
     )
 
     # Prune outputs that existed last time but are no longer produced

@@ -30,6 +30,7 @@ Available in every template:
 | `site.nav` | The nav entries — a list of items with `.label` and `.link`. |
 | `site.profile` | Author details: `.name`, `.bio`, `.avatar`, `.email`, `.socials`. |
 | `site.params` | The free-form `[params]` table. |
+| `site.feeds` | Published [RSS feeds](configuration.md#rss-feed), each with `.type` and a root-relative `.url` (e.g. `/blog/feed.xml`). Empty unless a content type sets `feed = true` and `base_url` is set. The starter `base.html` loops it into `<link rel="alternate">` autodiscovery tags. |
 | `site.config` | The raw parsed `config.toml`, as a fallback. |
 
 ## Variables by template kind
