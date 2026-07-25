@@ -14,6 +14,7 @@ import queue
 import threading
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from urllib.parse import unquote
 
 from rich.console import Console
 from rich.markup import escape
@@ -45,6 +46,25 @@ def _watch_filter(_change, path: str) -> bool:
     if path.endswith(CONFIG_FILENAME):
         return True
     return any(d in parts for d in _WATCH_DIRS)
+
+
+def resolve_request(public_dir: Path, url_path: str) -> Path | None:
+    """Map a request target to a file under *public_dir*; ``None`` if it escapes.
+
+    Browsers percent-encode non-ASCII paths on the wire, so a Unicode slug like
+    ``/blog/新貼文/`` arrives as ``/blog/%E6%96%B0%E8%B2%BC%E6%96%87/``. Decoding
+    first is what makes those slugs resolvable at all. The traversal check runs
+    *after* decoding, on the resolved path, so an encoded ``%2e%2e`` cannot slip
+    past it either.
+    """
+    rel = unquote(url_path).lstrip("/")
+    public = public_dir.resolve()
+    target = (public / rel).resolve()
+    if public not in target.parents and target != public:
+        return None
+    if target.is_dir() or url_path.endswith("/") or rel == "":
+        target = target / "index.html"
+    return target
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -97,15 +117,7 @@ class _Handler(BaseHTTPRequestHandler):
     # -- static file serving ----------------------------------------------
 
     def _resolve(self, url_path: str) -> Path | None:
-        rel = url_path.lstrip("/")
-        target = (self.server.public_dir / rel).resolve()  # type: ignore[attr-defined]
-        public = self.server.public_dir.resolve()  # type: ignore[attr-defined]
-        # Prevent path traversal outside public/.
-        if public not in target.parents and target != public:
-            return None
-        if target.is_dir() or url_path.endswith("/") or rel == "":
-            target = target / "index.html"
-        return target
+        return resolve_request(self.server.public_dir, url_path)  # type: ignore[attr-defined]
 
     def _inject_reload(self, html: str) -> str:
         """Insert the live-reload SSE script so built output stays clean."""

@@ -5,6 +5,17 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- `ctf serve` no longer 404s on content whose slug contains non-ASCII
+  characters. Browsers percent-encode those paths on the wire, so a post at
+  `/blog/新貼文/` arrived as `/blog/%E6%96%B0%E8%B2%BC%E6%96%87/` and never
+  matched the file on disk. The dev server now decodes the request target before
+  resolving it, with the path-traversal check running on the decoded path so an
+  encoded `%2e%2e` is still rejected.
+
 ## [0.1.4] - 2026-07-19
 
 ### Added
