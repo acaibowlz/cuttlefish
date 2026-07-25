@@ -13,6 +13,8 @@ from collections.abc import Iterable
 from pathlib import Path
 from xml.sax.saxutils import escape
 
+from cuttlefish.permalink import encode_url
+
 SITEMAP_FILENAME = "sitemap.xml"
 
 _INDEX_FILE = "index.html"
@@ -33,7 +35,7 @@ def render_sitemap(urls: Iterable[str], base_url: str) -> str:
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
     for url in urls:
-        lines.append(f"  <url><loc>{escape(base_url + url)}</loc></url>")
+        lines.append(f"  <url><loc>{escape(base_url + encode_url(url))}</loc></url>")
     lines.append("</urlset>")
     return "\n".join(lines) + "\n"
 

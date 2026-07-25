@@ -16,6 +16,7 @@ from pathlib import Path
 from xml.sax.saxutils import escape
 
 from cuttlefish.content import ContentItem
+from cuttlefish.permalink import encode_url
 
 FEED_FILENAME = "feed.xml"
 
@@ -51,8 +52,8 @@ def render_rss(
     index, e.g. ``/blog/``); *self_path* is the feed's own path
     (``/blog/feed.xml``). Both are made absolute with *base_url*.
     """
-    channel_link = base_url + channel_path
-    self_link = base_url + self_path
+    channel_link = base_url + encode_url(channel_path)
+    self_link = base_url + encode_url(self_path)
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
@@ -68,7 +69,7 @@ def render_rss(
     if newest is not None:
         lines.append(f"    <lastBuildDate>{_rfc822(newest)}</lastBuildDate>")
     for item in items:
-        link = base_url + item.url
+        link = base_url + encode_url(item.url)
         lines.append("    <item>")
         lines.append(f"      <title>{escape(item.title)}</title>")
         lines.append(f"      <link>{escape(link)}</link>")

@@ -19,3 +19,9 @@ def test_sitemap_render_is_sorted_and_absolute():
     assert "<loc>https://example.com/blog/</loc>" in xml
     # Ampersands in URLs are XML-escaped.
     assert "&amp;" in render_sitemap(["/?a=1&b=2"], base_url="https://x.com")
+
+
+def test_sitemap_percent_encodes_unicode_slugs():
+    # <loc> is parsed as a strict URI, which is ASCII-only.
+    xml = render_sitemap(["/blog/新貼文/"], base_url="https://example.com")
+    assert "<loc>https://example.com/blog/%E6%96%B0%E8%B2%BC%E6%96%87/</loc>" in xml

@@ -15,6 +15,8 @@ content/
 
 The filename becomes the default slug: `hello-world.md` → `hello-world`. Files may be nested in subfolders; only the type folder and the filename matter.
 
+Slugs keep letters from any script, so `新貼文.md` is served at `/blog/新貼文/` and `Café Crème` slugifies to `café-crème`. Only characters that are hostile to a URL or a filesystem (`<>:/|?*#\`, quotes, brackets, punctuation) are stripped, and spaces become hyphens. Cuttlefish does not transliterate — that would mangle CJK, and folding everything to ASCII would collide every non-Latin title onto one slug. Sitemap and feed links are percent-encoded automatically, since those are parsed as strict ASCII URIs; `href`s in your HTML keep the readable form, which browsers encode on the wire.
+
 ## Front matter
 
 Every file begins with a TOML block fenced by `+++` lines, followed by the Markdown body:

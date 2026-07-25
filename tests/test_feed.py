@@ -153,3 +153,18 @@ def test_feed_pruned_when_disabled(site: Path, build):
     )
     build(site)
     assert not (site / "public/blog/feed.xml").exists()
+
+
+def test_feed_percent_encodes_unicode_links():
+    # <link>/<guid> are URIs, so a Unicode slug must be encoded — but the title
+    # is character data and keeps its original characters.
+    xml = render_rss(
+        [_item("新貼文", "/blog/新貼文/", "", date(2026, 1, 1))],
+        site_title="S",
+        base_url="https://x.com",
+        channel_path="/blog/",
+        self_path="/blog/feed.xml",
+    )
+    assert "<link>https://x.com/blog/%E6%96%B0%E8%B2%BC%E6%96%87/</link>" in xml
+    assert '<guid isPermaLink="true">https://x.com/blog/%E6%96%B0%E8%B2%BC%E6%96%87/</guid>' in xml
+    assert "<title>新貼文</title>" in xml

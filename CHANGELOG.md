@@ -15,6 +15,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   matched the file on disk. The dev server now decodes the request target before
   resolving it, with the path-traversal check running on the decoded path so an
   encoded `%2e%2e` is still rejected.
+- `sitemap.xml` and RSS feeds now percent-encode their URLs. `<loc>`, `<link>`
+  and `<guid>` are parsed as strict ASCII URIs, so a Unicode slug previously
+  produced a technically invalid document. HTML `href`s deliberately keep the
+  readable form (`/blog/新貼文/`) — browsers encode those on the wire.
+
+### Documented
+
+- Slugs keep letters from any script, and cuttlefish does not transliterate:
+  `新貼文.md` is served at `/blog/新貼文/` and `Café Crème` becomes
+  `café-crème`. Only URL- and filesystem-hostile characters are stripped.
+  Folding to ASCII instead would collide every non-Latin title onto one slug,
+  and transliteration mangles CJK. Written up in `docs/content.md` and the
+  scaffold `AGENTS.md`.
 
 ## [0.1.4] - 2026-07-19
 

@@ -13,6 +13,7 @@ from __future__ import annotations
 import re
 from datetime import date, datetime
 from pathlib import Path
+from urllib.parse import quote
 
 from cuttlefish.errors import CuttlefishError
 
@@ -80,8 +81,30 @@ def output_path(url: str, public_dir: Path) -> Path:
     return public_dir / rel
 
 
+def encode_url(url: str) -> str:
+    """Percent-encode a site path for embedding in a machine-read document.
+
+    Slugs keep their non-ASCII letters (``/blog/新貼文/``) so filenames and the
+    address bar stay readable — browsers percent-encode on the wire themselves,
+    so HTML ``href``s need no help. But sitemap ``<loc>`` and RSS ``<link>`` are
+    parsed as strict URIs, which are ASCII-only, so those two boundaries encode.
+    Only the site path is encoded, never ``base_url`` — its ``//`` and ``:`` are
+    structure, not data. ``safe`` keeps every RFC 3986 reserved delimiter, so a
+    URL that already contains ``?``/``&``/``#`` keeps its structure and only the
+    non-ASCII (and spaces) get encoded.
+    """
+    return quote(url, safe="/:@!$&'()*+,;=?#~")
+
+
 def slugify(value: str) -> str:
-    """Turn a filename stem or title into a URL-safe slug."""
+    """Turn a filename stem or title into a URL-safe slug.
+
+    Non-ASCII **letters** are deliberately kept: ``\\w`` is Unicode-aware, so
+    ``新貼文`` and ``café`` survive while every filesystem- and URL-hostile
+    character (``<>:/|?*#\\``, quotes, brackets) is stripped. Transliterating
+    instead would need a dependency and mangles CJK; collapsing to ASCII would
+    silently collide every non-Latin title into one slug.
+    """
     value = value.strip().lower()
     value = re.sub(r"[^\w\s-]", "", value)
     value = re.sub(r"[\s_]+", "-", value)

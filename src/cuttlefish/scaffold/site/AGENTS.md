@@ -247,6 +247,11 @@ cover = "/img/my-post.jpg" # optional; cover image, available on listings as ite
   defaults to the filename. A configured taxonomy key on a page is rejected —
   pages join no taxonomy listing.
 - `draft = true` hides a page from `ctf build` (shown by `ctf serve`).
+- Slugs keep **letters from any script** — `新貼文.md` serves at `/blog/新貼文/`,
+  `Café Crème` → `café-crème`. Only URL/filesystem-hostile characters
+  (`<>:/|?*#\`, quotes, brackets, punctuation) are stripped and spaces become
+  hyphens; there is no transliteration. Sitemap and feed links percent-encode
+  automatically — never hand-encode a `slug` or an `href`.
 - `cover` is an optional cover-image URL. It's a **listing field**, so it reaches
   aggregate templates as `item.cover` (not just the item's own page) — use it for
   card thumbnails. Empty when unset.
