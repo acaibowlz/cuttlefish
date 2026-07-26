@@ -16,7 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Scaffold: the `{# … #}` teaching comments are gone from the starter templates.
   They explained the generator's contract inside files a user then edits and
   ships as their own site; that contract belongs in `AGENTS.md` and the docs,
-  which already carry all of it. The layout notes in `static/css/main.css` stay.
+  which already carry all of it. The comments in `static/css/main.css` are gone
+  for the same reason — the starter files a site inherits are now unannotated.
 
 ## [0.1.5] - 2026-07-26
 

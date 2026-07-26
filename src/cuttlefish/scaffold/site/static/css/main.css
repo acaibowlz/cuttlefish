@@ -1,17 +1,12 @@
-/* Default theme for cuttlefish — a clean reading-first look inspired by minimalist
-   SSG themes (Hugo PaperMod, Astro Paper). Light + dark via prefers-color-scheme.
-   All colors/spacing flow from the tokens in :root; prefer var(--token) over
-   hardcoded values, and add a token rather than sprinkling literals. */
-
 :root {
-  --max-width: 44rem;    /* default container width: the reading column */
-  --width-wide: 64rem;   /* wider container for the side-panel layouts */
-  --panel-width: 17rem;  /* the full-height side panel (home widgets, post TOC) */
+  --max-width: 44rem;
+  --width-wide: 64rem;
+  --panel-width: 17rem;
   --font-sans: "Inter", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
   --font-mono: ui-monospace, "SF Mono", "JetBrains Mono", Menlo, monospace;
 
   --bg: #ffffff;
-  --surface: #f6f8fa;   /* code blocks, pills, hover fills */
+  --surface: #f6f8fa;
   --border: #e4e7eb;
   --fg: #1f2328;
   --muted: #656d76;
@@ -67,12 +62,6 @@ a:hover { color: var(--accent-hover); }
   border-radius: var(--radius-sm);
 }
 
-/* -- layout -------------------------------------------------------------- */
-
-/* One centered content column, sized by --max-width. The nav bar and footer are
-   full-bleed (their background/border span the viewport); only their *inner*
-   content wears `.container`, so the sticky bar stretches edge to edge. `main`
-   is a `.container` itself. */
 .container {
   width: 100%;
   max-width: var(--max-width);
@@ -85,18 +74,10 @@ main {
   padding-block: 3rem;
 }
 
-/* The home page widens its container for the two-column landing layout. */
 body.layout-wide { --max-width: var(--width-wide); }
 
-/* The nav bar and footer keep a fixed inner width (independent of the page's
-   --max-width) so their contents don't shift as you move between the narrow
-   reading column and the wide home page. It matches the home width, so the
-   logo lines up with the content there; on reading pages the bar simply sits
-   wider than the text. */
 .site-header-inner,
 .site-footer-inner { max-width: var(--width-wide); }
-
-/* -- header -------------------------------------------------------------- */
 
 .site-header {
   position: sticky;
@@ -132,23 +113,15 @@ body.layout-wide { --max-width: var(--width-wide); }
 .site-header nav a { color: var(--muted); }
 .site-header nav a:hover { color: var(--fg); }
 
-/* On side-panel pages, right-align the nav to the panel's left edge so the header
-   lines up with the layout below it. The nav is lifted out of the centered header
-   inner and pinned to the sticky, full-bleed .site-header (its containing block),
-   `--panel-width` in from the right edge — exactly the panel's left edge — while
-   the logo keeps its place. Only while the panel sits beside the content: below
-   the collapse breakpoint the nav returns to normal flow for the burger menu. */
 @media (min-width: 48rem) {
   body:has(main > .panel-grid) .site-header nav {
     position: absolute;
-    inset-block: 0;                             /* fill the header height... */
-    align-items: center;                        /* ...and center the links in it */
-    right: calc(var(--panel-width) + 1.5rem);   /* clear of the panel's edge */
+    inset-block: 0;
+    align-items: center;
+    right: calc(var(--panel-width) + 1.5rem);
   }
 }
 
-/* Burger menu — pure CSS via a visually-hidden checkbox (no JavaScript).
-   Hidden on desktop; on small screens it toggles the nav into a dropdown. */
 .nav-toggle { position: absolute; width: 1px; height: 1px; opacity: 0; }
 .nav-burger { display: none; }
 
@@ -174,10 +147,10 @@ body.layout-wide { --max-width: var(--width-wide); }
   }
 
   .site-header nav {
-    display: none;            /* collapsed by default */
+    display: none;
     flex-direction: column;
     gap: 0.25rem;
-    width: 100%;             /* drops to a full-width row under the header */
+    width: 100%;
     padding-block: 0.5rem;
   }
   .site-header nav a { padding: 0.4rem 0; }
@@ -185,13 +158,10 @@ body.layout-wide { --max-width: var(--width-wide); }
   .nav-toggle:checked ~ nav { display: flex; }
   .nav-toggle:focus-visible ~ .nav-burger { outline: 2px solid var(--accent); outline-offset: 2px; }
 
-  /* Morph the three bars into an X when open. */
   .nav-toggle:checked ~ .nav-burger span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
   .nav-toggle:checked ~ .nav-burger span:nth-child(2) { opacity: 0; }
   .nav-toggle:checked ~ .nav-burger span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 }
-
-/* -- typography ---------------------------------------------------------- */
 
 h1, h2, h3, h4 {
   line-height: 1.25;
@@ -199,20 +169,15 @@ h1, h2, h3, h4 {
   letter-spacing: -0.02em;
   margin: 2.5rem 0 1rem;
 }
-h1 { font-size: 2.25rem; margin-top: 0; }   /* page/article title — the dominant heading */
+h1 { font-size: 2.25rem; margin-top: 0; }
 h2 { font-size: 1.5rem; }
 h3 { font-size: 1.2rem; }
 
-/* Body (Markdown) headings step down clearly below the page title, so a stray
-   "# Heading" inside content never rivals the title rendered by the template. */
 .body h1 { font-size: 1.55rem; }
 .body h2 { font-size: 1.3rem; }
 .body h3 { font-size: 1.1rem; }
 .body h4 { font-size: 0.95rem; }
 
-/* Headings are the anchor targets for TOC links. Offset the scroll landing by
-   the sticky header's height, so a jumped-to heading stops just below the bar
-   instead of hiding behind it. */
 .body :is(h1, h2, h3, h4, h5, h6) { scroll-margin-top: 5rem; }
 
 p, ul, ol { margin: 0 0 1.25rem; }
@@ -233,18 +198,10 @@ p, ul, ol { margin: 0 0 1.25rem; }
 
 time { color: var(--muted); font-size: 0.85rem; }
 
-/* -- hero (home) --------------------------------------------------------- */
-
 .hero { padding-block: 1rem 2.5rem; }
 .hero h1 { font-size: 2.5rem; }
 .hero p { font-size: 1.15rem; color: var(--muted); margin-bottom: 0; }
 
-/* Home main sections (Featured, Recent posts, Projects). Without help these
-   read as one continuous ruled column, because the section headings look like
-   the list below and the list rows carry their own rules. Give each heading a
-   small uppercase "eyebrow" on a divider rule — the same section-label language
-   as the sidebar's .widget-title — and a clear gap between sections, so the
-   three blocks separate at a glance. */
 .panel-main > .recent + .recent { margin-top: 3rem; }
 .panel-main > .recent > h2 {
   margin: 0 0 0.75rem;
@@ -257,15 +214,6 @@ time { color: var(--muted); font-size: 0.85rem; }
   border-bottom: 1px solid var(--border);
 }
 
-/* Side-panel layout (home widgets, single-post TOC). A narrow panel with the
-   --surface background sits at the right edge and runs the *full height* of the
-   page — header to footer — while the main content is centered in the space to
-   its left. Collapses to one column on narrow screens. Both the home page and
-   blog posts opt in by wrapping their content in `.panel-grid`. */
-
-/* The panel page fills its <main> edge to edge: drop the reading-column cap and
-   padding from `.container` and become a flex column, so the panel row below can
-   stretch down to the footer even when the content is short. */
 main:has(> .panel-grid) {
   display: flex;
   flex-direction: column;
@@ -274,14 +222,11 @@ main:has(> .panel-grid) {
 }
 
 .panel-grid {
-  flex: 1;                 /* fill the main, so the panel reaches the footer */
+  flex: 1;
   display: flex;
-  align-items: stretch;    /* the panel fills the full height of the row */
+  align-items: stretch;
 }
 
-/* The content column. It grows to fill the space beside the panel; its children
-   are capped at the reading width and centered, so the main content sits centered
-   in that space rather than hugging the panel. */
 .panel-main {
   flex: 1;
   min-width: 0;
@@ -289,26 +234,18 @@ main:has(> .panel-grid) {
 }
 .panel-main > * { max-width: var(--max-width); margin-inline: auto; }
 
-/* A panel page with no side panel (indexes, taxonomies, standalone pages) still
-   reserves the panel's width, so its content column lands in exactly the same
-   place as on pages that have one — same layout, one fewer column. */
 .panel-grid:not(:has(.panel-aside)) .panel-main { margin-right: var(--panel-width); }
 
 .panel-aside {
-  flex: 0 0 var(--panel-width);   /* narrow, fixed width */
+  flex: 0 0 var(--panel-width);
   background: var(--surface);
   border-left: 1px solid var(--border);
   padding: 3rem 1.5rem;
 }
-/* Widgets/TOC stay in view as you scroll the taller content column. */
-.panel-aside-inner { position: sticky; top: 5rem; }   /* clear the sticky header */
+.panel-aside-inner { position: sticky; top: 5rem; }
 
-/* The footer's usual top margin would leave a gap below the full-height panel,
-   so drop it: the panel band should meet the footer directly. */
 main:has(> .panel-grid) + .site-footer { margin-top: 0; }
 
-/* On the panel's --surface background, widgets drop their card and separate with
-   a hairline rule instead (a card would be surface-on-surface). */
 .panel-aside .widget {
   background: none;
   border: none;
@@ -321,8 +258,6 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
   border-top: 1px solid var(--border);
 }
 .widget .tags { margin: 0; }
-/* Pills sit on the panel, so give them the page background to stand out against
-   the panel's surface fill (the two share var(--surface) otherwise). */
 .widget .tags li a { background: var(--bg); }
 .tag-count { color: var(--muted); font-size: 0.75em; }
 .widget-title {
@@ -334,7 +269,6 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
   color: var(--muted);
 }
 
-/* Profile / author card — [profile] rendered on the home page via site.profile. */
 .profile-card { text-align: center; }
 .profile-card .avatar {
   width: 72px;
@@ -360,8 +294,6 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
 .socials a { color: var(--muted); }
 .socials a:hover { color: var(--accent); }
 
-/* On small screens the panel is hidden entirely and the content takes the full
-   width — a narrow viewport has no room for a side panel. */
 @media (max-width: 48rem) {
   .panel-main { padding: 2rem 1.25rem; }
   .panel-main > * { max-width: none; }
@@ -369,10 +301,6 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
   .panel-grid:not(:has(.panel-aside)) .panel-main { margin-right: 0; }
 }
 
-/* -- listings ------------------------------------------------------------ */
-
-/* margin-block only: a bare list is a direct child of `.panel-main` on the index
-   templates, where `margin-inline: auto` is what centers the column. */
 .post-list, .project-list, .term-list { list-style: none; padding: 0; margin-block: 0; }
 
 .post-list li, .project-list li {
@@ -394,8 +322,6 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
 .post-list time { display: block; margin-top: 0.2rem; }
 .post-list p, .project-list p { margin: 0.4rem 0 0; color: var(--muted); }
 
-/* Content-type label prefixing an item on a taxonomy term page (a tag can span
-   types), rendered as a small uppercase tag before the title. */
 .content-type {
   display: inline-block;
   margin-right: 0.5rem;
@@ -408,15 +334,10 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
 
 .term-list li { margin-bottom: 0.5rem; }
 
-/* -- tags ---------------------------------------------------------------- */
-
 .tags { list-style: none; padding: 0; margin: 1rem 0 0; display: flex; flex-wrap: wrap; gap: 0.5rem; }
 .tags li a {
   display: inline-block;
   background: var(--surface);
-  /* An inset box-shadow ring, not a border: on a full-radius pill a 1px border
-     antialiases unevenly around the curves (very visible on the accent hover),
-     while a ring renders at a consistent width all the way around. */
   box-shadow: inset 0 0 0 1px var(--border);
   color: var(--muted);
   padding: 0.15rem 0.6rem;
@@ -426,15 +347,10 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
 }
 .tags li a:hover { color: var(--accent); box-shadow: inset 0 0 0 1px var(--accent); }
 
-/* -- article ------------------------------------------------------------- */
-
 .post header, .project header { margin-bottom: 2rem; }
 .post header h1, .page h1, .project h1 { margin-bottom: 0.5rem; }
 .body { margin-top: 1.5rem; }
 
-/* Table of contents: the single-post side panel's contents (see .panel-aside).
-   The outline runs as a single column; the uppercase eyebrow matches the home
-   widget titles, and entries indent by heading level. */
 .toc { font-size: 0.9rem; }
 .toc::before {
   content: "In this post";
@@ -450,13 +366,10 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
 .toc li + li { margin-top: 0.5rem; }
 .toc a { color: var(--muted); }
 .toc a:hover { color: var(--fg); }
-/* Indent nested headings so the outline reads at a glance. */
 .toc-h3 { padding-left: 1.1rem; }
 .toc-h4 { padding-left: 2.2rem; }
 .toc-h5 { padding-left: 3.3rem; }
 .toc-h6 { padding-left: 4.4rem; }
-
-/* -- code ---------------------------------------------------------------- */
 
 code { font-family: var(--font-mono); font-size: 0.9em; }
 
@@ -478,8 +391,6 @@ pre {
 }
 pre code { background: none; border: none; padding: 0; }
 
-/* -- pagination & footer ------------------------------------------------- */
-
 .pagination {
   display: flex;
   justify-content: space-between;
@@ -500,8 +411,6 @@ pre code { background: none; border: none; padding: 0; }
   font-size: 0.85rem;
 }
 .site-footer p { margin: 0; }
-
-/* -- 404 ----------------------------------------------------------------- */
 
 .not-found {
   text-align: center;
