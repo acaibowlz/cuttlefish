@@ -5,7 +5,7 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.1.6] - 2026-07-26
 
 ### Changed
 
@@ -57,7 +57,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - RSS feeds. A content type with `feed = true` publishes an RSS 2.0 feed of its
   recent posts at `<index_permalink>feed.xml` (e.g. `/blog/feed.xml`). It's a
-  *summary* feed — title, link, date and description per entry, newest 20 first —
+  _summary_ feed — title, link, date and description per entry, newest 20 first —
   gated on `base_url` like the sitemap, and requires the type to have an index.
   Rendered in core (no template), it is a fingerprinted aggregate: regenerated
   only when a listed post's metadata changes, pruned when disabled, and kept out
@@ -154,6 +154,7 @@ as `cuttlefish-ssg` with the `ctf` CLI.
 - Recipes: a gallery of copy-in feature guides (e.g. reading time, breadcrumbs).
 - MIT license.
 
+[0.1.6]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.2...v0.1.3
