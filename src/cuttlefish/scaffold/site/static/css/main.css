@@ -289,6 +289,11 @@ main:has(> .panel-grid) {
 }
 .panel-main > * { max-width: var(--max-width); margin-inline: auto; }
 
+/* A panel page with no side panel (indexes, taxonomies, standalone pages) still
+   reserves the panel's width, so its content column lands in exactly the same
+   place as on pages that have one — same layout, one fewer column. */
+.panel-grid:not(:has(.panel-aside)) .panel-main { margin-right: var(--panel-width); }
+
 .panel-aside {
   flex: 0 0 var(--panel-width);   /* narrow, fixed width */
   background: var(--surface);
@@ -361,11 +366,14 @@ main:has(> .panel-grid) + .site-footer { margin-top: 0; }
   .panel-main { padding: 2rem 1.25rem; }
   .panel-main > * { max-width: none; }
   .panel-aside { display: none; }
+  .panel-grid:not(:has(.panel-aside)) .panel-main { margin-right: 0; }
 }
 
 /* -- listings ------------------------------------------------------------ */
 
-.post-list, .project-list, .term-list { list-style: none; padding: 0; margin: 0; }
+/* margin-block only: a bare list is a direct child of `.panel-main` on the index
+   templates, where `margin-inline: auto` is what centers the column. */
+.post-list, .project-list, .term-list { list-style: none; padding: 0; margin-block: 0; }
 
 .post-list li, .project-list li {
   padding-block: 1.25rem;

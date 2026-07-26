@@ -2,11 +2,17 @@
 
 {% block title %}{{ taxonomy }} — {{ site.title }}{% endblock %}
 
+{# Panel layout without a side panel — see blog.index.html. #}
+
 {% block content %}
-  <h1>{{ taxonomy }}</h1>
-  <ul class="term-list">
-    {% for term in terms %}
-    <li><a href="{{ term.url }}">{{ term.name }}</a> ({{ term.count }})</li>
-    {% endfor %}
-  </ul>
+  <div class="panel-grid">
+    <div class="panel-main">
+      <h1>{{ taxonomy }}</h1>
+      <ul class="term-list">
+        {% for term in terms %}
+        <li><a href="{{ term.url }}">{{ term.name }}</a> ({{ term.count }})</li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 {% endblock %}

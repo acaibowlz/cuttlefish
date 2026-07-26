@@ -2,24 +2,32 @@
 
 {% block title %}Blog — {{ site.title }}{% endblock %}
 
-{% block content %}
-  <h1>Blog</h1>
-  {# Listing templates see listing fields only — no body_html. #}
-  <ul class="post-list">
-    {% for item in items %}
-    <li>
-      <a href="{{ item.url }}">{{ item.title }}</a>
-      {% if item.date %}<time>{{ item.date }}</time>{% endif %}
-      {% if item.description %}<p>{{ item.description }}</p>{% endif %}
-    </li>
-    {% endfor %}
-  </ul>
+{# Same panel layout as the home page and posts, minus the side panel: a
+   `.panel-grid` with only `.panel-main`, so the content column is centered and
+   sized identically. Add an `.panel-aside` here if this page ever wants one. #}
 
-  {% if page.total_pages > 1 %}
-  <nav class="pagination">
-    {% if page.has_prev %}<a href="{{ page.prev_url }}">&larr; Newer</a>{% endif %}
-    <span>Page {{ page.number }} of {{ page.total_pages }}</span>
-    {% if page.has_next %}<a href="{{ page.next_url }}">Older &rarr;</a>{% endif %}
-  </nav>
-  {% endif %}
+{% block content %}
+  <div class="panel-grid">
+    <div class="panel-main">
+      <h1>Blog</h1>
+      {# Listing templates see listing fields only — no body_html. #}
+      <ul class="post-list">
+        {% for item in items %}
+        <li>
+          <a href="{{ item.url }}">{{ item.title }}</a>
+          {% if item.date %}<time>{{ item.date }}</time>{% endif %}
+          {% if item.description %}<p>{{ item.description }}</p>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+
+      {% if page.total_pages > 1 %}
+      <nav class="pagination">
+        {% if page.has_prev %}<a href="{{ page.prev_url }}">&larr; Newer</a>{% endif %}
+        <span>Page {{ page.number }} of {{ page.total_pages }}</span>
+        {% if page.has_next %}<a href="{{ page.next_url }}">Older &rarr;</a>{% endif %}
+      </nav>
+      {% endif %}
+    </div>
+  </div>
 {% endblock %}

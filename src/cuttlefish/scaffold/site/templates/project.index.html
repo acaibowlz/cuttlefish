@@ -2,14 +2,20 @@
 
 {% block title %}Projects — {{ site.title }}{% endblock %}
 
+{# Panel layout without a side panel — see blog.index.html. #}
+
 {% block content %}
-  <h1>Projects</h1>
-  <ul class="project-list">
-    {% for item in items %}
-    <li>
-      <a href="{{ item.url }}">{{ item.title }}</a>
-      {% if item.description %}<p>{{ item.description }}</p>{% endif %}
-    </li>
-    {% endfor %}
-  </ul>
+  <div class="panel-grid">
+    <div class="panel-main">
+      <h1>Projects</h1>
+      <ul class="project-list">
+        {% for item in items %}
+        <li>
+          <a href="{{ item.url }}">{{ item.title }}</a>
+          {% if item.description %}<p>{{ item.description }}</p>{% endif %}
+        </li>
+        {% endfor %}
+      </ul>
+    </div>
+  </div>
 {% endblock %}

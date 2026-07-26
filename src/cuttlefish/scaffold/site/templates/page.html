@@ -2,9 +2,15 @@
 
 {% block title %}{{ page.title }} — {{ site.title }}{% endblock %}
 
+{# Panel layout without a side panel — see blog.index.html. #}
+
 {% block content %}
-  <article class="page">
-    <h1>{{ page.title }}</h1>
-    <div class="body">{{ page.body_html | safe }}</div>
-  </article>
+  <div class="panel-grid">
+    <div class="panel-main">
+      <article class="page">
+        <h1>{{ page.title }}</h1>
+        <div class="body">{{ page.body_html | safe }}</div>
+      </article>
+    </div>
+  </div>
 {% endblock %}

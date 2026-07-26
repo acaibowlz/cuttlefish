@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Scaffold: the content index, taxonomy term, taxonomy index and standalone page
+  templates now use the same `.panel-grid` / `.panel-main` layout as the home
+  page and posts. They have no side panel, but the grid reserves its width, so
+  the content column and the header nav sit in the same place on every page
+  instead of shifting between layouts.
+
 ### Fixed
 
 - `ctf serve` no longer 404s on content whose slug contains non-ASCII
