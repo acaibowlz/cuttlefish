@@ -2,9 +2,10 @@
 
 {% block title %}{{ page.title }} — {{ site.title }}{% endblock %}
 
-{# A post with headings gets the two-column layout: the centered article on the
-   left, its table of contents in a narrow full-height side panel on the right
-   (see main.css). Posts with no headings keep the plain centered reading column. #}
+{# Every post uses the panel layout (see main.css): the centered article on the
+   left, and — only when the post has headings — its table of contents in a
+   narrow full-height side panel on the right. Without a TOC the grid keeps the
+   panel's width reserved, so the article doesn't shift between posts. #}
 
 {% macro post_header() %}
   <header>
@@ -21,13 +22,13 @@
 {% endmacro %}
 
 {% block content %}
-  {% if page.toc %}
   <div class="panel-grid">
     <article class="post panel-main">
       {{ post_header() }}
       {# Single-content templates may use the full rendered body. #}
       <div class="body">{{ page.body_html | safe }}</div>
     </article>
+    {% if page.toc %}
     <aside class="panel-aside">
       <div class="panel-aside-inner">
         {# page.toc is a flat, in-order list of body headings; indent by level. #}
@@ -40,11 +41,6 @@
         </nav>
       </div>
     </aside>
+    {% endif %}
   </div>
-  {% else %}
-  <article class="post">
-    {{ post_header() }}
-    <div class="body">{{ page.body_html | safe }}</div>
-  </article>
-  {% endif %}
 {% endblock %}

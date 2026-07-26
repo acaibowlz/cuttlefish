@@ -5,6 +5,15 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Scaffold: a blog post with no headings now uses the same `.panel-grid` layout
+  as one with a table of contents, just without the side panel — it kept the
+  plain centered container before, so the article shifted sideways as you moved
+  between posts in the same blog.
+
 ## [0.1.5] - 2026-07-26
 
 ### Changed
