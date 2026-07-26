@@ -1,9 +1,6 @@
 {% extends "base.html" %}
 
 {% block content %}
-  {# Two columns: centered content on the left, taxonomy widgets in a narrow
-     full-height side panel on the right. Collapses to a single column on small
-     screens (see main.css). #}
   <div class="panel-grid">
     <div class="panel-main">
       <section class="hero">
@@ -11,8 +8,6 @@
         <p>A placeholder landing page — replace this intro, or make the whole page your own.</p>
       </section>
 
-      {# Each section is addressed by content-type key — no forced loop, so you
-         can title and order them however you like. Keys come from [home].recent. #}
       <section class="recent">
         <h2>Recent posts</h2>
         <ul class="post-list">
@@ -42,9 +37,6 @@
     {% if site.profile or taxonomies.tags %}
     <aside class="panel-aside">
       <div class="panel-aside-inner">
-      {# Author card from [profile]. It's a site-wide global, so `site.profile`
-         is available on every page; the home page renders it here. It has
-         name, bio, avatar, email and socials (platform -> url). #}
       {% if site.profile %}
       <section class="widget profile-card">
         {% if site.profile.avatar %}
@@ -63,10 +55,6 @@
       </section>
       {% endif %}
 
-      {# Term lists for taxonomies with `home = true`, addressed by name. Each
-         term has `name`, `count` and `url`, ordered by the taxonomy's
-         sort_by/order. This renders `tags` as a pill cloud; slice with `[:20]`
-         if you want to cap it. #}
       {% if taxonomies.tags %}
       <section class="widget">
         <h2 class="widget-title">Tags</h2>

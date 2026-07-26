@@ -2,11 +2,6 @@
 
 {% block title %}{{ page.title }} — {{ site.title }}{% endblock %}
 
-{# Every post uses the panel layout (see main.css): the centered article on the
-   left, and — only when the post has headings — its table of contents in a
-   narrow full-height side panel on the right. Without a TOC the grid keeps the
-   panel's width reserved, so the article doesn't shift between posts. #}
-
 {% macro post_header() %}
   <header>
     <h1>{{ page.title }}</h1>
@@ -25,13 +20,11 @@
   <div class="panel-grid">
     <article class="post panel-main">
       {{ post_header() }}
-      {# Single-content templates may use the full rendered body. #}
       <div class="body">{{ page.body_html | safe }}</div>
     </article>
     {% if page.toc %}
     <aside class="panel-aside">
       <div class="panel-aside-inner">
-        {# page.toc is a flat, in-order list of body headings; indent by level. #}
         <nav class="toc" aria-label="Table of contents">
           <ul>
             {% for heading in page.toc %}

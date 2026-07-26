@@ -13,6 +13,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   as one with a table of contents, just without the side panel — it kept the
   plain centered container before, so the article shifted sideways as you moved
   between posts in the same blog.
+- Scaffold: the `{# … #}` teaching comments are gone from the starter templates.
+  They explained the generator's contract inside files a user then edits and
+  ships as their own site; that contract belongs in `AGENTS.md` and the docs,
+  which already carry all of it. The layout notes in `static/css/main.css` stay.
 
 ## [0.1.5] - 2026-07-26
 

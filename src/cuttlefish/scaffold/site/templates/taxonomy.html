@@ -2,16 +2,11 @@
 
 {% block title %}{{ term.name }} — {{ site.title }}{% endblock %}
 
-{# Panel layout without a side panel — see blog.index.html. #}
-
 {% block content %}
   <div class="panel-grid">
     <div class="panel-main">
       <h1>{{ taxonomy }}: {{ term.name }}</h1>
       <p>{{ term.count }} item(s).</p>
-      {# A taxonomy can span content types (a tag on both blog posts and projects),
-         so each item exposes its `type` — prefix the title with it to disambiguate.
-         Drop the span if a taxonomy only ever covers one type. #}
       <ul class="post-list">
         {% for item in items %}
         <li>

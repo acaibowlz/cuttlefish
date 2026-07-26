@@ -6,19 +6,15 @@
   <title>{% block title %}{{ site.title }}{% endblock %}</title>
   <link rel="icon" href="/favicon.svg" type="image/svg+xml">
   <link rel="stylesheet" href="/css/main.css">
-  {# RSS autodiscovery: feed readers and browsers find these. `site.feeds` lists
-     one per content type with `feed = true` (empty until base_url is set). #}
   {% for feed in site.feeds %}
   <link rel="alternate" type="application/rss+xml" title="{{ site.title }}" href="{{ feed.url }}">
   {% endfor %}
 </head>
 <body class="{% block body_class %}{% endblock %}">
   <header class="site-header">
-    {# Full-bleed bar; this inner .container aligns the logo/nav to the page. #}
     <div class="container site-header-inner">
       <a class="site-title" href="/">{{ site.title }}</a>
       {% if site.nav.enabled %}
-      {# CSS-only burger: the hidden checkbox toggles the nav on small screens. #}
       <input type="checkbox" id="nav-toggle" class="nav-toggle" aria-label="Toggle navigation menu">
       <label for="nav-toggle" class="nav-burger" aria-hidden="true"><span></span><span></span><span></span></label>
       <nav>
