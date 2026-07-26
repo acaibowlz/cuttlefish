@@ -27,6 +27,7 @@ newer version and re-apply.
 |--------|--------------|
 | [`reading-time`](reading-time.md) | Estimated reading time on single article pages (build-time, no JS). |
 | [`breadcrumb`](breadcrumb.md) | A breadcrumb trail (Home / Section / Page) on content pages. |
+| [`image-lightbox`](image-lightbox.md) | Click an image in an article to open it full-size in a modal. |
 
 ## Writing a recipe
 

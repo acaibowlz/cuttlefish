@@ -12,6 +12,7 @@ The library lives in the [`recipes/` folder of the cuttlefish repository](https:
 
 - **`reading-time`** — an estimated "N min read" on single article pages, computed at build time.
 - **`breadcrumb`** — a Home / Section / Page trail on content pages.
+- **`image-lightbox`** — click an image in an article to open it full-size in a modal.
 
 ## Using a recipe
 
