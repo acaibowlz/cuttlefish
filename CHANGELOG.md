@@ -5,6 +5,12 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- Build output lists removed files by URL and drops the "x of y" page counts.
+
 ## [0.1.10] - 2026-10-03
 
 ### Added
@@ -172,6 +178,7 @@ as `cuttlefish-ssg` with the `ctf` CLI.
 - Recipes: a gallery of copy-in feature guides (e.g. reading time, breadcrumbs).
 - MIT license.
 
+[Unreleased]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.10...HEAD
 [0.1.10]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.9...v0.1.10
 [0.1.9]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.8...v0.1.9
 [0.1.8]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.7...v0.1.8
