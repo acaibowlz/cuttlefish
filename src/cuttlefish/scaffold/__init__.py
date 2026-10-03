@@ -35,8 +35,6 @@ def scaffold_site(directory: Path, *, force: bool = False, console: Console | No
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
 
-    _link_claude_md(directory)
-
     url = "http://127.0.0.1:8000/"
     console.print(f"[green]✓[/green] Created a new cuttlefish site in [bold]{directory}[/bold]")
     console.print()
@@ -49,19 +47,39 @@ def scaffold_site(directory: Path, *, force: bool = False, console: Console | No
     console.print("  [dim]Customize it in config.toml, or read AGENTS.md for the full guide.[/dim]")
 
 
-def _link_claude_md(directory: Path) -> None:
-    """Point CLAUDE.md at AGENTS.md so Claude Code loads the agent guide.
+def update_site(root: Path, *, console: Console | None = None) -> None:
+    """Replace the site's ``AGENTS.md`` with the guide for this version of ctf.
 
-    Created as a symlink; falls back to a copy where symlinks aren't permitted
-    (e.g. unprivileged Windows).
+    ``AGENTS.md`` is generator-owned; site-specific notes live in
+    ``CUSTOMIZATION.md``, so a plain overwrite is safe. Sites from before that
+    split may have notes inside ``AGENTS.md``, so a copy that differs is kept as
+    ``AGENTS.md.bak`` rather than lost.
     """
-    agents = directory / "AGENTS.md"
-    if not agents.exists():
-        return
-    claude = directory / "CLAUDE.md"
-    if claude.is_symlink() or claude.exists():
-        claude.unlink()
-    try:
-        claude.symlink_to("AGENTS.md")
-    except (OSError, NotImplementedError):
-        shutil.copy2(agents, claude)
+    console = console or Console()
+    root = root.resolve()
+    if not (root / "config.toml").is_file():
+        raise ScaffoldError(
+            f"{display_path(root)} has no config.toml. Run this from a site root, or pass its path.",
+            summary="Refusing to update",
+        )
+
+    agents = root / "AGENTS.md"
+    new = (SITE_TEMPLATE_DIR / "AGENTS.md").read_bytes()
+    changed = not agents.is_file() or agents.read_bytes() != new
+    if changed:
+        if agents.is_file():
+            shutil.copy2(agents, root / "AGENTS.md.bak")
+            console.print("[dim]Previous AGENTS.md saved as AGENTS.md.bak[/dim]")
+        agents.write_bytes(new)
+
+    # Older sites predate CUSTOMIZATION.md; the new AGENTS.md tells the agent
+    # to read it, so give them the starter file. Never overwrite an existing one.
+    custom = root / "CUSTOMIZATION.md"
+    if not custom.exists():
+        shutil.copy2(SITE_TEMPLATE_DIR / "CUSTOMIZATION.md", custom)
+        console.print("[green]✓[/green] Created CUSTOMIZATION.md")
+
+    if changed:
+        console.print("[green]✓[/green] Updated AGENTS.md")
+    else:
+        console.print("[green]✓[/green] AGENTS.md is up to date")

@@ -7,10 +7,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `ctf update` replaces a site's `AGENTS.md` with the guide for the installed
+  version, keeping a differing copy as `AGENTS.md.bak`.
+- Scaffold: `CUSTOMIZATION.md` holds site-specific agent instructions;
+  `AGENTS.md` is marked protected and points the agent there.
+
 ### Changed
 
 - Build output colors only the counts; numbers or words like `True` in the site
   title are no longer recolored. The 404 line reads `404.html`.
+
+### Removed
+
+- `ctf init` no longer symlinks `CLAUDE.md` to `AGENTS.md`.
 
 ## [0.1.9] - 2026-10-03
 

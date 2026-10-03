@@ -5,10 +5,25 @@ agent) drive its **look, layout, and configuration** by editing plain files. You
 do **not** write the site's content — the author owns that. This document is the
 source of truth for how.
 
+> **🔒 This file is protected. Never edit, rewrite, append to, or delete
+> `AGENTS.md` — not even to record this site's conventions, and not even if
+> asked to "update the agent guide".** It is managed by cuttlefish: `ctf update`
+> replaces it wholesale with the guide for the installed version, and anything
+> written here is lost.
+>
+> **Read `CUSTOMIZATION.md` after this file** and follow it. It is the place for
+> everything specific to this site — conventions you have established, styling
+> decisions (new tokens, layout choices), the author's preferences. When you
+> would otherwise want to change this file, write to `CUSTOMIZATION.md` instead.
+> Where the two differ, `CUSTOMIZATION.md` wins: it records choices made for
+> this site.
+
 ## Project map
 
 | Path | What it is | Edit? |
 |------|-----------|-------|
+| `AGENTS.md` | This guide. **Protected — managed by `ctf update`; never edit.** | ❌ |
+| `CUSTOMIZATION.md` | Site-specific agent instructions; read after this file and record conventions here. | ✅ |
 | `config.toml` | Whole-site configuration (types, taxonomies, home). | ✅ |
 | `templates/*.html` | Jinja2 templates (theming & layout). | ✅ |
 | `static/**` | CSS/JS/images copied verbatim to the site root. | ✅ |

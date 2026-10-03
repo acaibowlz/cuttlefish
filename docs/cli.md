@@ -1,6 +1,6 @@
 # CLI reference
 
-cuttlefish installs one command, `ctf`, with five subcommands. Run `ctf --help` or `ctf <command> --help` for the same information at the terminal.
+cuttlefish installs one command, `ctf`, with six subcommands. Run `ctf --help` or `ctf <command> --help` for the same information at the terminal.
 `ctf --version` prints the installed version.
 
 ## `init`
@@ -9,7 +9,7 @@ cuttlefish installs one command, `ctf`, with five subcommands. Run `ctf --help` 
 ctf init <directory> [--force]
 ```
 
-Scaffold a new site into `<directory>` — config, templates, stylesheet, starter content, and `AGENTS.md`.
+Scaffold a new site into `<directory>` — config, templates, stylesheet, starter content, `AGENTS.md`, and `CUSTOMIZATION.md`.
 
 | Option | Default | Meaning |
 |--------|---------|---------|
@@ -85,6 +85,20 @@ Serve `public/` with file watching and live reload — the dev server.
 | `--reload` / `--no-reload` | `--reload` | Watch files and live-reload the browser. |
 
 `serve` previews the site at the local root regardless of `base_url`, so hosting paths don't get in the way while you work. It watches every file in the site except `public/` and hidden files (`.ctf/`, `.git`, editor swap files). On each change it runs an incremental rebuild, and refreshes connected browsers only if the output changed — editing a file the build doesn't read, such as `AGENTS.md`, rebuilds nothing and leaves the page alone.
+
+## `update` {#update}
+
+```
+ctf update [root]
+```
+
+Replace the site's `AGENTS.md` with the guide that matches the installed `ctf`. Run it after upgrading cuttlefish so the agent learns about new config keys and template variables — then ask the agent to run `ctf check` and fix anything the upgrade broke.
+
+| Option | Default | Meaning |
+|--------|---------|---------|
+| `root` | `.` | Site root (contains `config.toml`). |
+
+`AGENTS.md` is owned by cuttlefish and overwritten wholesale; notes specific to your site belong in `CUSTOMIZATION.md`, which `update` never touches (it only creates one if the site has none). If the existing `AGENTS.md` differs from the new one, it is first saved as `AGENTS.md.bak`, so notes written there before `CUSTOMIZATION.md` existed aren't lost — move them over, then delete the backup.
 
 ## Error output
 

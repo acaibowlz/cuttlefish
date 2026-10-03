@@ -4,7 +4,9 @@ A cuttlefish site is nothing but files — `config.toml`, Markdown in `content/`
 
 ## The agent already knows cuttlefish
 
-What makes this work is that every scaffolded site ships an `AGENTS.md` at its root — a contract written *for the agent*. It spells out the file map, the full `config.toml` schema, the permalink tokens, every template variable, and this site's styling tokens and conventions. Agents that follow the `AGENTS.md` convention read it from the project root on their own (cuttlefish also symlinks `CLAUDE.md` to it, so Claude Code loads the same file).
+What makes this work is that every scaffolded site ships an `AGENTS.md` at its root — a contract written *for the agent*. It spells out the file map, the full `config.toml` schema, the permalink tokens, every template variable, and this site's styling tokens and conventions. Agents that follow the `AGENTS.md` convention read it from the project root on their own.
+
+`AGENTS.md` belongs to cuttlefish, not to your site: it tells the agent never to edit it, and [`ctf update`](cli.md#update) replaces it wholesale when you upgrade. Anything specific to *your* site — conventions you've settled on, a new design token, "always use sentence case in headings" — goes in **`CUSTOMIZATION.md`**, which `AGENTS.md` tells the agent to read next and to follow where the two differ. Ask the agent to "remember" a convention and that's where it writes it.
 
 The practical upshot: **you never have to explain how cuttlefish works.** You don't paste documentation, name template variables, or describe the config format. The agent arrives already knowing them, so your side of the conversation is just the outcome — "put the three most recent projects on the home page," not "iterate `recent.project` in `home.html`." It derives the second sentence from the first.
 

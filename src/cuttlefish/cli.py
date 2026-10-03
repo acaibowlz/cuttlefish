@@ -2,7 +2,8 @@
 
 ``init`` scaffolds a new site, ``new`` creates a content file from config,
 ``build`` renders the site to ``public/``, ``check`` validates it without
-writing, and ``serve`` runs a live-reloading dev server.
+writing, ``serve`` runs a live-reloading dev server, and ``update`` refreshes
+a site's ``AGENTS.md``.
 """
 
 from __future__ import annotations
@@ -172,6 +173,17 @@ def serve(
     from cuttlefish.serve import serve_site
 
     serve_site(root, port=port, drafts=drafts, reload=reload, console=console)
+
+
+@app.command()
+@handle_errors
+def update(
+    root: Path = typer.Argument(Path("."), help="Site root (contains config.toml)."),
+) -> None:
+    """Replace AGENTS.md with the guide for this version of ctf."""
+    from cuttlefish.scaffold import update_site
+
+    update_site(root, console=console)
 
 
 def main() -> None:

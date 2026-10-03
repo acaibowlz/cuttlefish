@@ -44,7 +44,8 @@ Here's what `ctf init` gives you:
 ```
 my-site/
 ├── config.toml          # the whole site's configuration
-├── AGENTS.md            # the agent's contract for editing this site
+├── AGENTS.md            # the agent's contract for editing this site (managed by ctf)
+├── CUSTOMIZATION.md     # your site's own conventions, for the agent
 ├── content/             # your Markdown, one folder per content type
 │   ├── blog/
 │   ├── project/
