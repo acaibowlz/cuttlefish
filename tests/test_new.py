@@ -105,3 +105,10 @@ def test_new_collision_refused_then_forced(site: Path):
     # --force overwrites in place.
     make(site, "blog", "Dup", force=True, description="Second take.")
     assert "Second take." in first.read_text(encoding="utf-8")
+
+
+def test_new_edit_with_missing_editor_is_not_fatal(site: Path, monkeypatch):
+    # The file already exists by the time the editor runs; a bad $EDITOR is a note.
+    monkeypatch.setenv("EDITOR", "no-such-editor --wait")
+    path = make(site, "blog", "Edit Me", edit=True)
+    assert path.is_file()

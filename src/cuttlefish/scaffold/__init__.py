@@ -7,7 +7,15 @@ from pathlib import Path
 
 from rich.console import Console
 
+from cuttlefish.errors import CuttlefishError, display_path
+
 SITE_TEMPLATE_DIR = Path(__file__).parent / "site"
+
+
+class ScaffoldError(CuttlefishError):
+    """Raised when the starter site cannot be created."""
+
+    default_summary = "Refusing to scaffold"
 
 
 def scaffold_site(directory: Path, *, force: bool = False, console: Console | None = None) -> None:
@@ -16,11 +24,7 @@ def scaffold_site(directory: Path, *, force: bool = False, console: Console | No
     directory = directory.resolve()
 
     if directory.exists() and any(directory.iterdir()) and not force:
-        console.print(
-            f"[bold red]error:[/bold red] Refusing to scaffold: {directory} is not empty. "
-            "Pass [bold]--force[/bold] to override."
-        )
-        raise SystemExit(1)
+        raise ScaffoldError(f"{display_path(directory)} is not empty. Pass --force to override.")
 
     for src in SITE_TEMPLATE_DIR.rglob("*"):
         rel = src.relative_to(SITE_TEMPLATE_DIR)

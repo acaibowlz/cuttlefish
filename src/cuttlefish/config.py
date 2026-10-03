@@ -14,7 +14,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from urllib.parse import urlsplit
 
-from cuttlefish.errors import CuttlefishError
+from cuttlefish.errors import CuttlefishError, display_path, read_text
 
 #: The content type name reserved for standalone pages (no index, no taxonomy).
 PAGES_TYPE = "pages"
@@ -414,15 +414,22 @@ def _parse_params(data: dict) -> dict:
     return data
 
 
+def _table(raw: dict, key: str) -> dict:
+    """A top-level table of named sub-tables (``[content_types.<name>]``)."""
+    value = raw.get(key) or {}
+    if not isinstance(value, dict):
+        raise ConfigError(f"[{key}] must be a table, e.g. [{key}.<name>].")
+    return value
+
+
 def parse_config(raw: dict) -> SiteConfig:
     """Validate a raw config mapping into a :class:`SiteConfig`."""
     _reject_unknown_keys(raw, _TOP_LEVEL_KEYS, CONFIG_FILENAME)
     content_types = {
-        name: _parse_content_type(name, data)
-        for name, data in (raw.get("content_types") or {}).items()
+        name: _parse_content_type(name, data) for name, data in _table(raw, "content_types").items()
     }
     taxonomies = {
-        name: _parse_taxonomy(name, data) for name, data in (raw.get("taxonomies") or {}).items()
+        name: _parse_taxonomy(name, data) for name, data in _table(raw, "taxonomies").items()
     }
     home = _parse_home(raw["home"]) if "home" in raw else None
     nav = _parse_nav(raw["nav"]) if "nav" in raw else NavConfig()
@@ -469,9 +476,9 @@ def load_config(root: Path) -> SiteConfig:
     """Read and validate ``<root>/config.toml``."""
     path = root / CONFIG_FILENAME
     if not path.is_file():
-        raise ConfigError(f"No {CONFIG_FILENAME} found in {root}.")
+        raise ConfigError(f"No {CONFIG_FILENAME} found in {display_path(root)}.")
     try:
-        raw = tomllib.loads(path.read_text(encoding="utf-8"))
+        raw = tomllib.loads(read_text(path, ConfigError))
     except tomllib.TOMLDecodeError as exc:
-        raise ConfigError(f"Invalid TOML in {path}: {exc}") from exc
+        raise ConfigError(f"Invalid TOML in {CONFIG_FILENAME}: {exc}") from exc
     return parse_config(raw)

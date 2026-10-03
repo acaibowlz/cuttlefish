@@ -99,6 +99,12 @@ def test_config_unknown_keys_rejected():
             parse_config(raw)
 
 
+def test_named_tables_must_be_tables():
+    for key in ("content_types", "taxonomies"):
+        with pytest.raises(ConfigError, match=rf"\[{key}\] must be a table"):
+            parse_config({key: 3})
+
+
 def test_taxonomy_multiple_defaults_true():
     assert _tax_config().taxonomies["tags"].multiple is True
 

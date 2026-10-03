@@ -121,7 +121,7 @@ def load_manifest(root: Path) -> Manifest | None:
         data = json.loads(path.read_text(encoding="utf-8"))
     except (json.JSONDecodeError, OSError):
         return None
-    if data.get("version") != MANIFEST_VERSION:
+    if not isinstance(data, dict) or data.get("version") != MANIFEST_VERSION:
         return None
     return Manifest.from_dict(data)
 

@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
-from cuttlefish.serve import resolve_request
+import socket
+
+import pytest
+from rich.console import Console
+
+from cuttlefish.serve import ServeError, resolve_request, serve_site
 
 
 def test_resolve_request_decodes_percent_encoded_unicode(tmp_path):
@@ -31,3 +36,12 @@ def test_resolve_request_rejects_traversal(tmp_path):
     assert resolve_request(public, "/../secret.txt") is None
     # Encoded traversal must fail too: decoding happens before the check.
     assert resolve_request(public, "/%2e%2e/secret.txt") is None
+
+
+def test_serve_reports_port_in_use(site):
+    with socket.socket() as taken:
+        taken.bind(("127.0.0.1", 0))
+        taken.listen()
+        port = taken.getsockname()[1]
+        with pytest.raises(ServeError, match=f"Port {port} is already in use"):
+            serve_site(site, port=port, reload=False, console=Console(quiet=True))

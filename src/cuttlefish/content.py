@@ -21,14 +21,14 @@ from __future__ import annotations
 
 import tomllib
 from dataclasses import dataclass, field
-from datetime import date, datetime
+from datetime import date, datetime, time
 from pathlib import Path
 
 import mistune
 from mistune.toc import normalize_toc_item
 
 from cuttlefish.config import PAGES_TYPE, SiteConfig
-from cuttlefish.errors import CuttlefishError
+from cuttlefish.errors import CuttlefishError, read_text
 from cuttlefish.permalink import resolve_permalink, slugify
 
 CONTENT_DIR = "content"
@@ -325,9 +325,29 @@ def _check_date(meta: dict, key: str, err_summary: str) -> None:
     if not isinstance(value, date):
         raise ContentError(
             f"Front-matter '{key}' must be an unquoted YYYY-MM-DD date "
-            f"(e.g. 2026-07-02), got {type(value).__name__}.",
+            f"(e.g. 2026-07-02), got {_toml_type(value)}.",
             summary=err_summary,
         )
+
+
+def _toml_type(value: object) -> str:
+    """Name a front-matter value's type in TOML terms, as the author wrote it."""
+    if isinstance(value, bool):  # before int: bool is an int subclass
+        return "a boolean"
+    if isinstance(value, datetime):  # before date: datetime is a date subclass
+        return "a date-time"
+    for kind, name in (
+        (int, "an integer"),
+        (float, "a float"),
+        (str, "a string"),
+        (date, "a date"),
+        (time, "a time"),
+        (list, "an array"),
+        (dict, "a table"),
+    ):
+        if isinstance(value, kind):
+            return name
+    return type(value).__name__
 
 
 def _coerce_date(value: object) -> date | None:
@@ -356,14 +376,14 @@ def _extract_taxonomies(meta: dict, config: SiteConfig) -> dict[str, list[str]]:
             if not isinstance(value, (list, tuple)):
                 raise ContentError(
                     f"Taxonomy '{name}' expects a list of terms (multiple = true), "
-                    f"got {type(value).__name__}."
+                    f"got {_toml_type(value)}."
                 )
             terms = [str(v) for v in value]
         else:
             if not isinstance(value, str):
                 raise ContentError(
                     f"Taxonomy '{name}' expects a single term (multiple = false), "
-                    f"got {type(value).__name__}."
+                    f"got {_toml_type(value)}."
                 )
             terms = [value]
         result[name] = [t for t in terms if t]
@@ -372,8 +392,8 @@ def _extract_taxonomies(meta: dict, config: SiteConfig) -> dict[str, list[str]]:
 
 def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
     """Parse a single content file into a :class:`ContentItem`."""
-    text = path.read_text(encoding="utf-8")
     summary = f"Failed to parse {_relative_to_root(path, config)}"
+    text = read_text(path, ContentError, summary=summary)
     try:
         meta, body = split_front_matter(text)
     except ContentError as exc:
@@ -390,7 +410,10 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
 
     slug = str(meta.get("slug") or slugify(path.stem))
     body_html, toc = render_markdown(body)
-    taxonomies = _extract_taxonomies(meta, config)
+    try:
+        taxonomies = _extract_taxonomies(meta, config)
+    except ContentError as exc:
+        raise ContentError(exc.detail, summary=summary) from exc
 
     content_type = config.content_types[type_name]
     item_date = meta.get("date")
@@ -465,4 +488,15 @@ def sort_items(
         value = item.sort_value(sort_by)
         return (value is not None, value if value is not None else "")
 
-    return sorted(items, key=key, reverse=(order == "desc"))
+    try:
+        return sorted(items, key=key, reverse=(order == "desc"))
+    except TypeError as exc:
+        # sort_by is open-ended, so nothing upstream guarantees comparable values.
+        kinds = sorted(
+            {_toml_type(i.sort_value(sort_by)) for i in items if i.has_sort_field(sort_by)}
+        )
+        raise ContentError(
+            f"Front-matter '{sort_by}' has mixed types across items ({', '.join(kinds)}), "
+            f"so they can't be sorted. Use the same type for '{sort_by}' everywhere.",
+            summary=f"Failed to sort content by '{sort_by}'",
+        ) from exc

@@ -9,6 +9,7 @@ HTML responses on the fly, so built output stays clean.
 
 from __future__ import annotations
 
+import errno
 import mimetypes
 import queue
 import threading
@@ -22,7 +23,7 @@ from watchfiles import watch
 
 from cuttlefish.build import PUBLIC_DIR, STATIC_DIR, build_site
 from cuttlefish.config import CONFIG_FILENAME
-from cuttlefish.errors import CuttlefishError
+from cuttlefish.errors import CuttlefishError, describe_os_error
 
 RELOAD_PATH = "/__reload"
 
@@ -34,6 +35,7 @@ _RELOAD_SCRIPT = (
     "})();\n"
     "</script>\n"
 )
+
 
 _WATCH_DIRS = (STATIC_DIR, "content", "templates")
 
@@ -65,6 +67,12 @@ def resolve_request(public_dir: Path, url_path: str) -> Path | None:
     if target.is_dir() or url_path.endswith("/") or rel == "":
         target = target / "index.html"
     return target
+
+
+class ServeError(CuttlefishError):
+    """Raised when the dev server cannot start."""
+
+    default_summary = "Failed to start the dev server"
 
 
 class _Handler(BaseHTTPRequestHandler):
@@ -193,6 +201,8 @@ def _watch_loop(
                 f"[bold red]error:[/bold red] {escape(exc.summary)} "
                 f"[dim]·[/dim] {escape(exc.detail)}"
             )
+        except OSError as exc:
+            console.print(f"[bold red]error:[/bold red] {escape(describe_os_error(exc))}")
         except Exception as exc:  # unexpected bug: still don't kill the server
             console.print(f"[bold red]error:[/bold red] Build failed: {escape(str(exc))}")
 
@@ -213,7 +223,14 @@ def serve_site(
     # against http://127.0.0.1:<port>/ rather than a deploy prefix like /repo.
     build_site(root, drafts=drafts, base_path="", console=console)
 
-    server = _DevServer(("127.0.0.1", port), _Handler, public_dir)
+    try:
+        server = _DevServer(("127.0.0.1", port), _Handler, public_dir)
+    except OSError as exc:
+        if exc.errno != errno.EADDRINUSE:
+            raise
+        raise ServeError(
+            f"Port {port} is already in use. Stop the other server or pass --port.",
+        ) from exc
     stop = threading.Event()
 
     watcher: threading.Thread | None = None

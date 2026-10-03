@@ -14,6 +14,7 @@ from cuttlefish.content import (
     _require_front_matter,
     parse_item,
     render_markdown,
+    sort_items,
     split_front_matter,
 )
 
@@ -276,3 +277,37 @@ def test_updated_is_validated_on_pages_too(tmp_path):
     path.write_text('+++\ntitle = "About"\nupdated = "soon"\n+++\n', encoding="utf-8")
     with pytest.raises(ContentError, match="'updated'"):
         parse_item(path, PAGES_TYPE, cfg)
+
+
+def test_type_errors_use_toml_type_names(tmp_path):
+    cfg = _tax_config()
+    with pytest.raises(ContentError, match=r"got a string\.$"):
+        _require_front_matter(
+            {"title": "T", "description": "D", "date": "2026-01-02"}, "blog", cfg, "err"
+        )
+    with pytest.raises(ContentError, match=r"got an integer\.$"):
+        _extract_taxonomies({"tags": 3}, cfg)
+
+
+def test_taxonomy_error_names_the_file(tmp_path):
+    cfg = parse_config(
+        {
+            "content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}},
+            "taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/"}},
+        }
+    )
+    path = tmp_path / "content" / "blog" / "post.md"
+    path.parent.mkdir(parents=True)
+    path.write_text(
+        '+++\ntitle = "T"\ndescription = "D"\ndate = 2026-01-02\ntags = 3\n+++\n',
+        encoding="utf-8",
+    )
+    with pytest.raises(ContentError) as exc:
+        parse_item(path, "blog", cfg)
+    assert exc.value.summary == "Failed to parse content/blog/post.md"
+
+
+def test_sort_items_mixed_types_is_a_content_error():
+    items = [_item(slug="a", params={"weight": 1}), _item(slug="b", params={"weight": "x"})]
+    with pytest.raises(ContentError, match="mixed types across items \\(a string, an integer\\)"):
+        sort_items(items, sort_by="weight", order="asc")

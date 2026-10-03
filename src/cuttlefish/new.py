@@ -17,11 +17,13 @@ from __future__ import annotations
 
 import difflib
 import os
+import shlex
 import subprocess
 from datetime import date as date_cls
 from pathlib import Path
 
 from rich.console import Console
+from rich.markup import escape
 
 from cuttlefish.config import PAGES_TYPE, load_config
 from cuttlefish.content import CONTENT_DIR
@@ -159,7 +161,15 @@ def create_content(
     if edit:
         editor = os.environ.get("EDITOR")
         if editor:
-            subprocess.run([editor, str(dest)])
+            # $EDITOR may carry arguments ("code -w"); the file is already
+            # created, so a bad editor is a note, not a failure.
+            try:
+                subprocess.run([*shlex.split(editor), str(dest)])
+            except (OSError, ValueError):
+                console.print(
+                    f"  [dim]Could not run $EDITOR ({escape(editor)}); "
+                    "open the file manually to edit it.[/dim]"
+                )
         else:
             console.print("  [dim]$EDITOR is not set; open the file manually to edit it.[/dim]")
 

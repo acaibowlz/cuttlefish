@@ -13,6 +13,9 @@ from pathlib import Path
 
 from jinja2 import Environment, meta
 
+from cuttlefish.errors import read_text
+from cuttlefish.render import RenderError
+
 TEMPLATES_DIR = "templates"
 
 
@@ -66,7 +69,7 @@ def build_graph(root: Path, env: Environment | None = None) -> TemplateGraph:
     tdir = root / TEMPLATES_DIR
     for path in _list_templates(root):
         name = str(path.relative_to(tdir)).replace("\\", "/")
-        source = path.read_text(encoding="utf-8")
+        source = read_text(path, RenderError, summary=f"Failed to read template {name}")
         try:
             ast = env.parse(source)
             refs = {r for r in meta.find_referenced_templates(ast) if r}

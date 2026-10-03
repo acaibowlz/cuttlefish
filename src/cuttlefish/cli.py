@@ -15,7 +15,7 @@ from typing import TypeVar
 import typer
 from rich.padding import Padding
 
-from cuttlefish.errors import CuttlefishError
+from cuttlefish.errors import CuttlefishError, describe_os_error
 from cuttlefish.ui import console, err_console, print_error
 
 try:  # Typer >= 0.26 vendors its own copy of click under typer._click
@@ -63,8 +63,10 @@ def handle_errors(func: Callable[..., T]) -> Callable[..., T]:
     """Turn user-facing ``CuttlefishError``s into a clean message + exit code.
 
     These errors describe something the user can fix, so we print a concise,
-    styled diagnostic instead of dumping a Python traceback. Bugs (anything that
-    is not a ``CuttlefishError``) are left to propagate as normal.
+    styled diagnostic instead of dumping a Python traceback. An ``OSError`` is
+    treated the same way: an unreadable file, a ``public`` that is a file, a full
+    disk are the environment, not a bug, and can surface from any file access.
+    Everything else is a bug and propagates as normal.
     """
 
     @functools.wraps(func)
@@ -73,6 +75,9 @@ def handle_errors(func: Callable[..., T]) -> Callable[..., T]:
             return func(*args, **kwargs)
         except CuttlefishError as exc:
             print_error(exc.summary, exc.detail)
+            raise typer.Exit(1) from exc
+        except OSError as exc:
+            print_error("File system error", describe_os_error(exc))
             raise typer.Exit(1) from exc
 
     return wrapper
