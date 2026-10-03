@@ -158,3 +158,22 @@ def test_no_change_skips_everything(site: Path, build):
     assert stats.skipped == 4
     assert stats.aggregates_skipped == TOTAL_AGGREGATES
     assert stats.error_pages == 0  # unchanged 404 template is not re-rendered
+
+
+def test_prune_never_leaves_public(site: Path, build):
+    # The manifest is a file on disk; a stale or edited entry pointing outside
+    # public/ must not delete anything there.
+    import json
+
+    build(site)
+    victim = site / "keep" / "index.html"
+    victim.parent.mkdir()
+    victim.write_text("keep", encoding="utf-8")
+    cache = site / ".ctf" / "cache.json"
+    manifest = json.loads(cache.read_text(encoding="utf-8"))
+    entry = next(iter(manifest["content"].values()))
+    entry["outputs"] = ["../keep/index.html"]
+    cache.write_text(json.dumps(manifest), encoding="utf-8")
+
+    build(site)
+    assert victim.read_text(encoding="utf-8") == "keep"

@@ -258,3 +258,27 @@ def test_sitemap_lastmod_prefers_updated_over_date(site: Path, build):
     # Undated content and aggregates carry no <lastmod>.
     assert "<url><loc>https://example.com/about/</loc></url>" in sitemap
     assert "<url><loc>https://example.com/blog/</loc></url>" in sitemap
+
+
+def test_duplicate_output_is_refused_before_writing(site: Path, build):
+    # Two posts on one URL: the later one used to overwrite the earlier silently.
+    post = site / "content" / "blog" / "second-post.md"
+    post.write_text(
+        post.read_text(encoding="utf-8").replace(
+            'slug = "front-matter"', 'slug = "hello-world"', 1
+        ),
+        encoding="utf-8",
+    )
+    with pytest.raises(ContentError, match="both produce /blog/hello-world/index.html"):
+        build(site)
+    assert not [p for p in (site / "public").rglob("*") if p.is_file()]
+
+
+def test_page_colliding_with_a_listing_is_refused(site: Path, build):
+    page = site / "content" / "pages" / "about.md"
+    page.write_text(
+        page.read_text(encoding="utf-8").replace('slug = "about"', 'slug = "blog"', 1),
+        encoding="utf-8",
+    )
+    with pytest.raises(ContentError, match="about.md and the blog index both produce"):
+        build(site)

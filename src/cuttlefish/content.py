@@ -19,6 +19,7 @@ incremental builds correct (a body-only edit cannot affect any listing).
 
 from __future__ import annotations
 
+import re
 import tomllib
 from dataclasses import dataclass, field
 from datetime import date, datetime, time
@@ -284,6 +285,7 @@ def _require_front_matter(meta: dict, type_name: str, config: SiteConfig, err_su
     a quoted date is ignored entirely, and rejecting a time component keeps every
     post's date to a single, sortable day.
     """
+    _check_types(meta, err_summary)
     if "updated" in meta:
         _check_date(meta, "updated", err_summary)
     if type_name == PAGES_TYPE:
@@ -328,6 +330,48 @@ def _check_date(meta: dict, key: str, err_summary: str) -> None:
             f"(e.g. 2026-07-02), got {_toml_type(value)}.",
             summary=err_summary,
         )
+
+
+#: A slug is one URL path segment: letters (any script), digits, '-' and '_'.
+_UNSAFE_SLUG = re.compile(r"[^\w-]")
+
+
+def _check_types(meta: dict, err_summary: str) -> None:
+    """Reject wrongly-typed built-in fields instead of coercing them.
+
+    Coercion hides mistakes: ``draft = "no"`` is a truthy string that hides the
+    post, and ``slug = "../x"`` would write outside ``public/``.
+    """
+    for key in ("title", "description", "cover"):
+        if key in meta and not isinstance(meta[key], str):
+            raise ContentError(
+                f"Front-matter '{key}' must be a string, got {_toml_type(meta[key])}.",
+                summary=err_summary,
+            )
+    if "draft" in meta and not isinstance(meta["draft"], bool):
+        raise ContentError(
+            f"Front-matter 'draft' must be true or false (unquoted), "
+            f"got {_toml_type(meta['draft'])}.",
+            summary=err_summary,
+        )
+    if "slug" in meta:
+        slug = meta["slug"]
+        if not isinstance(slug, str):
+            raise ContentError(
+                f"Front-matter 'slug' must be a string, got {_toml_type(slug)}.",
+                summary=err_summary,
+            )
+        if not slug:
+            raise ContentError(
+                "Front-matter 'slug' is empty. Remove it to use the filename.",
+                summary=err_summary,
+            )
+        if _UNSAFE_SLUG.search(slug):
+            raise ContentError(
+                f"Front-matter 'slug' = {slug!r} is not URL-safe: use only letters, "
+                f"digits, '-' and '_' (e.g. {slugify(slug)!r}).",
+                summary=err_summary,
+            )
 
 
 def _toml_type(value: object) -> str:

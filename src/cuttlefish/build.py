@@ -29,7 +29,7 @@ from cuttlefish.cache import (
     save_manifest,
 )
 from cuttlefish.config import CONFIG_FILENAME, ConfigError, SiteConfig, load_config
-from cuttlefish.content import ContentItem, discover, sort_items
+from cuttlefish.content import ContentError, ContentItem, discover, sort_items
 from cuttlefish.graph import (
     AggregateSpec,
     aggregate_is_dirty,
@@ -192,6 +192,37 @@ def _static_files(root: Path) -> dict[str, str]:
             out_rel = str(src.relative_to(static_root)).replace("\\", "/")
             mapping[src_rel] = out_rel
     return mapping
+
+
+def _describe_spec(spec: AggregateSpec) -> str:
+    """Name an aggregate the way the user configured it (``index:blog`` -> the blog index)."""
+    kind, _, rest = spec.key.partition(":")
+    if kind == "index":
+        return f"the {rest} index"
+    if kind == "taxonomy":
+        taxonomy, _, term = rest.partition(":")
+        return f"the {taxonomy} term page for {term!r}"
+    if kind == "taxonomy_index":
+        return f"the {rest} index"
+    return f"the {kind} page" if kind == "home" else f"the {kind}"
+
+
+def _check_unique_outputs(outputs: list[tuple[str, str]]) -> None:
+    """Refuse two sources writing one file: the later would silently overwrite the earlier.
+
+    Runs before anything is written, over every kind of output (content,
+    listings, the feed, error pages, static files), so e.g. a page with
+    ``slug = "blog"`` colliding with the blog index is caught too.
+    """
+    seen: dict[str, str] = {}
+    for output, source in outputs:
+        if output in seen:
+            raise ContentError(
+                f"{seen[output]} and {source} both produce /{output}. "
+                "Rename one so they map to different URLs.",
+                summary="Duplicate output",
+            )
+        seen[output] = source
 
 
 def _aggregates_manifest(specs: list[AggregateSpec]) -> dict[str, dict]:
@@ -377,6 +408,15 @@ def _run_build(
         name: ct.template in affected_templates for name, ct in config.content_types.items()
     }
 
+    specs = build_aggregate_specs(config, grouped, taxonomies, renderer)
+    feed_specs = build_feed_specs(config, grouped, renderer)
+    _check_unique_outputs(
+        [(i.output_rel, i.source_rel) for i in items]
+        + [(out, _describe_spec(s)) for s in specs + feed_specs for out in s.outputs]
+        + [(name, f"templates/{name}") for name in ERROR_TEMPLATES if name in new_templates]
+        + [(out, src) for src, out in _static_files(root).items()]
+    )
+
     # Content pages: render only those that changed or use a dirty template.
     new_content: dict[str, dict] = {}
     for item in items:
@@ -399,7 +439,6 @@ def _run_build(
 
     # Aggregates: rebuild only those whose fingerprint changed or whose
     # template was (transitively) affected (Milestone 2 dependency graph).
-    specs = build_aggregate_specs(config, grouped, taxonomies, renderer)
     for spec in specs:
         if aggregate_is_dirty(spec, manifest.aggregates, affected_templates):
             spec.render()
@@ -429,7 +468,7 @@ def _run_build(
     # their own manifest section so they are pruned but never enter the sitemap —
     # the same treatment as error pages. Absent entirely unless base_url is set.
     new_feeds: dict[str, dict] = {}
-    for spec in build_feed_specs(config, grouped, renderer):
+    for spec in feed_specs:
         if aggregate_is_dirty(spec, manifest.feeds, affected_templates):
             spec.render()
             stats.feeds += 1
@@ -483,8 +522,13 @@ def _run_build(
 def _prune(public_dir: Path, old_outputs: set[str], new_outputs: set[str]) -> int:
     """Delete output files present last build but not this one."""
     pruned = 0
+    root = public_dir.resolve()
     for rel in old_outputs - new_outputs:
         target = public_dir / rel
+        # The manifest is a file on disk: never let an entry delete (or walk the
+        # empty-directory cleanup) outside public/.
+        if not target.resolve().is_relative_to(root):
+            continue
         if target.is_file():
             target.unlink()
             pruned += 1

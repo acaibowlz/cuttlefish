@@ -19,6 +19,18 @@ def test_resolve_permalink_unknown_token():
         resolve_permalink("/x/{nope}/", slug="a")
 
 
+def test_resolve_permalink_unmatched_brace():
+    with pytest.raises(PermalinkError, match="unmatched"):
+        resolve_permalink("/blog/{slug/", slug="a")
+
+
+def test_resolve_permalink_refuses_dot_segments():
+    # Output paths are derived from URLs: '..' would write outside public/.
+    for pattern in ("/../{slug}/", "/blog/./{slug}/"):
+        with pytest.raises(PermalinkError, match="steps outside"):
+            resolve_permalink(pattern, slug="a")
+
+
 def test_slugify():
     assert slugify("Hello, World!") == "hello-world"
     assert slugify("  Multiple   Spaces ") == "multiple-spaces"

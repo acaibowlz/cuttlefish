@@ -63,11 +63,13 @@ The [optional fields](#optional-fields) below still apply: `slug` overrides the 
 
 | Field | Meaning |
 |-------|---------|
-| `slug` | Override the filename-derived slug. Sets the URL. |
-| `draft` | `draft = true` hides the file from `ctf build`. `ctf serve` still shows it. |
+| `slug` | Override the filename-derived slug. Sets the URL. Must be a single URL-safe segment — letters (any script), digits, `-` and `_` — so spaces, `/`, `.` and `..` are rejected (the error suggests a cleaned-up slug). |
+| `draft` | `draft = true` hides the file from `ctf build`. `ctf serve` still shows it. Must be an unquoted boolean: `draft = "no"` is rejected rather than read as true. |
 | `cover` | Cover/hero image URL (e.g. `/img/post.jpg`). Unlike a custom field, it's a **summary** field, so listing templates can show a thumbnail via `item.cover` — not just the item's own page. Empty when unset. |
 | `updated` | Last-modified date, set by hand when you revise a post. Same format rules as `date` — an unquoted `YYYY-MM-DD` — and it can't be earlier than `date`. Becomes the page's `<lastmod>` in `sitemap.xml` (which otherwise falls back to `date`). A **summary** field, so listings can show it as `item.updated`. Unset by default. |
 | `lang` | This item's language tag (e.g. `"fr"`), overriding the site's [`lang`](configuration.md#top-level-keys) — the starter `base.html` uses it for `<html lang>`. A **summary** field, so listings can mark mixed-language entries with `lang="{{ item.lang }}"`. Defaults to the site's `lang`. |
+
+Built-in fields are type-checked, not coerced: `title`, `description`, `cover` and `slug` must be strings. Two files that resolve to the same URL — or a file that collides with a listing page, such as a page with `slug = "blog"` — fail the build with both named, instead of one silently overwriting the other.
 
 ### Taxonomies
 

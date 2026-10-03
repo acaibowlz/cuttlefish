@@ -311,3 +311,30 @@ def test_sort_items_mixed_types_is_a_content_error():
     items = [_item(slug="a", params={"weight": 1}), _item(slug="b", params={"weight": "x"})]
     with pytest.raises(ContentError, match="mixed types across items \\(a string, an integer\\)"):
         sort_items(items, sort_by="weight", order="asc")
+
+
+def test_built_in_fields_are_type_checked_not_coerced():
+    base = {"title": "T", "description": "D", "date": datetime.date(2026, 1, 2)}
+    cases = [
+        ({"title": 3}, "'title' must be a string, got an integer"),
+        ({"description": 3}, "'description' must be a string"),
+        ({"cover": True}, "'cover' must be a string, got a boolean"),
+        # A quoted "no" is truthy: coercing it would hide the post.
+        ({"draft": "no"}, "'draft' must be true or false"),
+        ({"slug": 3}, "'slug' must be a string"),
+        ({"slug": ""}, "'slug' is empty"),
+    ]
+    for extra, match in cases:
+        with pytest.raises(ContentError, match=match):
+            _require_front_matter({**base, **extra}, "blog", _tax_config(), "err")
+
+
+def test_slug_must_be_one_url_safe_segment():
+    base = {"title": "T", "description": "D", "date": datetime.date(2026, 1, 2)}
+    # '..' and '/' would write outside the type's directory, or outside public/.
+    for bad, suggestion in [("../../x", "'x'"), ("a/b", "'ab'"), ("Hello World", "'hello-world'")]:
+        with pytest.raises(ContentError, match=f"not URL-safe.*{suggestion}"):
+            _require_front_matter({**base, "slug": bad}, "blog", _tax_config(), "err")
+    # Any script, case and underscores are fine: the check is safety, not style.
+    for ok in ("My_Post", "新貼文", "2026-recap"):
+        _require_front_matter({**base, "slug": ok}, "blog", _tax_config(), "err")

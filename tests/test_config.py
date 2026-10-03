@@ -286,6 +286,13 @@ def test_lang_defaults_to_en_and_rejects_non_strings():
         parse_config({"lang": 1})
 
 
+def test_site_strings_are_type_checked():
+    # str()-coercing `base_url = 3` would break every absolute link silently.
+    for key in ("title", "description", "base_url"):
+        with pytest.raises(ConfigError, match=f"'{key}' must be a string"):
+            parse_config({key: 3})
+
+
 def test_description_is_optional():
     assert parse_config({}).description == ""
     assert parse_config({"description": "About"}).description == "About"

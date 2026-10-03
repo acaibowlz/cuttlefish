@@ -45,6 +45,8 @@ def resolve_permalink(pattern: str, *, date: object = None, **tokens: str) -> st
     The result always starts with ``/`` and, unless it points at a file with an
     extension, ends with ``/``.
     """
+    if "{" in _TOKEN_RE.sub("", pattern) or "}" in _TOKEN_RE.sub("", pattern):
+        raise PermalinkError(f"Permalink '{pattern}' has an unmatched '{{' or '}}'.")
     values: dict[str, str] = {k: str(v) for k, v in tokens.items() if v is not None}
     values.update(_date_tokens(date))
 
@@ -66,6 +68,12 @@ def resolve_permalink(pattern: str, *, date: object = None, **tokens: str) -> st
     last = url.rsplit("/", 1)[-1]
     if "." not in last and not url.endswith("/"):
         url += "/"
+    # Output paths come from URLs, so a '..' segment would write outside public/.
+    if any(segment in (".", "..") for segment in url.split("/")) or "\\" in url:
+        raise PermalinkError(
+            f"Permalink '{pattern}' resolves to '{url}', which steps outside the site "
+            "with a '.' or '..' segment."
+        )
     return url
 
 

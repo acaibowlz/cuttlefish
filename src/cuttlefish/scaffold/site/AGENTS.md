@@ -252,7 +252,13 @@ lang = "fr"                # optional; overrides the site's lang for this item
 - The **`pages`** type needs only a `title` (no `description`/`date`); its slug
   defaults to the filename. A configured taxonomy key on a page is rejected —
   pages join no taxonomy listing.
-- `draft = true` hides a page from `ctf build` (shown by `ctf serve`).
+- `draft = true` hides a page from `ctf build` (shown by `ctf serve`). It must
+  be an unquoted boolean; `title`, `description`, `cover` and `slug` must be
+  strings. Wrong types fail the build rather than being coerced.
+- An explicit `slug` must be one URL-safe segment: letters (any script), digits,
+  `-`, `_`. Spaces, `/`, `.` and `..` are rejected.
+- Two files (or a file and a listing page) resolving to the same URL fail the
+  build with both named — pick distinct slugs.
 - Slugs keep **letters from any script** — `新貼文.md` serves at `/blog/新貼文/`,
   `Café Crème` → `café-crème`. Only URL/filesystem-hostile characters
   (`<>:/|?*#\`, quotes, brackets, punctuation) are stripped and spaces become

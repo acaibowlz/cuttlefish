@@ -453,10 +453,15 @@ def parse_config(raw: dict) -> SiteConfig:
     if not isinstance(lang, str) or not lang.strip():
         raise ConfigError(f"'lang' must be a non-empty language tag like \"en\", got {lang!r}.")
 
-    base_url = str(raw.get("base_url", "")).rstrip("/")
+    # Checked, not str()-coerced: `base_url = 3` would otherwise become "3" and
+    # silently break every absolute link in the feed and sitemap.
+    for key in ("title", "description", "base_url"):
+        if key in raw and not isinstance(raw[key], str):
+            raise ConfigError(f"'{key}' must be a string, got {raw[key]!r}.")
+    base_url = raw.get("base_url", "").rstrip("/")
     return SiteConfig(
-        title=str(raw.get("title", "Untitled Site")),
-        description=str(raw.get("description", "")),
+        title=raw.get("title", "Untitled Site"),
+        description=raw.get("description", ""),
         base_url=base_url,
         # base_url's path component is the subpath the site is served under;
         # internal links get prefixed with it so subpath hosting works.
