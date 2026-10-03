@@ -1,6 +1,7 @@
 # CLI reference
 
 cuttlefish installs one command, `ctf`, with five subcommands. Run `ctf --help` or `ctf <command> --help` for the same information at the terminal.
+`ctf --version` prints the installed version.
 
 ## `init`
 

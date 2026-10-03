@@ -37,6 +37,28 @@ app = typer.Typer(
 T = TypeVar("T")
 
 
+def _print_version(value: bool) -> None:
+    if value:
+        from cuttlefish import __version__
+
+        console.print(f"ctf {__version__}")
+        raise typer.Exit()
+
+
+@app.callback()
+def _root(
+    version: bool = typer.Option(
+        False,
+        "--version",
+        "-V",
+        callback=_print_version,
+        is_eager=True,
+        help="Show the version and exit.",
+    ),
+) -> None:
+    """cuttlefish — agentic static site generator."""
+
+
 def handle_errors(func: Callable[..., T]) -> Callable[..., T]:
     """Turn user-facing ``CuttlefishError``s into a clean message + exit code.
 

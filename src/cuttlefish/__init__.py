@@ -1,3 +1,6 @@
 """cuttlefish — agentic static site generator."""
 
-__version__ = "0.1.0"
+from importlib.metadata import version
+
+# Read from the installed package so pyproject.toml stays the single source.
+__version__ = version("cuttlefish-ssg")
