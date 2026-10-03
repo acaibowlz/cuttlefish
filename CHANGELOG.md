@@ -5,6 +5,23 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- `lang` config key (default `"en"`) and per-item `lang` front matter; sets
+  `<html lang>` and the feed's `<language>`.
+- `description` config key, used as the feed's channel description.
+- Optional `updated` front-matter date, emitted as `<lastmod>` in `sitemap.xml`.
+- Feed items carry their content type as `<category>`.
+
+### Changed
+
+- **Breaking:** one site-wide RSS feed at `/feed.xml` replaces per-type feeds;
+  `feed = true` now adds a type to it. `site.feeds` is replaced by `site.feed`.
+- Build output is split into one line per kind of output, shown only when
+  something changed.
+
 ## [0.1.6] - 2026-07-26
 
 ### Changed
@@ -154,6 +171,7 @@ as `cuttlefish-ssg` with the `ctf` CLI.
 - Recipes: a gallery of copy-in feature guides (e.g. reading time, breadcrumbs).
 - MIT license.
 
+[Unreleased]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.6...HEAD
 [0.1.6]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.5...v0.1.6
 [0.1.5]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.3...v0.1.4
