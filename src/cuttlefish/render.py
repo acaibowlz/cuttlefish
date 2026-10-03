@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import math
 import re
+import traceback
 from collections.abc import Iterator
 from contextlib import contextmanager
 from dataclasses import dataclass
@@ -20,7 +21,9 @@ from jinja2 import (
     Environment,
     FileSystemLoader,
     StrictUndefined,
+    TemplateNotFound,
     TemplateSyntaxError,
+    UndefinedError,
     select_autoescape,
 )
 
@@ -46,12 +49,59 @@ class RenderError(CuttlefishError):
     default_summary = "Failed to render template"
 
 
+#: Jinja names the Python type of the object, not the template variable:
+#: "'types.SimpleNamespace object' has no attribute 'feeds'".
+_NO_ATTR = re.compile(r"^'[^']+' has no attribute '([^']+)'$")
+
+
+def _template_frame(exc: Exception) -> traceback.FrameSummary | None:
+    """The innermost template frame of *exc*, if any.
+
+    Jinja rewrites tracebacks so template code appears as frames in the template
+    file at its source line; every other frame is Python (``.py``).
+    """
+    frames = [f for f in traceback.extract_tb(exc.__traceback__) if not f.filename.endswith(".py")]
+    return frames[-1] if frames else None
+
+
+def _template_rel(filename: str) -> str:
+    """Show a template path as the user sees it (``templates/blog.html``)."""
+    parts = Path(filename).parts
+    if TEMPLATES_DIR in parts:
+        i = len(parts) - 1 - parts[::-1].index(TEMPLATES_DIR)
+        return Path(*parts[i:]).as_posix()
+    return filename
+
+
 def _jinja_detail(exc: Exception) -> str:
     """Turn a Jinja exception into a one-line reason with location where known."""
     if isinstance(exc, TemplateSyntaxError):
-        where = exc.filename or exc.name or "template"
+        where = _template_rel(exc.filename) if exc.filename else exc.name or "template"
         return f"{where}:{exc.lineno}: {exc.message}"
-    return f"{type(exc).__name__}: {exc}"
+    frame = _template_frame(exc)
+    if isinstance(exc, TemplateNotFound):
+        message = f"template '{exc.name}' not found in {TEMPLATES_DIR}/"
+    elif isinstance(exc, UndefinedError):
+        message = str(exc)
+        attr = _NO_ATTR.match(message)
+        if attr:
+            # Recover the template expression (`site.feeds`) from the source line
+            # so the user sees their own code, not a Python class name.
+            name = attr.group(1)
+            line = frame.line if frame else ""
+            expr = re.search(rf"([\w.\[\]]+)\.{re.escape(name)}\b", line or "")
+            message = (
+                f"'{expr.group(1)}' has no attribute '{name}'"
+                if expr
+                else (f"no attribute '{name}'")
+            )
+    else:
+        # A Python error raised by template code (calling a string, dividing by
+        # zero): its message is Python's, so show the template line it came from.
+        message = f"{exc}, in: {frame.line}" if frame and frame.line else str(exc)
+    if frame is None:
+        return message
+    return f"{_template_rel(frame.filename)}:{frame.lineno}: {message}"
 
 
 @contextmanager
@@ -62,6 +112,10 @@ def _render_step(target: str) -> Iterator[None]:
     except RenderError:
         raise
     except Exception as exc:
+        # Writing output failed: the environment, not the template. (Jinja's
+        # TemplateNotFound subclasses OSError, so it must not slip through here.)
+        if isinstance(exc, OSError) and not isinstance(exc, TemplateNotFound):
+            raise
         raise RenderError(_jinja_detail(exc), summary=f"Failed to render {target}") from exc
 
 
