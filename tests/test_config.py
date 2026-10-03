@@ -291,3 +291,8 @@ def test_lang_defaults_to_en_and_rejects_non_strings():
         parse_config({"lang": ""})
     with pytest.raises(ConfigError, match="'lang'"):
         parse_config({"lang": 1})
+
+
+def test_description_is_optional():
+    assert parse_config({}).description == ""
+    assert parse_config({"description": "About"}).description == "About"

@@ -61,8 +61,10 @@ covers the request, build it directly using the rest of this guide.
 
 ## Editing `config.toml`
 
-Top-level keys: `title`, `base_url`, `lang`, and the tables below. `lang` is
-the default language tag (`"en"` if omitted), read as `site.lang`. `base_url` is the
+Top-level keys: `title`, `description`, `base_url`, `lang`, and the tables
+below. `description` is a one-line site summary (`site.description`, also the
+RSS channel description). `lang` is the default language tag (`"en"` if
+omitted), read as `site.lang` and emitted as the feeds' `<language>`. `base_url` is the
 site's absolute origin (e.g. `https://example.com`); it builds absolute URLs
 such as the `sitemap.xml` entries, so set it for production. If it includes a
 **subpath** (e.g. `https://you.github.io/repo`), that path (`/repo`) is
@@ -289,7 +291,7 @@ Usable in any `permalink`/`index_permalink`: `{slug}`, `{type}`, `{year}`,
 
 Templates are Jinja2 and live in `templates/`. `base.html` is the shared layout;
 others `{% extends "base.html" %}`. A global `site` object is available
-everywhere: `site.title`, `site.lang`, `site.base_url`, `site.nav`, `site.profile`,
+everywhere: `site.title`, `site.description`, `site.lang`, `site.base_url`, `site.nav`, `site.profile`,
 `site.params` (your free-form `[params]` table), `site.feeds` (published RSS
 feeds, each with `.type` and a root-relative `.url`; empty unless a type sets
 `feed = true`), and `site.config` (the raw parsed `config.toml`).

@@ -1,4 +1,6 @@
 title = "Demo Site"
+# One-line site summary (`site.description`); also the RSS channel description.
+description = "A demo site built with cuttlefish."
 base_url = "https://example.com"
 # Default language tag for <html lang> (`site.lang`). A content file can
 # override it with `lang = "..."` in its front matter.

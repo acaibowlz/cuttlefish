@@ -30,7 +30,18 @@ CONFIG_DOCS_URL = "https://acaibowlz.github.io/cuttlefish/configuration/"
 #: are deliberately free-form (see ``_parse_params``); custom site-wide values
 #: go there rather than as loose top-level keys.
 _TOP_LEVEL_KEYS = frozenset(
-    {"title", "base_url", "lang", "content_types", "taxonomies", "home", "nav", "profile", "params"}
+    {
+        "title",
+        "description",
+        "base_url",
+        "lang",
+        "content_types",
+        "taxonomies",
+        "home",
+        "nav",
+        "profile",
+        "params",
+    }
 )
 _PROFILE_KEYS = frozenset({"name", "bio", "avatar", "email", "socials"})
 _CONTENT_TYPE_KEYS = frozenset(
@@ -197,6 +208,9 @@ class SiteConfig:
     title: str
     base_url: str
     home: HomeConfig | None
+    #: One-line site summary, exposed as ``site.description``; also the RSS
+    #: channel ``<description>`` (which falls back to the title when empty).
+    description: str = ""
     #: Default language (a BCP 47 tag like ``en`` or ``zh-TW``) for ``<html lang>``,
     #: exposed as ``site.lang``. Content may override it per item via front matter.
     lang: str = "en"
@@ -435,6 +449,7 @@ def parse_config(raw: dict) -> SiteConfig:
     base_url = str(raw.get("base_url", "")).rstrip("/")
     return SiteConfig(
         title=str(raw.get("title", "Untitled Site")),
+        description=str(raw.get("description", "")),
         base_url=base_url,
         # base_url's path component is the subpath the site is served under;
         # internal links get prefixed with it so subpath hosting works.

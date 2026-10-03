@@ -169,3 +169,17 @@ def test_feed_percent_encodes_unicode_links():
     assert "<link>https://x.com/blog/%E6%96%B0%E8%B2%BC%E6%96%87/</link>" in xml
     assert '<guid isPermaLink="true">https://x.com/blog/%E6%96%B0%E8%B2%BC%E6%96%87/</guid>' in xml
     assert "<title>新貼文</title>" in xml
+
+
+def test_render_rss_channel_description_and_language():
+    kwargs = dict(
+        site_title="S", base_url="https://x.com", channel_path="/b/", self_path="/b/feed.xml"
+    )
+    bare = render_rss([], **kwargs)
+    # RSS requires a channel description: the title stands in when none is set.
+    assert "<description>S</description>" in bare
+    assert "<language>" not in bare
+
+    xml = render_rss([], site_description="About S", lang="zh-TW", **kwargs)
+    assert "<description>About S</description>" in xml
+    assert "<language>zh-TW</language>" in xml

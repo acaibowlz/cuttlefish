@@ -26,6 +26,7 @@ Available in every template:
 | Variable | What it is |
 |----------|-----------|
 | `site.title` | The site name. |
+| `site.description` | The one-line site summary from `config.toml` (empty unless set). |
 | `site.lang` | The default language tag from `config.toml` (`"en"` unless set). |
 | `site.base_url` | The configured public URL. |
 | `site.nav` | The nav entries — a list of items with `.label` and `.link`. |

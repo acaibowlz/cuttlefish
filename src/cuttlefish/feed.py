@@ -45,6 +45,8 @@ def render_rss(
     base_url: str,
     channel_path: str,
     self_path: str,
+    site_description: str = "",
+    lang: str = "",
 ) -> str:
     """Render an RSS 2.0 document for *items* (already ordered newest-first).
 
@@ -60,9 +62,12 @@ def render_rss(
         "  <channel>",
         f"    <title>{escape(site_title)}</title>",
         f"    <link>{escape(channel_link)}</link>",
-        f"    <description>{escape(site_title)}</description>",
+        # RSS requires a channel description; the title stands in when unset.
+        f"    <description>{escape(site_description or site_title)}</description>",
         f'    <atom:link href="{escape(self_link)}" rel="self" type="application/rss+xml"/>',
     ]
+    if lang:
+        lines.append(f"    <language>{escape(lang)}</language>")
     # lastBuildDate reflects the newest item, so it is derived from content (stable
     # across rebuilds) rather than the wall clock (which would churn the file).
     newest = max((i.date for i in items if i.date is not None), default=None)
@@ -93,6 +98,8 @@ def write_feed(
     base_url: str,
     channel_path: str,
     self_path: str,
+    site_description: str = "",
+    lang: str = "",
 ) -> str:
     """Render and write a feed to ``public/<output_rel>``; return *output_rel*.
 
@@ -106,6 +113,8 @@ def write_feed(
         base_url=base_url,
         channel_path=channel_path,
         self_path=self_path,
+        site_description=site_description,
+        lang=lang,
     )
     dest = public_dir / output_rel
     dest.parent.mkdir(parents=True, exist_ok=True)

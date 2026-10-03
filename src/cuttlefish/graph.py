@@ -176,6 +176,8 @@ def build_feed_specs(
                             base_url=config.base_url,
                             channel_path=cp,
                             self_path=sp,
+                            site_description=config.description,
+                            lang=config.lang,
                         )
                     ]
                 ),
