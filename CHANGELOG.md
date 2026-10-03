@@ -5,6 +5,41 @@ All notable changes to this project are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+
+- Errors are reported as `error:` diagnostics instead of Python tracebacks or
+  internals: non-UTF-8 files (with file and line), file-system errors (unreadable
+  files, `public` being a file), mixed-type `sort_by` values, a non-table
+  `content_types`/`taxonomies`, a busy `ctf serve` port, and a broken `$EDITOR`
+  for `ctf new --edit` (which now also accepts arguments, e.g. `code -w`).
+- Template errors name the template file and line, show the failing expression
+  (`'site' has no attribute 'feeds'`) instead of a Python class, and report a
+  missing template without the absolute search path.
+- Two sources resolving to one URL (posts sharing a slug, a page shadowing a
+  listing, tags that slugify alike) fail the build instead of one silently
+  overwriting the other.
+- A `slug` or permalink containing `..` can no longer write outside `public/`,
+  and pruning never deletes outside it.
+- `ctf serve` binds its port before the first build, so a busy port no longer
+  leaves a preview build (drafts, no subpath prefix) in `public/`.
+- `ctf serve` live reload works for a site stored under a folder named `public`
+  (it ignored every change), and no longer rebuilds on unrelated changes when the
+  site is under a folder named `content`, `templates` or `static`.
+
+### Changed
+
+- `ctf serve` watches the whole site (except `public/` and hidden files) and
+  reloads the browser only when the output changed.
+- Build output lists the sitemap and robots.txt on their own lines and drops
+  "updated" (`RSS feed`, `404 page`).
+- Front matter is type-checked instead of coerced: `title`, `description`,
+  `cover` and `slug` must be strings and `draft` a boolean (`draft = "no"` used
+  to hide the post). An explicit `slug` must be URL-safe (letters, digits, `-`,
+  `_`). In `config.toml`, `title`, `description` and `base_url` must be strings,
+  and an unmatched `{`/`}` in a permalink is rejected.
+
 ## [0.1.8] - 2026-10-03
 
 ### Added
@@ -119,6 +154,7 @@ as `cuttlefish-ssg` with the `ctf` CLI.
 - Recipes: a gallery of copy-in feature guides (e.g. reading time, breadcrumbs).
 - MIT license.
 
+[Unreleased]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.8...HEAD
 [0.1.8]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.7...0.1.8
 [0.1.7]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.6...v0.1.7
 [0.1.6]: https://github.com/acaibowlz/cuttlefish/compare/v0.1.5...v0.1.6
