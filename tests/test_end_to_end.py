@@ -236,3 +236,13 @@ def test_check_catches_config_errors(site: Path):
     config.write_text(config.read_text() + "\n[bogus_table]\nx = 1\n", encoding="utf-8")
     with pytest.raises(ConfigError):
         _quiet_check(site)
+
+
+def test_html_lang_uses_item_lang_else_site_lang(site: Path, build):
+    post = site / "content" / "blog" / "hello-world.md"
+    post.write_text(post.read_text().replace("+++\n", '+++\nlang = "fr"\n', 1), encoding="utf-8")
+    build(site)
+    assert '<html lang="fr">' in read(site, "blog/hello-world/index.html")
+    assert '<html lang="en">' in read(site, "about/index.html")
+    assert '<html lang="en">' in read(site, "index.html")
+    assert '<html lang="en">' in read(site, "blog/index.html")

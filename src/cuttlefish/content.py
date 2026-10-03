@@ -42,6 +42,7 @@ SUMMARY_FIELDS = (
     "date",
     "description",
     "cover",
+    "lang",
     "slug",
     "url",
     "taxonomies",
@@ -52,7 +53,7 @@ SUMMARY_FIELDS = (
 #: read as attributes (never a raw dict), excluded from the free-form
 #: ``params``, and — because each is always present with a default — always
 #: available as a ``sort_by`` target.
-_PROMOTED_KEYS = frozenset({"title", "description", "date", "slug", "draft", "cover"})
+_PROMOTED_KEYS = frozenset({"title", "description", "date", "slug", "draft", "cover", "lang"})
 
 
 @dataclass(frozen=True)
@@ -131,6 +132,7 @@ class ContentSummary:
     date: date | None
     description: str
     cover: str
+    lang: str
     slug: str
     url: str
     taxonomies: dict[str, list[str]]
@@ -153,6 +155,9 @@ class ContentItem:
     #: Optional cover/hero image URL (e.g. ``/img/post.jpg``). A summary field, so
     #: listings can show a thumbnail; empty string when unset.
     cover: str
+    #: Language tag for this item: its front-matter ``lang``, else the site's.
+    #: A summary field, so a mixed-language listing can mark each entry.
+    lang: str
     body_html: str
     taxonomies: dict[str, list[str]]
     #: Free-form front-matter fields: everything that is neither a promoted
@@ -202,6 +207,7 @@ class ContentItem:
             "date": self.date.isoformat() if self.date else None,
             "description": self.description,
             "cover": self.cover,
+            "lang": self.lang,
             "slug": self.slug,
             "url": self.url,
             "taxonomies": {k: sorted(v) for k, v in sorted(self.taxonomies.items())},
@@ -217,6 +223,7 @@ class ContentItem:
             date=self.date,
             description=self.description,
             cover=self.cover,
+            lang=self.lang,
             slug=self.slug,
             url=self.url,
             taxonomies=self.taxonomies,
@@ -351,6 +358,13 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
 
     _require_front_matter(meta, type_name, config, summary)
 
+    lang = meta.get("lang", config.lang)
+    if not isinstance(lang, str) or not lang.strip():
+        raise ContentError(
+            f"Front-matter 'lang' must be a non-empty language tag like \"en\", got {lang!r}.",
+            summary=summary,
+        )
+
     slug = str(meta.get("slug") or slugify(path.stem))
     body_html, toc = render_markdown(body)
     taxonomies = _extract_taxonomies(meta, config)
@@ -376,6 +390,7 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
         date=_coerce_date(item_date),
         draft=bool(meta.get("draft", False)),
         cover=str(meta.get("cover", "")),
+        lang=lang.strip(),
         body_html=body_html,
         taxonomies=taxonomies,
         params=_custom_params(meta, config),

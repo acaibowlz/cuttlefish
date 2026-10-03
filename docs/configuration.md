@@ -13,12 +13,14 @@ The single exception is the `[params]` table, whose keys are intentionally free-
 ```toml
 title = "Demo Site"
 base_url = "https://example.com"
+lang = "en"
 ```
 
 | Key | Meaning |
 |-----|---------|
 | `title` | The site name. Available to every template as `site.title`. Defaults to `"Untitled Site"`. |
 | `base_url` | The site's public URL. Sets absolute links in `sitemap.xml`, and its path component becomes the prefix for internal links (see [Deployment](deployment.md)). |
+| `lang` | The site's default language, as a BCP 47 tag (`"en"`, `"zh-TW"`). Available as `site.lang`; the starter `base.html` puts it on `<html lang>`. A content file can override it with its own [`lang`](content.md#optional-fields). Defaults to `"en"`. |
 
 The remaining configuration lives in tables: `[content_types.*]`, `[taxonomies.*]`, `[home]`, `[nav]`, `[profile]`, and `[params]`.
 

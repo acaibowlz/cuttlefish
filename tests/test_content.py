@@ -33,6 +33,7 @@ def _item(**overrides):
         date=None,
         draft=False,
         cover="",
+        lang="en",
         body_html="",
         taxonomies={},
         params={},
@@ -205,3 +206,30 @@ def test_cover_is_optional_and_in_fingerprint(tmp_path):
     with_cover = parse_item(path, "blog", cfg)
     # A listing renders the cover, so it must move the fingerprint when it changes.
     assert with_cover.meta_fingerprint != without.meta_fingerprint
+
+
+def test_lang_defaults_to_site_and_overrides_per_item(tmp_path):
+    cfg = parse_config(
+        {
+            "lang": "zh-TW",
+            "content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}},
+        }
+    )
+    path = tmp_path / "content" / "blog" / "post.md"
+    path.parent.mkdir(parents=True)
+    base = '+++\ntitle = "T"\ndescription = "D"\ndate = 2026-01-02\n'
+
+    path.write_text(base + "+++\nBody\n", encoding="utf-8")
+    inherited = parse_item(path, "blog", cfg)
+    assert inherited.lang == "zh-TW"
+
+    path.write_text(base + 'lang = "fr"\n+++\nBody\n', encoding="utf-8")
+    own = parse_item(path, "blog", cfg)
+    assert own.lang == own.summary.lang == "fr"
+    assert "lang" not in own.params
+    # A listing can render lang, so it must move the fingerprint.
+    assert own.meta_fingerprint != inherited.meta_fingerprint
+
+    path.write_text(base + "lang = 3\n+++\nBody\n", encoding="utf-8")
+    with pytest.raises(ContentError, match="'lang'"):
+        parse_item(path, "blog", cfg)

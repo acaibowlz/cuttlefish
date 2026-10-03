@@ -282,3 +282,12 @@ def test_nav_absent_defaults_disabled():
     cfg = parse_config({})
     assert cfg.nav.enabled is False
     assert cfg.nav.items == ()
+
+
+def test_lang_defaults_to_en_and_rejects_non_strings():
+    assert parse_config({}).lang == "en"
+    assert parse_config({"lang": "zh-TW"}).lang == "zh-TW"
+    with pytest.raises(ConfigError, match="'lang'"):
+        parse_config({"lang": ""})
+    with pytest.raises(ConfigError, match="'lang'"):
+        parse_config({"lang": 1})

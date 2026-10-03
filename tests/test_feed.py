@@ -21,6 +21,7 @@ def _item(title: str, url: str, description: str, d: date | None) -> ContentItem
         date=d,
         draft=False,
         cover="",
+        lang="en",
         body_html="<p>body</p>",
         taxonomies={},
         params={},

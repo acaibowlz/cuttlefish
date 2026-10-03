@@ -1,5 +1,8 @@
 title = "Demo Site"
 base_url = "https://example.com"
+# Default language tag for <html lang> (`site.lang`). A content file can
+# override it with `lang = "..."` in its front matter.
+lang = "en"
 
 # Free-form custom values. Unlike every other table, keys here are NOT
 # validated — put anything a template needs and read it as `site.params.<key>`

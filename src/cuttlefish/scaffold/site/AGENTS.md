@@ -61,7 +61,8 @@ covers the request, build it directly using the rest of this guide.
 
 ## Editing `config.toml`
 
-Top-level keys: `title`, `base_url`, and the tables below. `base_url` is the
+Top-level keys: `title`, `base_url`, `lang`, and the tables below. `lang` is
+the default language tag (`"en"` if omitted), read as `site.lang`. `base_url` is the
 site's absolute origin (e.g. `https://example.com`); it builds absolute URLs
 such as the `sitemap.xml` entries, so set it for production. If it includes a
 **subpath** (e.g. `https://you.github.io/repo`), that path (`/repo`) is
@@ -210,7 +211,7 @@ values. Read them in any template as `site.params.<key>` (e.g.
 **per-page** custom values, add them to a page's front matter instead and read
 them off `page.params` — the per-page counterpart to `site.params`. It holds
 every front-matter field that is not a built-in (`title`, `date`,
-`description`, `slug`, `draft`, `cover`) or a configured taxonomy. Guard
+`description`, `slug`, `draft`, `cover`, `lang`) or a configured taxonomy. Guard
 optional ones with `.get`, since a missing key otherwise errors (e.g.
 `{% if page.params.get('hero_layout') %}{{ page.params.hero_layout }}{% endif %}`).
 
@@ -230,6 +231,7 @@ draft = false
 tags = ["python", "ssg"]   # any configured taxonomy name
 slug = "my-post"           # optional; defaults to the filename
 cover = "/img/my-post.jpg" # optional; cover image, available on listings as item.cover
+lang = "fr"                # optional; overrides the site's lang for this item
 +++
 
 # Markdown body here
@@ -255,6 +257,9 @@ cover = "/img/my-post.jpg" # optional; cover image, available on listings as ite
 - `cover` is an optional cover-image URL. It's a **listing field**, so it reaches
   aggregate templates as `item.cover` (not just the item's own page) — use it for
   card thumbnails. Empty when unset.
+- `lang` is an optional language tag overriding the site's `lang` (it defaults
+  to it). Also a listing field (`item.lang`); `base.html` sets `<html lang>`
+  from `item.lang` on single-content pages and `site.lang` elsewhere.
 
 **Markdown body extensions.** Beyond standard Markdown, bodies support tables,
 footnotes (`[^1]`), strikethrough (`~~x~~`), task lists (`- [x]`), autolinks,
@@ -284,7 +289,7 @@ Usable in any `permalink`/`index_permalink`: `{slug}`, `{type}`, `{year}`,
 
 Templates are Jinja2 and live in `templates/`. `base.html` is the shared layout;
 others `{% extends "base.html" %}`. A global `site` object is available
-everywhere: `site.title`, `site.base_url`, `site.nav`, `site.profile`,
+everywhere: `site.title`, `site.lang`, `site.base_url`, `site.nav`, `site.profile`,
 `site.params` (your free-form `[params]` table), `site.feeds` (published RSS
 feeds, each with `.type` and a root-relative `.url`; empty unless a type sets
 `feed = true`), and `site.config` (the raw parsed `config.toml`).
@@ -301,7 +306,7 @@ Variables per template kind:
 
 > **Important rule:** listing templates (index / taxonomy / taxonomy-index /
 > home) may use only **listing fields** — `type`, `title`, `date`,
-> `description`, `cover`, `slug`, `url`, `taxonomies`, `draft`. The full rendered body
+> `description`, `cover`, `lang`, `slug`, `url`, `taxonomies`, `draft`. The full rendered body
 > (`body_html`) is
 > available **only** in single-content and page templates. This keeps
 > incremental builds correct: editing a post's body never forces listings to

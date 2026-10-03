@@ -30,7 +30,7 @@ CONFIG_DOCS_URL = "https://acaibowlz.github.io/cuttlefish/configuration/"
 #: are deliberately free-form (see ``_parse_params``); custom site-wide values
 #: go there rather than as loose top-level keys.
 _TOP_LEVEL_KEYS = frozenset(
-    {"title", "base_url", "content_types", "taxonomies", "home", "nav", "profile", "params"}
+    {"title", "base_url", "lang", "content_types", "taxonomies", "home", "nav", "profile", "params"}
 )
 _PROFILE_KEYS = frozenset({"name", "bio", "avatar", "email", "socials"})
 _CONTENT_TYPE_KEYS = frozenset(
@@ -197,6 +197,9 @@ class SiteConfig:
     title: str
     base_url: str
     home: HomeConfig | None
+    #: Default language (a BCP 47 tag like ``en`` or ``zh-TW``) for ``<html lang>``,
+    #: exposed as ``site.lang``. Content may override it per item via front matter.
+    lang: str = "en"
     nav: NavConfig = field(default_factory=NavConfig)
     profile: Profile | None = None
     content_types: dict[str, ContentType] = field(default_factory=dict)
@@ -425,6 +428,10 @@ def parse_config(raw: dict) -> SiteConfig:
             if type_name not in content_types:
                 raise ConfigError(f"[home] 'recent' references unknown content type {type_name!r}.")
 
+    lang = raw.get("lang", "en")
+    if not isinstance(lang, str) or not lang.strip():
+        raise ConfigError(f"'lang' must be a non-empty language tag like \"en\", got {lang!r}.")
+
     base_url = str(raw.get("base_url", "")).rstrip("/")
     return SiteConfig(
         title=str(raw.get("title", "Untitled Site")),
@@ -433,6 +440,7 @@ def parse_config(raw: dict) -> SiteConfig:
         # internal links get prefixed with it so subpath hosting works.
         base_path=urlsplit(base_url).path.rstrip("/"),
         home=home,
+        lang=lang.strip(),
         nav=nav,
         profile=profile,
         content_types=content_types,
