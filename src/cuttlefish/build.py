@@ -432,7 +432,10 @@ def _run_build(
     # (deleted content, renamed slugs, removed terms, removed static files).
     stats.pruned = _prune(public_dir, manifest.all_outputs(), new_manifest.all_outputs())
 
-    stats.sitemap = write_sitemap(public_dir, new_manifest.page_outputs(), config.base_url)
+    # Every build parses every item, so <lastmod> is always current even when
+    # the page itself was skipped as unchanged.
+    lastmod = {i.output_rel: i.updated or i.date for i in items if i.updated or i.date}
+    stats.sitemap = write_sitemap(public_dir, new_manifest.page_outputs(), config.base_url, lastmod)
     # robots.txt: generated unless the site ships its own static/robots.txt, in
     # which case the verbatim static copy already produced public/robots.txt and
     # we leave it alone.

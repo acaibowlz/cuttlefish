@@ -40,6 +40,7 @@ SUMMARY_FIELDS = (
     "type",
     "title",
     "date",
+    "updated",
     "description",
     "cover",
     "lang",
@@ -53,7 +54,9 @@ SUMMARY_FIELDS = (
 #: read as attributes (never a raw dict), excluded from the free-form
 #: ``params``, and — because each is always present with a default — always
 #: available as a ``sort_by`` target.
-_PROMOTED_KEYS = frozenset({"title", "description", "date", "slug", "draft", "cover", "lang"})
+_PROMOTED_KEYS = frozenset(
+    {"title", "description", "date", "updated", "slug", "draft", "cover", "lang"}
+)
 
 
 @dataclass(frozen=True)
@@ -130,6 +133,7 @@ class ContentSummary:
     type: str
     title: str
     date: date | None
+    updated: date | None
     description: str
     cover: str
     lang: str
@@ -151,6 +155,10 @@ class ContentItem:
     title: str
     description: str
     date: date | None
+    #: Optional last-modified date, set by hand. Feeds the sitemap ``<lastmod>``
+    #: (which falls back to ``date``) and is a summary field, so listings can
+    #: show "updated on". ``None`` when unset.
+    updated: date | None
     draft: bool
     #: Optional cover/hero image URL (e.g. ``/img/post.jpg``). A summary field, so
     #: listings can show a thumbnail; empty string when unset.
@@ -205,6 +213,7 @@ class ContentItem:
             "type": self.type,
             "title": self.title,
             "date": self.date.isoformat() if self.date else None,
+            "updated": self.updated.isoformat() if self.updated else None,
             "description": self.description,
             "cover": self.cover,
             "lang": self.lang,
@@ -221,6 +230,7 @@ class ContentItem:
             type=self.type,
             title=self.title,
             date=self.date,
+            updated=self.updated,
             description=self.description,
             cover=self.cover,
             lang=self.lang,
@@ -274,6 +284,8 @@ def _require_front_matter(meta: dict, type_name: str, config: SiteConfig, err_su
     a quoted date is ignored entirely, and rejecting a time component keeps every
     post's date to a single, sortable day.
     """
+    if "updated" in meta:
+        _check_date(meta, "updated", err_summary)
     if type_name == PAGES_TYPE:
         if not str(meta.get("title", "")).strip():
             raise ContentError("Missing required front-matter 'title'.", summary=err_summary)
@@ -290,18 +302,29 @@ def _require_front_matter(meta: dict, type_name: str, config: SiteConfig, err_su
             raise ContentError(f"Missing required front-matter '{key}'.", summary=err_summary)
     if "date" not in meta:
         raise ContentError("Missing required front-matter 'date'.", summary=err_summary)
-    value = meta["date"]
+    _check_date(meta, "date", err_summary)
+    # Zola accepts an `updated` earlier than `date` silently; it is always a slip.
+    if "updated" in meta and meta["updated"] < meta["date"]:
+        raise ContentError(
+            f"Front-matter 'updated' ({meta['updated']}) is earlier than 'date' ({meta['date']}).",
+            summary=err_summary,
+        )
+
+
+def _check_date(meta: dict, key: str, err_summary: str) -> None:
+    """Require ``meta[key]`` to be an unquoted ``YYYY-MM-DD`` TOML local date."""
+    value = meta[key]
     # datetime is a subclass of date, so check it first: a date-time has a time
     # component we don't want. What remains must be a plain date (not a string).
     if isinstance(value, datetime):
         raise ContentError(
-            "Front-matter 'date' must be a plain YYYY-MM-DD date (e.g. 2026-07-02), "
+            f"Front-matter '{key}' must be a plain YYYY-MM-DD date (e.g. 2026-07-02), "
             "without a time component.",
             summary=err_summary,
         )
     if not isinstance(value, date):
         raise ContentError(
-            "Front-matter 'date' must be an unquoted YYYY-MM-DD date "
+            f"Front-matter '{key}' must be an unquoted YYYY-MM-DD date "
             f"(e.g. 2026-07-02), got {type(value).__name__}.",
             summary=err_summary,
         )
@@ -388,6 +411,7 @@ def parse_item(path: Path, type_name: str, config: SiteConfig) -> ContentItem:
         title=str(meta.get("title", slug)),
         description=str(meta.get("description", "")),
         date=_coerce_date(item_date),
+        updated=meta.get("updated"),
         draft=bool(meta.get("draft", False)),
         cover=str(meta.get("cover", "")),
         lang=lang.strip(),

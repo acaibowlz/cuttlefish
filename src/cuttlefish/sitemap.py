@@ -9,7 +9,8 @@ files.
 
 from __future__ import annotations
 
-from collections.abc import Iterable
+from collections.abc import Iterable, Mapping
+from datetime import date
 from pathlib import Path
 from xml.sax.saxutils import escape
 
@@ -28,20 +29,36 @@ def _output_to_url(output_rel: str) -> str:
     return "/" + out
 
 
-def render_sitemap(urls: Iterable[str], base_url: str) -> str:
-    """Render a sitemap XML document for *urls* (site-root paths) under *base_url*."""
+def render_sitemap(
+    urls: Iterable[str], base_url: str, lastmod: Mapping[str, date] | None = None
+) -> str:
+    """Render a sitemap XML document for *urls* (site-root paths) under *base_url*.
+
+    *lastmod* maps a URL to its ``<lastmod>`` date; URLs without one omit it.
+    """
+    lastmod = lastmod or {}
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">',
     ]
     for url in urls:
-        lines.append(f"  <url><loc>{escape(base_url + encode_url(url))}</loc></url>")
+        loc = f"<loc>{escape(base_url + encode_url(url))}</loc>"
+        mod = f"<lastmod>{lastmod[url].isoformat()}</lastmod>" if url in lastmod else ""
+        lines.append(f"  <url>{loc}{mod}</url>")
     lines.append("</urlset>")
     return "\n".join(lines) + "\n"
 
 
-def write_sitemap(public_dir: Path, page_outputs: Iterable[str], base_url: str) -> bool:
+def write_sitemap(
+    public_dir: Path,
+    page_outputs: Iterable[str],
+    base_url: str,
+    lastmod: Mapping[str, date] | None = None,
+) -> bool:
     """Write ``public/sitemap.xml`` from *page_outputs*; return whether it was written.
+
+    *lastmod* maps an output path to its last-modified date (content pages only;
+    aggregates have no single date and omit ``<lastmod>``).
 
     Skips (and removes any stale file) when *base_url* is empty, since a sitemap
     must contain absolute URLs.
@@ -51,5 +68,6 @@ def write_sitemap(public_dir: Path, page_outputs: Iterable[str], base_url: str) 
         target.unlink(missing_ok=True)
         return False
     urls = sorted({_output_to_url(o) for o in page_outputs})
-    target.write_text(render_sitemap(urls, base_url), encoding="utf-8")
+    by_url = {_output_to_url(o): d for o, d in (lastmod or {}).items()}
+    target.write_text(render_sitemap(urls, base_url, by_url), encoding="utf-8")
     return True

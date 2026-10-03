@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from datetime import date
+
 from cuttlefish.sitemap import _output_to_url, render_sitemap
 
 
@@ -25,3 +27,11 @@ def test_sitemap_percent_encodes_unicode_slugs():
     # <loc> is parsed as a strict URI, which is ASCII-only.
     xml = render_sitemap(["/blog/新貼文/"], base_url="https://example.com")
     assert "<loc>https://example.com/blog/%E6%96%B0%E8%B2%BC%E6%96%87/</loc>" in xml
+
+
+def test_render_sitemap_lastmod_only_where_known():
+    xml = render_sitemap(
+        ["/", "/blog/post/"], base_url="https://x.com", lastmod={"/blog/post/": date(2026, 3, 4)}
+    )
+    assert "<loc>https://x.com/blog/post/</loc><lastmod>2026-03-04</lastmod>" in xml
+    assert "<url><loc>https://x.com/</loc></url>" in xml

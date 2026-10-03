@@ -101,6 +101,6 @@ A missing path always returns an HTTP 404 status regardless — the host does th
 
 ## Sitemap and robots.txt
 
-`ctf build` writes `public/sitemap.xml` from the pages it renders, using `base_url` for the absolute URLs. Keep `base_url` set to your real domain so the sitemap points where the site actually lives.
+`ctf build` writes `public/sitemap.xml` from the pages it renders, using `base_url` for the absolute URLs. Keep `base_url` set to your real domain so the sitemap points where the site actually lives. Each content page gets a `<lastmod>` from its [`updated`](content.md#optional-fields) date, or its `date` when it has none; listing pages carry no `<lastmod>`.
 
 Alongside it, the build writes a `public/robots.txt` that allows all crawlers and advertises the sitemap (`Sitemap: <base_url>/sitemap.xml`). Both files are generated only when `base_url` is set. To use your own crawl rules instead, drop a `robots.txt` in `static/` — it's copied verbatim to the site root and the generated one steps aside. (Crawlers only honor `robots.txt` at the host root, so it has no effect when a site is served under a subpath.)

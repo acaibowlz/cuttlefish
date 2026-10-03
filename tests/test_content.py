@@ -31,6 +31,7 @@ def _item(**overrides):
         title="T",
         description="D",
         date=None,
+        updated=None,
         draft=False,
         cover="",
         lang="en",
@@ -233,3 +234,45 @@ def test_lang_defaults_to_site_and_overrides_per_item(tmp_path):
     path.write_text(base + "lang = 3\n+++\nBody\n", encoding="utf-8")
     with pytest.raises(ContentError, match="'lang'"):
         parse_item(path, "blog", cfg)
+
+
+def test_updated_is_optional_validated_and_in_fingerprint(tmp_path):
+    cfg = parse_config(
+        {"content_types": {"blog": {"template": "b.html", "permalink": "/blog/{slug}/"}}}
+    )
+    path = tmp_path / "content" / "blog" / "post.md"
+    path.parent.mkdir(parents=True)
+    base = '+++\ntitle = "T"\ndescription = "D"\ndate = 2026-01-02\n'
+
+    path.write_text(base + "+++\nBody\n", encoding="utf-8")
+    without = parse_item(path, "blog", cfg)
+    assert without.updated is None
+
+    path.write_text(base + "updated = 2026-03-04\n+++\nBody\n", encoding="utf-8")
+    item = parse_item(path, "blog", cfg)
+    assert item.updated == item.summary.updated == datetime.date(2026, 3, 4)
+    assert "updated" not in item.params
+    assert item.meta_fingerprint != without.meta_fingerprint
+
+    # Same rules as `date`: unquoted, no time component, and not before `date`.
+    for bad, match in [
+        ('updated = "2026-03-04"', "unquoted"),
+        ("updated = 2026-03-04T09:00:00Z", "time component"),
+        ("updated = 2026-01-01", "earlier than 'date'"),
+    ]:
+        path.write_text(base + bad + "\n+++\nBody\n", encoding="utf-8")
+        with pytest.raises(ContentError, match=match):
+            parse_item(path, "blog", cfg)
+
+
+def test_updated_is_validated_on_pages_too(tmp_path):
+    cfg = parse_config(
+        {"content_types": {PAGES_TYPE: {"template": "p.html", "permalink": "/{slug}/"}}}
+    )
+    path = tmp_path / "content" / PAGES_TYPE / "about.md"
+    path.parent.mkdir(parents=True)
+    path.write_text('+++\ntitle = "About"\nupdated = 2026-03-04\n+++\n', encoding="utf-8")
+    assert parse_item(path, PAGES_TYPE, cfg).updated == datetime.date(2026, 3, 4)
+    path.write_text('+++\ntitle = "About"\nupdated = "soon"\n+++\n', encoding="utf-8")
+    with pytest.raises(ContentError, match="'updated'"):
+        parse_item(path, PAGES_TYPE, cfg)

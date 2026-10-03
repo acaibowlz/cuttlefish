@@ -246,3 +246,15 @@ def test_html_lang_uses_item_lang_else_site_lang(site: Path, build):
     assert '<html lang="en">' in read(site, "about/index.html")
     assert '<html lang="en">' in read(site, "index.html")
     assert '<html lang="en">' in read(site, "blog/index.html")
+
+
+def test_sitemap_lastmod_prefers_updated_over_date(site: Path, build):
+    post = site / "content" / "blog" / "hello-world.md"
+    text = post.read_text(encoding="utf-8")
+    post.write_text(text.replace("+++\n", "+++\nupdated = 2099-01-01\n", 1), encoding="utf-8")
+    build(site)
+    sitemap = read(site, "sitemap.xml")
+    assert "/blog/hello-world/</loc><lastmod>2099-01-01</lastmod>" in sitemap
+    # Undated content and aggregates carry no <lastmod>.
+    assert "<url><loc>https://example.com/about/</loc></url>" in sitemap
+    assert "<url><loc>https://example.com/blog/</loc></url>" in sitemap

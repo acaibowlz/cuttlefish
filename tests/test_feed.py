@@ -19,6 +19,7 @@ def _item(title: str, url: str, description: str, d: date | None) -> ContentItem
         title=title,
         description=description,
         date=d,
+        updated=None,
         draft=False,
         cover="",
         lang="en",
