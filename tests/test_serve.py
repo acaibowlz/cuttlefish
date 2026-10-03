@@ -45,3 +45,6 @@ def test_serve_reports_port_in_use(site):
         port = taken.getsockname()[1]
         with pytest.raises(ServeError, match=f"Port {port} is already in use"):
             serve_site(site, port=port, reload=False, console=Console(quiet=True))
+    # Failing fast means no preview build ran: public/ and the cache are untouched.
+    assert not (site / "public").exists()
+    assert not (site / ".ctf").exists()

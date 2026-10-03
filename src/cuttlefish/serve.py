@@ -219,10 +219,9 @@ def serve_site(
     root = root.resolve()
     public_dir = root / PUBLIC_DIR
 
-    # Preview at the local root: ignore base_url's subpath so links resolve
-    # against http://127.0.0.1:<port>/ rather than a deploy prefix like /repo.
-    build_site(root, drafts=drafts, base_path="", console=console)
-
+    # Bind before building: the preview build (drafts on, no base_path prefix)
+    # rewrites public/ and the cache, which a failed serve must not leave behind.
+    # Binding doesn't accept requests yet; that starts at serve_forever().
     try:
         server = _DevServer(("127.0.0.1", port), _Handler, public_dir)
     except OSError as exc:
@@ -231,6 +230,14 @@ def serve_site(
         raise ServeError(
             f"Port {port} is already in use. Stop the other server or pass --port.",
         ) from exc
+
+    # Preview at the local root: ignore base_url's subpath so links resolve
+    # against http://127.0.0.1:<port>/ rather than a deploy prefix like /repo.
+    try:
+        build_site(root, drafts=drafts, base_path="", console=console)
+    except BaseException:
+        server.server_close()  # release the port on a failed first build
+        raise
     stop = threading.Event()
 
     watcher: threading.Thread | None = None
