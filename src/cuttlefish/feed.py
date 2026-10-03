@@ -1,7 +1,8 @@
-"""Generate an RSS 2.0 feed for a content type from its items.
+"""Generate the site's RSS 2.0 feed from the content types that opt in.
 
-A feed lists a content type's most recent items as **absolute** links, so — like
-``sitemap.xml`` — it is only produced when ``base_url`` is set. It is a *summary*
+One feed per site, at :data:`FEED_PATH`: it merges the most recent items of
+every type with ``feed = true``, newest first. Its links are **absolute**, so —
+like ``sitemap.xml`` — it is only produced when ``base_url`` is set. It is a *summary*
 feed: each entry carries the item's title, link, date and description, never the
 body. That is deliberate: the feed is fingerprinted over item metadata (see
 ``graph.build_feed_specs``) and so stays inside the incremental-build model,
@@ -18,19 +19,13 @@ from xml.sax.saxutils import escape
 from cuttlefish.content import ContentItem
 from cuttlefish.permalink import encode_url
 
-FEED_FILENAME = "feed.xml"
+#: Site path of the feed. Fixed rather than derived from a type's index, so
+#: renaming or re-permalinking a type never moves subscribers' URL.
+FEED_PATH = "/feed.xml"
 
 #: Cap on entries per feed, newest first. A feed advertises "what's new", not the
 #: whole archive, so a fixed cap keeps it small without adding another config knob.
 FEED_MAX_ITEMS = 20
-
-
-def feed_url_path(index_permalink: str) -> str:
-    """Site path of the feed for a type whose index lives at *index_permalink*.
-
-    ``/blog/`` -> ``/blog/feed.xml``. The index permalink always ends in a slash.
-    """
-    return index_permalink + FEED_FILENAME
 
 
 def _rfc822(value: date) -> str:
@@ -43,19 +38,16 @@ def render_rss(
     *,
     site_title: str,
     base_url: str,
-    channel_path: str,
-    self_path: str,
     site_description: str = "",
     lang: str = "",
 ) -> str:
     """Render an RSS 2.0 document for *items* (already ordered newest-first).
 
-    *channel_path* is the site path of the page the feed represents (the type
-    index, e.g. ``/blog/``); *self_path* is the feed's own path
-    (``/blog/feed.xml``). Both are made absolute with *base_url*.
+    The channel links to the site root and advertises :data:`FEED_PATH` as its
+    own address, both made absolute with *base_url*.
     """
-    channel_link = base_url + encode_url(channel_path)
-    self_link = base_url + encode_url(self_path)
+    channel_link = base_url + "/"
+    self_link = base_url + FEED_PATH
     lines = [
         '<?xml version="1.0" encoding="UTF-8"?>',
         '<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">',
@@ -83,6 +75,8 @@ def render_rss(
             lines.append(f"      <pubDate>{_rfc822(item.date)}</pubDate>")
         if item.description:
             lines.append(f"      <description>{escape(item.description)}</description>")
+        # The feed mixes types; the category lets readers label or filter them.
+        lines.append(f"      <category>{escape(item.type)}</category>")
         lines.append("    </item>")
     lines.append("  </channel>")
     lines.append("</rss>")
@@ -91,17 +85,14 @@ def render_rss(
 
 def write_feed(
     public_dir: Path,
-    output_rel: str,
     items: list[ContentItem],
     *,
     site_title: str,
     base_url: str,
-    channel_path: str,
-    self_path: str,
     site_description: str = "",
     lang: str = "",
 ) -> str:
-    """Render and write a feed to ``public/<output_rel>``; return *output_rel*.
+    """Render and write the feed to ``public/feed.xml``; return its output path.
 
     The feed's links are absolute (built from *base_url*), so it is written
     directly here rather than through the renderer's base-path link rewriting,
@@ -111,11 +102,10 @@ def write_feed(
         items,
         site_title=site_title,
         base_url=base_url,
-        channel_path=channel_path,
-        self_path=self_path,
         site_description=site_description,
         lang=lang,
     )
+    output_rel = FEED_PATH.lstrip("/")
     dest = public_dir / output_rel
     dest.parent.mkdir(parents=True, exist_ok=True)
     dest.write_text(xml, encoding="utf-8")

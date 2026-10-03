@@ -27,7 +27,7 @@ from jinja2 import (
 from cuttlefish.config import ContentType, SiteConfig
 from cuttlefish.content import ContentItem, ContentSummary
 from cuttlefish.errors import CuttlefishError
-from cuttlefish.feed import feed_url_path
+from cuttlefish.feed import FEED_PATH
 from cuttlefish.permalink import output_path
 from cuttlefish.taxonomy import HomeTerm, TaxonomyData, Term, term_links
 
@@ -145,7 +145,7 @@ class Renderer:
         )
 
     def set_site_context(self) -> None:
-        """Expose a stable ``site`` global (title, description, lang, base_url, nav, profile, params, feeds, config)."""
+        """Expose a stable ``site`` global (title, description, lang, base_url, nav, profile, params, feed, config)."""
         self.env.globals["site"] = SimpleNamespace(
             title=self.config.title,
             description=self.config.description,
@@ -154,26 +154,20 @@ class Renderer:
             nav=self.config.nav,
             profile=self.config.profile,
             params=self.config.params,
-            feeds=self._feeds(),
+            feed=self._feed(),
             config=self.config.raw,
         )
 
-    def _feeds(self) -> list[SimpleNamespace]:
-        """Published RSS feeds as ``(type, url)`` for templates to advertise.
+    def _feed(self) -> str:
+        """Root-relative URL of the site's RSS feed, or ``""`` when none is emitted.
 
-        One per content type with ``feed = true`` and an index. The URL is
-        root-relative (``/blog/feed.xml``) so it flows through subpath prefixing
-        like every other link; the list is empty without ``base_url``, matching
-        when the feeds are actually emitted. Lets ``base.html`` render
-        ``<link rel="alternate">`` autodiscovery tags without knowing the config.
+        Non-empty exactly when the feed is written (a type has ``feed = true`` and
+        ``base_url`` is set), so ``base.html`` can guard its autodiscovery
+        ``<link rel="alternate">`` on it without knowing the config. Root-relative
+        so it flows through subpath prefixing like every other link.
         """
-        if not self.config.base_url:
-            return []
-        feeds = []
-        for name, ct in self.config.content_types.items():
-            if ct.feed and ct.has_index:
-                feeds.append(SimpleNamespace(type=name, url=feed_url_path(ct.index_permalink)))  # type: ignore[arg-type]
-        return feeds
+        has_feed = any(ct.feed for ct in self.config.content_types.values())
+        return FEED_PATH if has_feed and self.config.base_url else ""
 
     # -- writing -----------------------------------------------------------
 

@@ -22,7 +22,7 @@ lang = "en"
 | `title` | The site name. Available to every template as `site.title`. Defaults to `"Untitled Site"`. |
 | `description` | A one-line summary of the site. Available as `site.description`, and used as the RSS channel `<description>` (which falls back to `title` when this is unset). |
 | `base_url` | The site's public URL. Sets absolute links in `sitemap.xml`, and its path component becomes the prefix for internal links (see [Deployment](deployment.md)). |
-| `lang` | The site's default language, as a BCP 47 tag (`"en"`, `"zh-TW"`). Available as `site.lang`; the starter `base.html` puts it on `<html lang>`, and RSS feeds carry it as `<language>`. A content file can override it with its own [`lang`](content.md#optional-fields). Defaults to `"en"`. |
+| `lang` | The site's default language, as a BCP 47 tag (`"en"`, `"zh-TW"`). Available as `site.lang`; the starter `base.html` puts it on `<html lang>`, and the RSS feed carries it as `<language>`. A content file can override it with its own [`lang`](content.md#optional-fields). Defaults to `"en"`. |
 
 The remaining configuration lives in tables: `[content_types.*]`, `[taxonomies.*]`, `[home]`, `[nav]`, `[profile]`, and `[params]`.
 
@@ -50,15 +50,15 @@ order = "desc"
 | `paginate` | no | `0` | Items per index page; `0` (or omitted) disables pagination. Must be a non-negative integer. |
 | `sort_by` | no | `"date"` | Front-matter field to sort the index by. Any field works, including a [custom one](content.md#custom-fields). |
 | `order` | no | `"desc"` | `"desc"` (newest/largest first) or `"asc"`. |
-| `feed` | no | `false` | Publish an RSS feed of this type's recent posts (see below). |
+| `feed` | no | `false` | Include this type's items in the site's RSS feed (see below). |
 
 `index_template` and `index_permalink` travel together: define both to get an index page, or neither for a type that has individual pages but no listing.
 
 #### RSS feed
 
-Set `feed = true` on a content type to publish an RSS 2.0 feed of its recent items at `<index_permalink>feed.xml` — e.g. a blog with `index_permalink = "/blog/"` gets `/blog/feed.xml`. It's a **summary** feed: each entry carries the post's title, link, date and `description`, not the body. The newest 20 items are included, newest first.
+A site has **one** RSS 2.0 feed, at `/feed.xml`. Set `feed = true` on each content type whose items belong in it — typically just the blog. Items from every opted-in type are merged, newest first, and the newest 20 are included, so a subscriber's one URL covers everything you publish there. Each entry is tagged with its content type as an RSS `<category>`, which readers can use to label or filter. It's a **summary** feed: each entry carries the item's title, link, date and `description`, not the body.
 
-Two conditions gate it, both mirroring the [sitemap](deployment.md#sitemap-and-robotstxt): the feed's links are absolute, so it's only emitted when `base_url` is set; and it lives at the index URL, so the type must have an index (`feed = true` without one is a config error). Multiple types can each set `feed = true` for separate feeds. The starter `base.html` advertises every feed with a `<link rel="alternate">` autodiscovery tag, driven by the [`site.feeds`](templates.md#the-global-site-object) template variable — so feed readers and browsers find it automatically. The feed is regenerated only when a listed post's metadata changes (like the HTML listings) and never appears in `sitemap.xml`.
+The feed's links are absolute, so — like the [sitemap](deployment.md#sitemap-and-robotstxt) — it's only emitted when `base_url` is set. The `pages` type can't opt in, since standalone pages have no date to order the feed by. The channel takes its title, `description` and `lang` from the [top-level keys](#top-level-keys). The starter `base.html` advertises the feed with a `<link rel="alternate">` autodiscovery tag, driven by the [`site.feed`](templates.md#the-global-site-object) template variable — so feed readers and browsers find it automatically. The feed is regenerated only when a listed item's metadata changes (like the HTML listings) and never appears in `sitemap.xml`.
 
 ### The `pages` type
 

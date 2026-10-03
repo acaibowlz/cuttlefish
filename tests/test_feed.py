@@ -6,7 +6,7 @@ from datetime import date
 from pathlib import Path
 
 from cuttlefish.content import ContentItem
-from cuttlefish.feed import feed_url_path, render_rss
+from cuttlefish.feed import render_rss
 from tests.conftest import append, read
 
 # -- unit: rendering -------------------------------------------------------
@@ -32,10 +32,6 @@ def _item(title: str, url: str, description: str, d: date | None) -> ContentItem
     )
 
 
-def test_feed_url_path_appends_feed_xml():
-    assert feed_url_path("/blog/") == "/blog/feed.xml"
-
-
 def test_render_rss_structure_and_absolute_links():
     items = [
         _item("Newest", "/blog/newest/", "The newest post.", date(2026, 6, 15)),
@@ -45,15 +41,13 @@ def test_render_rss_structure_and_absolute_links():
         items,
         site_title="Demo Site",
         base_url="https://example.com",
-        channel_path="/blog/",
-        self_path="/blog/feed.xml",
     )
     assert xml.startswith('<?xml version="1.0" encoding="UTF-8"?>')
     assert '<rss version="2.0"' in xml
     assert "<title>Demo Site</title>" in xml
-    assert "<link>https://example.com/blog/</link>" in xml
+    assert "<link>https://example.com/</link>" in xml  # channel = site root
     # atom:self link advertises the feed's own address.
-    assert 'href="https://example.com/blog/feed.xml" rel="self"' in xml
+    assert 'href="https://example.com/feed.xml" rel="self"' in xml
     # Item links and guids are absolute.
     assert "<link>https://example.com/blog/newest/</link>" in xml
     assert '<guid isPermaLink="true">https://example.com/blog/newest/</guid>' in xml
@@ -70,8 +64,6 @@ def test_render_rss_escapes_and_orders_items():
         [_item("A & B", "/blog/a/", "x < y", date(2026, 1, 1))],
         site_title="S",
         base_url="https://x.com",
-        channel_path="/blog/",
-        self_path="/blog/feed.xml",
     )
     assert "<title>A &amp; B</title>" in xml
     assert "<description>x &lt; y</description>" in xml
@@ -82,8 +74,6 @@ def test_render_rss_omits_pubdate_when_undated():
         [_item("No date", "/blog/n/", "", None)],
         site_title="S",
         base_url="https://x.com",
-        channel_path="/blog/",
-        self_path="/blog/feed.xml",
     )
     assert "<pubDate>" not in xml
     assert "<lastBuildDate>" not in xml
@@ -94,9 +84,9 @@ def test_render_rss_omits_pubdate_when_undated():
 # -- integration: the scaffold build --------------------------------------
 
 
-def test_scaffold_emits_blog_feed(site: Path, build):
+def test_scaffold_emits_site_feed(site: Path, build):
     build(site)
-    feed = read(site, "blog/feed.xml")
+    feed = read(site, "feed.xml")
     assert '<rss version="2.0"' in feed
     assert "<link>https://example.com/blog/hello-world/</link>" in feed
     # Autodiscovery link is present on rendered pages.
@@ -119,7 +109,7 @@ def test_no_feed_without_base_url(site: Path, build):
         encoding="utf-8",
     )
     build(site)
-    assert not (site / "public/blog/feed.xml").exists()
+    assert not (site / "public/feed.xml").exists()
     assert 'type="application/rss+xml"' not in read(site, "index.html")
 
 
@@ -141,12 +131,12 @@ def test_body_edit_skips_feed_but_meta_edit_rebuilds_it(site: Path, build):
     )
     stats = build(site)
     assert stats.feeds == 1
-    assert "freshly retitled" in read(site, "blog/feed.xml")
+    assert "freshly retitled" in read(site, "feed.xml")
 
 
 def test_feed_pruned_when_disabled(site: Path, build):
     build(site)
-    assert (site / "public/blog/feed.xml").exists()
+    assert (site / "public/feed.xml").exists()
     # Turn the feed off; the incremental build prunes the stale file.
     cfg = site / "config.toml"
     cfg.write_text(
@@ -154,7 +144,7 @@ def test_feed_pruned_when_disabled(site: Path, build):
         encoding="utf-8",
     )
     build(site)
-    assert not (site / "public/blog/feed.xml").exists()
+    assert not (site / "public/feed.xml").exists()
 
 
 def test_feed_percent_encodes_unicode_links():
@@ -164,8 +154,6 @@ def test_feed_percent_encodes_unicode_links():
         [_item("新貼文", "/blog/新貼文/", "", date(2026, 1, 1))],
         site_title="S",
         base_url="https://x.com",
-        channel_path="/blog/",
-        self_path="/blog/feed.xml",
     )
     assert "<link>https://x.com/blog/%E6%96%B0%E8%B2%BC%E6%96%87/</link>" in xml
     assert '<guid isPermaLink="true">https://x.com/blog/%E6%96%B0%E8%B2%BC%E6%96%87/</guid>' in xml
@@ -173,9 +161,7 @@ def test_feed_percent_encodes_unicode_links():
 
 
 def test_render_rss_channel_description_and_language():
-    kwargs = dict(
-        site_title="S", base_url="https://x.com", channel_path="/b/", self_path="/b/feed.xml"
-    )
+    kwargs = dict(site_title="S", base_url="https://x.com")
     bare = render_rss([], **kwargs)
     # RSS requires a channel description: the title stands in when none is set.
     assert "<description>S</description>" in bare
@@ -184,3 +170,26 @@ def test_render_rss_channel_description_and_language():
     xml = render_rss([], site_description="About S", lang="zh-TW", **kwargs)
     assert "<description>About S</description>" in xml
     assert "<language>zh-TW</language>" in xml
+
+
+def test_render_rss_tags_each_item_with_its_type():
+    xml = render_rss([_item("A", "/blog/a/", "", None)], site_title="S", base_url="https://x.com")
+    assert "<category>blog</category>" in xml
+
+
+def test_feed_merges_opted_in_types_newest_first(site: Path, build):
+    # Opt projects in too: one /feed.xml carries both types, ordered by date.
+    cfg = site / "config.toml"
+    cfg.write_text(
+        cfg.read_text(encoding="utf-8").replace(
+            "[content_types.project]\n", "[content_types.project]\nfeed = true\n"
+        ),
+        encoding="utf-8",
+    )
+    build(site)
+    feed = read(site, "feed.xml")
+    assert "<category>blog</category>" in feed
+    assert "<category>project</category>" in feed
+    assert not (site / "public/blog/feed.xml").exists()
+    dates = [line for line in feed.splitlines() if "<pubDate>" in line]
+    assert len(dates) == 3  # 2 posts + 1 project

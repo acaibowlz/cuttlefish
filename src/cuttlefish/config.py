@@ -107,9 +107,9 @@ class ContentType:
     paginate: int = 0
     sort_by: str = "date"
     order: str = "desc"  # "desc" (newest/largest first) or "asc"
-    #: Publish an RSS feed of this type's recent items at ``<index_permalink>feed.xml``.
-    #: Requires an index (that's where the feed lives) and ``base_url`` (its links
-    #: are absolute), so it only takes effect when both are present.
+    #: Include this type's items in the site's single RSS feed at ``/feed.xml``.
+    #: One feed per site, not per type, so a subscriber's one URL covers every
+    #: opted-in type. Only emitted when ``base_url`` is set (its links are absolute).
     feed: bool = False
 
     @property
@@ -270,12 +270,12 @@ def _parse_content_type(name: str, data: dict) -> ContentType:
         order=order,
         feed=feed,
     )
-    # A feed lists a type's items and is published *at* its index URL, so it needs
-    # one. Reject 'feed = true' without an index rather than silently emit nothing.
-    if content_type.feed and not content_type.has_index:
+    # The feed is ordered by date and standalone pages have none, so opting them
+    # in would silently add nothing. Reject it instead.
+    if content_type.feed and name == PAGES_TYPE:
         raise ConfigError(
-            f"{where} 'feed = true' needs an index — set 'index_template' and "
-            "'index_permalink'; the feed is published at <index_permalink>feed.xml."
+            f"{where} cannot set 'feed = true' — standalone pages have no date to "
+            "order the feed by."
         )
     return content_type
 

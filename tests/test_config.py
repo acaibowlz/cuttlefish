@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import pytest
 
-from cuttlefish.config import ConfigError, parse_config
+from cuttlefish.config import PAGES_TYPE, ConfigError, parse_config
 
 
 def _tax_config(**taxonomy_extra):
@@ -64,25 +64,19 @@ def test_config_paginate_default_and_validation():
             parse_config(ct(paginate=bad))
 
 
-def test_config_feed_requires_index_and_bool():
-    def ct(**extra):
-        return {
-            "content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/", **extra}}
-        }
+def test_config_feed_is_a_bool_and_not_for_pages():
+    def ct(name="blog", **extra):
+        return {"content_types": {name: {"template": "b.html", "permalink": "/b/{slug}/", **extra}}}
 
-    indexed = {"index_template": "i.html", "index_permalink": "/b/"}
-
-    # Defaults off; on with an index is accepted.
+    # Defaults off; no index needed, since the feed lives at /feed.xml.
     assert parse_config(ct()).content_types["blog"].feed is False
-    assert parse_config(ct(feed=True, **indexed)).content_types["blog"].feed is True
+    assert parse_config(ct(feed=True)).content_types["blog"].feed is True
 
-    # feed = true without an index is rejected (nowhere to publish it).
-    with pytest.raises(ConfigError):
-        parse_config(ct(feed=True))
-
-    # Non-boolean feed is rejected.
-    with pytest.raises(ConfigError):
-        parse_config(ct(feed="yes", **indexed))
+    with pytest.raises(ConfigError, match="boolean"):
+        parse_config(ct(feed="yes"))
+    # Pages have no date to order the feed by.
+    with pytest.raises(ConfigError, match="no date"):
+        parse_config(ct(PAGES_TYPE, feed=True))
 
 
 def test_config_unknown_keys_rejected():

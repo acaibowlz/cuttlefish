@@ -94,8 +94,8 @@ class BuildStats:
         lines = [
             _done_of(self.content, self.content + self.skipped, "content page"),
             _done_of(listings, listings + self.aggregates_skipped, "listing page"),
-            _single(self.feeds, self.feeds + self.feeds_skipped, "RSS feed", outputs),
-            _single(self.error_pages, self.error_pages, "404 page", outputs),
+            _single(self.feeds, "RSS feed", outputs),
+            _single(self.error_pages, "404 page", outputs),
         ]
         if outputs:
             lines += [
@@ -135,16 +135,14 @@ def _updated(what: str) -> str:
     return f"{what} updated" if what else ""
 
 
-def _single(done: int, total: int, noun: str, written: bool) -> str:
-    """A one-off output (a feed, the 404 page): ``RSS feed updated`` rather than a count.
+def _single(done: int, noun: str, written: bool) -> str:
+    """A one-off output (the feed, the 404 page): ``RSS feed updated``, not a count.
 
-    Several feeds fall back to a count (``1 of 2 RSS feeds updated``). *written*
-    is False under ``check``, which validates but writes nothing.
+    *written* is False under ``check``, which validates but writes nothing.
     """
     if not done:
         return ""
-    line = noun if total == 1 else _done_of(done, total, noun)
-    return _updated(line) if written else line
+    return _updated(noun) if written else noun
 
 
 def _done_of(done: int, total: int, noun: str) -> str:
@@ -426,8 +424,8 @@ def _run_build(
             stats.error_pages += 1
         new_error_pages[template_name] = {"output": template_name}
 
-    # RSS feeds: one summary aggregate per content type with feed = true (and an
-    # index), rebuilt only when its listed items' metadata changed. Tracked in
+    # RSS feed: one site-wide summary aggregate over the types with feed = true,
+    # rebuilt only when its listed items' metadata changed. Tracked in
     # their own manifest section so they are pruned but never enter the sitemap —
     # the same treatment as error pages. Absent entirely unless base_url is set.
     new_feeds: dict[str, dict] = {}

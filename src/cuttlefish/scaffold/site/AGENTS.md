@@ -30,9 +30,9 @@ runs the same pipeline as a build and exits non-zero on the first error, so it's
 a quick way to confirm an edit is sound. When `base_url` is set, the build also emits a
 `public/sitemap.xml` of every page and a `public/robots.txt` that points at it.
 To supply your own crawl rules, drop a `robots.txt` in `static/` and the
-generated one steps aside. A content type with `feed = true` also gets an RSS
-feed at `<index_permalink>feed.xml` (also `base_url`-gated); the `<head>` in
-`base.html` advertises each via `site.feeds`.
+generated one steps aside. The site also gets one RSS feed at `/feed.xml`
+(also `base_url`-gated) covering every content type with `feed = true`; the
+`<head>` in `base.html` advertises it via `site.feed`.
 
 ## Recipes
 
@@ -64,7 +64,7 @@ covers the request, build it directly using the rest of this guide.
 Top-level keys: `title`, `description`, `base_url`, `lang`, and the tables
 below. `description` is a one-line site summary (`site.description`, also the
 RSS channel description). `lang` is the default language tag (`"en"` if
-omitted), read as `site.lang` and emitted as the feeds' `<language>`. `base_url` is the
+omitted), read as `site.lang` and emitted as the feed's `<language>`. `base_url` is the
 site's absolute origin (e.g. `https://example.com`); it builds absolute URLs
 such as the `sitemap.xml` entries, so set it for production. If it includes a
 **subpath** (e.g. `https://you.github.io/repo`), that path (`/repo`) is
@@ -83,14 +83,15 @@ index_permalink = "/notes/"       # required if index_template is set
 paginate = 10                     # optional; 0/absent = no pagination
 sort_by = "date"                  # front-matter field to sort by
 order = "desc"                    # "desc" = newest/largest first, "asc" = oldest/smallest
-feed = true                       # optional; publish an RSS feed at /notes/feed.xml
+feed = true                       # optional; include notes in the site feed at /feed.xml
 ```
 
-`feed = true` publishes an RSS 2.0 feed of the type's recent posts (title, link,
-date, description — a summary feed) at `<index_permalink>feed.xml`. It needs an
-index (that's where it lives) and `base_url` (absolute links), and is exposed to
-templates via `site.feeds` for autodiscovery `<link>` tags. Kept out of the
-sitemap.
+`feed = true` adds the type's items to the site's single RSS 2.0 feed at
+`/feed.xml` (title, link, date, description — a summary feed). Items from all
+opted-in types are merged newest first, capped at 20, each tagged with its type
+as a `<category>`. It needs `base_url` (absolute links), not an index, and is
+exposed to templates as `site.feed` for the autodiscovery `<link>` tag. Not
+allowed on `pages` (no dates). Kept out of the sitemap.
 
 Then create `templates/note.html` and `templates/note.index.html`. The author
 adds the content under `content/note/*.md`.
@@ -297,9 +298,9 @@ Usable in any `permalink`/`index_permalink`: `{slug}`, `{type}`, `{year}`,
 Templates are Jinja2 and live in `templates/`. `base.html` is the shared layout;
 others `{% extends "base.html" %}`. A global `site` object is available
 everywhere: `site.title`, `site.description`, `site.lang`, `site.base_url`, `site.nav`, `site.profile`,
-`site.params` (your free-form `[params]` table), `site.feeds` (published RSS
-feeds, each with `.type` and a root-relative `.url`; empty unless a type sets
-`feed = true`), and `site.config` (the raw parsed `config.toml`).
+`site.params` (your free-form `[params]` table), `site.feed` (the RSS feed's
+root-relative URL, `/feed.xml`; empty unless a type sets `feed = true`), and
+`site.config` (the raw parsed `config.toml`).
 
 Variables per template kind:
 
