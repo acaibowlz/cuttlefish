@@ -1,8 +1,7 @@
 """Incremental-build correctness: the Milestone 2 dependency graph.
 
-The scaffolded site has 4 content files (2 blog, 1 project, 1 page) and 6
-aggregates: index:blog, index:project, taxonomy:tags:meta, taxonomy:tags:python,
-taxonomy_index:tags, home.
+The scaffolded site has 4 content files (2 blog, 1 project, 1 page) and 7
+aggregates (see TOTAL_AGGREGATES).
 """
 
 from __future__ import annotations

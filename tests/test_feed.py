@@ -59,7 +59,7 @@ def test_render_rss_structure_and_absolute_links():
     assert "body" not in xml
 
 
-def test_render_rss_escapes_and_orders_items():
+def test_render_rss_escapes_text():
     xml = render_rss(
         [_item("A & B", "/blog/a/", "x < y", date(2026, 1, 1))],
         site_title="S",
@@ -186,10 +186,19 @@ def test_feed_merges_opted_in_types_newest_first(site: Path, build):
         ),
         encoding="utf-8",
     )
+    # Date the project between the two blog posts, so grouping by type would fail.
+    project = site / "content/project/example-project.md"
+    text = project.read_text(encoding="utf-8")
+    project.write_text(text.replace("date = 2026-05-20", "date = 2026-06-10", 1), encoding="utf-8")
     build(site)
     feed = read(site, "feed.xml")
     assert "<category>blog</category>" in feed
     assert "<category>project</category>" in feed
     assert not (site / "public/blog/feed.xml").exists()
-    dates = [line for line in feed.splitlines() if "<pubDate>" in line]
-    assert len(dates) == 3  # 2 posts + 1 project
+    dates = [line.strip() for line in feed.splitlines() if "<pubDate>" in line]
+    # Types are interleaved by date, not grouped: blog, project, blog.
+    assert dates == [
+        "<pubDate>Mon, 15 Jun 2026 00:00:00 +0000</pubDate>",
+        "<pubDate>Wed, 10 Jun 2026 00:00:00 +0000</pubDate>",
+        "<pubDate>Mon, 01 Jun 2026 00:00:00 +0000</pubDate>",
+    ]

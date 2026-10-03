@@ -91,6 +91,7 @@ def test_config_unknown_keys_rejected():
         {"content_types": {"blog": {**ct, "index_tempalte": "i.html"}}},  # content type
         {"taxonomies": {"tags": {"template": "t.html", "permalink": "/t/{term}/", "paginate": 5}}},
         {"home": {"template": "h.html", "recnt": {}}},  # home
+        {"home": {"template": "h.html", "featured": {}}},  # removed key
         {"nav": {"enabledd": True}},  # nav
     ]
     for raw in bad_configs:
@@ -130,14 +131,6 @@ def test_home_recent_validation():
     for recent in ({"blgo": 5}, {"blog": -1}, {"blog": "five"}, {"blog": True}):
         with pytest.raises(ConfigError):
             parse_config(home(recent))
-
-
-def test_home_rejects_removed_featured_key():
-    # 'featured' was removed in favor of taxonomy-based curation; a leftover key
-    # is an unknown-key error rather than a silently ignored no-op.
-    base = {"content_types": {"blog": {"template": "b.html", "permalink": "/b/{slug}/"}}}
-    with pytest.raises(ConfigError):
-        parse_config({**base, "home": {"template": "home.html", "featured": {"blog": 2}}})
 
 
 def test_taxonomy_sort_parsed_with_defaults():

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 from datetime import date
 
-from cuttlefish.sitemap import _output_to_url, render_sitemap
+from cuttlefish.sitemap import SITEMAP_FILENAME, _output_to_url, render_sitemap, write_sitemap
 
 
 def test_sitemap_output_to_url():
@@ -14,7 +14,7 @@ def test_sitemap_output_to_url():
     assert _output_to_url("/tags/meta/index.html") == "/tags/meta/"
 
 
-def test_sitemap_render_is_sorted_and_absolute():
+def test_sitemap_render_is_absolute_and_escaped():
     xml = render_sitemap(["/blog/", "/"], base_url="https://example.com")
     assert xml.startswith('<?xml version="1.0" encoding="UTF-8"?>')
     assert "<loc>https://example.com/</loc>" in xml
@@ -35,3 +35,14 @@ def test_render_sitemap_lastmod_only_where_known():
     )
     assert "<loc>https://x.com/blog/post/</loc><lastmod>2026-03-04</lastmod>" in xml
     assert "<url><loc>https://x.com/</loc></url>" in xml
+
+
+def test_write_sitemap_sorts_and_dedupes_urls(tmp_path):
+    # Page outputs arrive in build order; the sitemap must be stable across builds.
+    outputs = ["tags/meta/index.html", "index.html", "blog/index.html", "/index.html"]
+    assert write_sitemap(tmp_path, outputs, base_url="https://x.com") is True
+    xml = (tmp_path / SITEMAP_FILENAME).read_text(encoding="utf-8")
+    locs = [
+        line.split("<loc>")[1].split("</loc>")[0] for line in xml.splitlines() if "<loc>" in line
+    ]
+    assert locs == ["https://x.com/", "https://x.com/blog/", "https://x.com/tags/meta/"]

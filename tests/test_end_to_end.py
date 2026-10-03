@@ -40,7 +40,7 @@ def test_full_build_outputs(site: Path, build):
     assert stats.content == 4  # 2 blog + 1 project + 1 page
 
 
-def test_markdown_code_highlighting(site: Path, build):
+def test_fenced_code_gets_language_class(site: Path, build):
     build(site)
     post = read(site, "blog/hello-world/index.html")
     assert 'class="language-python"' in post
