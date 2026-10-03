@@ -205,7 +205,9 @@ def _watch_loop(
                 # reload the browser and lose the reader's scroll position.
                 console.print(f"[dim]↻ No output changed ({stats.elapsed_str})[/dim]")
                 continue
-            console.print(stats.report(f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str}"))
+            console.print(
+                stats.report(f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str}"), highlight=False
+            )
             server.broadcast("reload")
         except CuttlefishError as exc:  # keep the server alive on build errors
             console.print(

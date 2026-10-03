@@ -99,7 +99,7 @@ class BuildStats:
             _done_of(listings, listings + self.aggregates_skipped, "listing page"),
             f"{_plural(self.static, 'static file')} copied" if outputs and self.static else "",
             "RSS feed" if self.feeds else "",
-            "404 page" if self.error_pages else "",
+            "404.html" if self.error_pages else "",
             "sitemap.xml" if full and self.sitemap else "",
             "robots.txt" if full and self.robots else "",
             f"{_plural(self.pruned, 'stale file')} removed" if outputs and self.pruned else "",
@@ -119,14 +119,18 @@ class BuildStats:
 
 
 def _plural(n: int, noun: str) -> str:
-    return f"{n} {noun}{'' if n == 1 else 's'}"
+    return f"[bold cyan]{n}[/bold cyan] {noun}{'' if n == 1 else 's'}"
 
 
 def _done_of(done: int, total: int, noun: str) -> str:
     """``4 content pages``, or ``1 of 4 content pages`` when some were skipped."""
     if not done:
         return ""
-    return _plural(done, noun) if done == total else f"{done} of {_plural(total, noun)}"
+    return (
+        _plural(done, noun)
+        if done == total
+        else f"[bold cyan]{done}[/bold cyan] of {_plural(total, noun)}"
+    )
 
 
 # -- shared helpers --------------------------------------------------------
@@ -308,7 +312,9 @@ def build_site(
         save_manifest(root, new_manifest)
 
     stats.elapsed_ms = (time.perf_counter() - start) * 1000
-    console.print(stats.summary(config.title))
+    # highlight=False: Rich's auto-highlighter would recolor whatever looks like a
+    # number or Python literal (a title like "True North", a "404" label).
+    console.print(stats.summary(config.title), highlight=False)
     return stats
 
 
@@ -339,7 +345,8 @@ def check_site(root: Path, *, drafts: bool = False, console: Console | None = No
             f"[green]✓[/green] Checked [bold]{config.title}[/bold] in {stats.elapsed_str} "
             "[dim](nothing written)[/dim]",
             outputs=False,
-        )
+        ),
+        highlight=False,
     )
     return stats
 
