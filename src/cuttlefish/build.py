@@ -91,28 +91,19 @@ class BuildStats:
         which writes nothing.
         """
         listings = self.indexes + self.taxonomy_indexes + self.terms + self.home
+        # sitemap.xml and robots.txt are rewritten on every build, so they are
+        # only worth reporting on a full one.
+        full = outputs and self.mode == "full"
         lines = [
             _done_of(self.content, self.content + self.skipped, "content page"),
             _done_of(listings, listings + self.aggregates_skipped, "listing page"),
-            _single(self.feeds, "RSS feed", outputs),
-            _single(self.error_pages, "404 page", outputs),
+            f"{_plural(self.static, 'static file')} copied" if outputs and self.static else "",
+            "RSS feed" if self.feeds else "",
+            "404 page" if self.error_pages else "",
+            "sitemap.xml" if full and self.sitemap else "",
+            "robots.txt" if full and self.robots else "",
+            f"{_plural(self.pruned, 'stale file')} removed" if outputs and self.pruned else "",
         ]
-        if outputs:
-            lines += [
-                f"{_plural(self.static, 'static file')} copied" if self.static else "",
-                f"{_plural(self.pruned, 'stale file')} removed" if self.pruned else "",
-                # Rewritten on every build, so only worth reporting on a full one.
-                _updated(
-                    ", ".join(
-                        name
-                        for name, written in (
-                            ("sitemap.xml", self.sitemap),
-                            ("robots.txt", self.robots),
-                        )
-                        if written and self.mode == "full"
-                    )
-                ),
-            ]
         return [line for line in lines if line]
 
     def report(self, headline: str, *, outputs: bool = True) -> str:
@@ -129,20 +120,6 @@ class BuildStats:
 
 def _plural(n: int, noun: str) -> str:
     return f"{n} {noun}{'' if n == 1 else 's'}"
-
-
-def _updated(what: str) -> str:
-    return f"{what} updated" if what else ""
-
-
-def _single(done: int, noun: str, written: bool) -> str:
-    """A one-off output (the feed, the 404 page): ``RSS feed updated``, not a count.
-
-    *written* is False under ``check``, which validates but writes nothing.
-    """
-    if not done:
-        return ""
-    return _updated(noun) if written else noun
 
 
 def _done_of(done: int, total: int, noun: str) -> str:
