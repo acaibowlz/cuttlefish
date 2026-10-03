@@ -84,7 +84,7 @@ Serve `public/` with file watching and live reload — the dev server.
 | `--drafts` / `--no-drafts` | `--drafts` | Include drafts. **On by default here**, unlike `build`. |
 | `--reload` / `--no-reload` | `--reload` | Watch files and live-reload the browser. |
 
-`serve` previews the site at the local root regardless of `base_url`, so hosting paths don't get in the way while you work. On each change it runs an incremental rebuild and refreshes connected browsers.
+`serve` previews the site at the local root regardless of `base_url`, so hosting paths don't get in the way while you work. It watches every file in the site except `public/` and hidden files (`.ctf/`, `.git`, editor swap files). On each change it runs an incremental rebuild, and refreshes connected browsers only if the output changed — editing a file the build doesn't read, such as `AGENTS.md`, rebuilds nothing and leaves the page alone.
 
 ## Error output
 

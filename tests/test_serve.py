@@ -7,7 +7,7 @@ import socket
 import pytest
 from rich.console import Console
 
-from cuttlefish.serve import ServeError, resolve_request, serve_site
+from cuttlefish.serve import ServeError, is_watched, resolve_request, serve_site
 
 
 def test_resolve_request_decodes_percent_encoded_unicode(tmp_path):
@@ -48,3 +48,28 @@ def test_serve_reports_port_in_use(site):
     # Failing fast means no preview build ran: public/ and the cache are untouched.
     assert not (site / "public").exists()
     assert not (site / ".ctf").exists()
+
+
+def test_is_watched_whole_site_except_output_and_hidden(tmp_path):
+    root = tmp_path / "mysite"
+    for rel in ("content/blog/a.md", "templates/base.html", "config.toml", "AGENTS.md"):
+        assert is_watched(root, str(root / rel)), rel
+    for rel in ("public/index.html", ".ctf/cache.json", ".git/index", "content/.a.md.swp"):
+        assert not is_watched(root, str(root / rel)), rel
+    assert not is_watched(root, str(tmp_path / "elsewhere.md"))
+
+
+def test_is_watched_ignores_folder_names_above_the_site(tmp_path):
+    # The rule applies inside the site only: a site living under a folder named
+    # `public` must still reload (it used to ignore every change).
+    root = tmp_path / "public" / "mysite"
+    assert is_watched(root, str(root / "content" / "blog" / "a.md"))
+    assert not is_watched(root, str(root / "public" / "index.html"))
+
+
+def test_unused_file_edit_changes_no_output(site, build):
+    # serve reloads the browser only when the rebuild reports output; an edit
+    # the build doesn't read (AGENTS.md, a pasted recipe) must report none.
+    build(site, base_path="")
+    (site / "AGENTS.md").write_text("edited", encoding="utf-8")
+    assert build(site, base_path="").detail_lines() == []

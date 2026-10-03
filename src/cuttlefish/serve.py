@@ -21,8 +21,7 @@ from rich.console import Console
 from rich.markup import escape
 from watchfiles import watch
 
-from cuttlefish.build import PUBLIC_DIR, STATIC_DIR, build_site
-from cuttlefish.config import CONFIG_FILENAME
+from cuttlefish.build import PUBLIC_DIR, build_site
 from cuttlefish.errors import CuttlefishError, describe_os_error
 
 RELOAD_PATH = "/__reload"
@@ -37,17 +36,21 @@ _RELOAD_SCRIPT = (
 )
 
 
-_WATCH_DIRS = (STATIC_DIR, "content", "templates")
+def is_watched(root: Path, path: str) -> bool:
+    """Whether a change at *path* should trigger a rebuild.
 
-
-def _watch_filter(_change, path: str) -> bool:
-    """Include only inputs; ignore generated output and the cache."""
-    parts = Path(path).parts
-    if PUBLIC_DIR in parts or ".ctf" in parts:
+    Everything in the site counts except the build output (``public/``), which
+    would loop, and hidden files (``.ctf/`` cache, ``.git``, editor swap files).
+    Watching the whole site rather than a list of input folders keeps the rule
+    simple; a change the build doesn't use is a no-op rebuild and no reload.
+    The test is on the path *inside* the site: matching folder names anywhere in
+    the absolute path broke sites that live under e.g. ``/srv/public/``.
+    """
+    try:
+        parts = Path(path).relative_to(root).parts
+    except ValueError:
         return False
-    if path.endswith(CONFIG_FILENAME):
-        return True
-    return any(d in parts for d in _WATCH_DIRS)
+    return bool(parts) and parts[0] != PUBLIC_DIR and not any(p.startswith(".") for p in parts)
 
 
 def resolve_request(public_dir: Path, url_path: str) -> Path | None:
@@ -191,9 +194,17 @@ def _watch_loop(
     drafts: bool,
     console: Console,
 ) -> None:
-    for _changes in watch(root, watch_filter=_watch_filter, stop_event=stop):
+    def watch_filter(_change: object, path: str) -> bool:
+        return is_watched(root, path)
+
+    for _changes in watch(root, watch_filter=watch_filter, stop_event=stop):
         try:
             stats = build_site(root, drafts=drafts, base_path="", console=Console(quiet=True))
+            if not stats.detail_lines():
+                # Nothing in public/ changed (e.g. an edit to AGENTS.md): don't
+                # reload the browser and lose the reader's scroll position.
+                console.print(f"[dim]↻ No output changed ({stats.elapsed_str})[/dim]")
+                continue
             console.print(stats.report(f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str}"))
             server.broadcast("reload")
         except CuttlefishError as exc:  # keep the server alive on build errors
@@ -250,8 +261,7 @@ def serve_site(
     url = f"http://127.0.0.1:{port}/"
     console.print(f"  Serving [bold]{PUBLIC_DIR}/[/bold]  →  [link={url}]{url}[/link]")
     if reload:
-        watched = ", ".join(("content", "templates", STATIC_DIR, CONFIG_FILENAME))
-        console.print(f"  Watching {watched} [dim]·[/dim] live reload on")
+        console.print(f"  Watching for file changes in {escape(str(root))}/")
     console.print("  [dim]Press Ctrl+C to stop[/dim]")
     try:
         server.serve_forever()
