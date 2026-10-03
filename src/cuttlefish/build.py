@@ -82,41 +82,76 @@ class BuildStats:
             return f"{self.elapsed_ms:.0f}ms"
         return f"{self.elapsed_ms / 1000:.2f}s"
 
-    @property
-    def counts_str(self) -> str:
-        """Compact, zero-dropping breakdown of what this build produced."""
-        if self.mode == "incremental":
-            segs = [f"{self.content} changed", f"{self.skipped} unchanged"]
-            if self.pruned:
-                segs.append(f"{self.pruned} pruned")
-            return ", ".join(segs)
-        segs = [f"{self.content} pages"]
-        indexes = self.indexes + self.taxonomy_indexes
-        if indexes:
-            segs.append(f"{indexes} indexes")
-        if self.terms:
-            segs.append(f"{self.terms} terms")
-        if self.home:
-            segs.append("home")
-        if self.error_pages:
-            segs.append(f"{self.error_pages} error")
-        if self.static:
-            segs.append(f"{self.static} static")
-        if self.feeds:
-            segs.append(f"{self.feeds} feed{'s' if self.feeds != 1 else ''}")
-        if self.sitemap:
-            segs.append("sitemap")
-        if self.robots:
-            segs.append("robots")
-        return ", ".join(segs)
+    def detail_lines(self, *, outputs: bool = True) -> list[str]:
+        """One line per kind of output this build produced; untouched kinds are omitted.
 
-    def summary_line(self, title: str) -> str:
-        """One-line glyph summary printed after a build."""
+        Counts read "1 of 4 content pages" when some were skipped as unchanged,
+        so full and incremental builds share one vocabulary. *outputs* = False
+        drops the file-level lines (copies, removals, sitemap) for ``check``,
+        which writes nothing.
+        """
+        listings = self.indexes + self.taxonomy_indexes + self.terms + self.home
+        lines = [
+            _done_of(self.content, self.content + self.skipped, "content page"),
+            _done_of(listings, listings + self.aggregates_skipped, "listing page"),
+            _single(self.feeds, self.feeds + self.feeds_skipped, "RSS feed", outputs),
+            _single(self.error_pages, self.error_pages, "404 page", outputs),
+        ]
+        if outputs:
+            lines += [
+                f"{_plural(self.static, 'static file')} copied" if self.static else "",
+                f"{_plural(self.pruned, 'stale file')} removed" if self.pruned else "",
+                # Rewritten on every build, so only worth reporting on a full one.
+                _updated(
+                    ", ".join(
+                        name
+                        for name, written in (
+                            ("sitemap.xml", self.sitemap),
+                            ("robots.txt", self.robots),
+                        )
+                        if written and self.mode == "full"
+                    )
+                ),
+            ]
+        return [line for line in lines if line]
+
+    def report(self, headline: str, *, outputs: bool = True) -> str:
+        """*headline* followed by an indented line per kind of output."""
+        return "\n".join([headline, *(f"  {line}" for line in self.detail_lines(outputs=outputs))])
+
+    def summary(self, title: str) -> str:
+        """Multi-line summary printed after a build."""
+        if self.mode == "incremental" and not self.detail_lines():
+            return f"[green]✓[/green] [bold]{title}[/bold] is up to date [dim]({self.elapsed_str})[/dim]"
         verb = "Rebuilt" if self.mode == "incremental" else "Built"
-        return (
-            f"[green]✓[/green] {verb} [bold]{title}[/bold] in {self.elapsed_str} "
-            f"[dim]·[/dim] {self.counts_str}"
-        )
+        return self.report(f"[green]✓[/green] {verb} [bold]{title}[/bold] in {self.elapsed_str}")
+
+
+def _plural(n: int, noun: str) -> str:
+    return f"{n} {noun}{'' if n == 1 else 's'}"
+
+
+def _updated(what: str) -> str:
+    return f"{what} updated" if what else ""
+
+
+def _single(done: int, total: int, noun: str, written: bool) -> str:
+    """A one-off output (a feed, the 404 page): ``RSS feed updated`` rather than a count.
+
+    Several feeds fall back to a count (``1 of 2 RSS feeds updated``). *written*
+    is False under ``check``, which validates but writes nothing.
+    """
+    if not done:
+        return ""
+    line = noun if total == 1 else _done_of(done, total, noun)
+    return _updated(line) if written else line
+
+
+def _done_of(done: int, total: int, noun: str) -> str:
+    """``4 content pages``, or ``1 of 4 content pages`` when some were skipped."""
+    if not done:
+        return ""
+    return _plural(done, noun) if done == total else f"{done} of {_plural(total, noun)}"
 
 
 # -- shared helpers --------------------------------------------------------
@@ -267,7 +302,7 @@ def build_site(
         save_manifest(root, new_manifest)
 
     stats.elapsed_ms = (time.perf_counter() - start) * 1000
-    console.print(stats.summary_line(config.title))
+    console.print(stats.summary(config.title))
     return stats
 
 
@@ -294,8 +329,11 @@ def check_site(root: Path, *, drafts: bool = False, console: Console | None = No
             persist=False,
         )
     console.print(
-        f"[green]✓[/green] Checked [bold]{config.title}[/bold] in {stats.elapsed_str} "
-        f"[dim]·[/dim] {stats.counts_str} [dim](no output written)[/dim]"
+        stats.report(
+            f"[green]✓[/green] Checked [bold]{config.title}[/bold] in {stats.elapsed_str} "
+            "[dim](nothing written)[/dim]",
+            outputs=False,
+        )
     )
     return stats
 
