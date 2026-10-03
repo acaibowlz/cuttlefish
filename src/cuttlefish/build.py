@@ -16,10 +16,11 @@ from __future__ import annotations
 import shutil
 import tempfile
 import time
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from pathlib import Path
 
 from rich.console import Console
+from rich.markup import escape
 
 from cuttlefish.cache import (
     Manifest,
@@ -57,7 +58,7 @@ class BuildStats:
     aggregates_skipped: int = 0
     error_pages: int = 0
     static: int = 0
-    pruned: int = 0
+    pruned: list[str] = field(default_factory=list)
     feeds: int = 0
     feeds_skipped: int = 0
     sitemap: bool = False
@@ -85,8 +86,8 @@ class BuildStats:
     def detail_lines(self, *, outputs: bool = True) -> list[str]:
         """One line per kind of output this build produced; untouched kinds are omitted.
 
-        Counts read "1 of 4 content pages" when some were skipped as unchanged,
-        so full and incremental builds share one vocabulary. *outputs* = False
+        Counts are what this build rendered; pages skipped as unchanged are
+        left out, since they are noise to the reader. *outputs* = False
         drops the file-level lines (copies, removals, sitemap) for ``check``,
         which writes nothing.
         """
@@ -95,16 +96,21 @@ class BuildStats:
         # only worth reporting on a full one.
         full = outputs and self.mode == "full"
         lines = [
-            _done_of(self.content, self.content + self.skipped, "content page"),
-            _done_of(listings, listings + self.aggregates_skipped, "listing page"),
+            _plural(self.content, "content page") if self.content else "",
+            _plural(listings, "listing page") if listings else "",
             f"{_plural(self.static, 'static file')} copied" if outputs and self.static else "",
             "RSS feed" if self.feeds else "",
             "404.html" if self.error_pages else "",
             "sitemap.xml" if full and self.sitemap else "",
             "robots.txt" if full and self.robots else "",
-            f"{_plural(self.pruned, 'stale file')} removed" if outputs and self.pruned else "",
+            f"{_plural(len(self.pruned), 'file')} removed from the build" if outputs and self.pruned else "",
         ]
-        return [line for line in lines if line]
+        lines = [line for line in lines if line]
+        if outputs and self.pruned:
+            # Name what went: one deleted post can also take term pages that
+            # only it populated, and a bare count leaves that a mystery.
+            lines += [f"  [dim]- {escape(_pretty(rel))}[/dim]" for rel in self.pruned]
+        return lines
 
     def report(self, headline: str, *, outputs: bool = True) -> str:
         """*headline* followed by an indented line per kind of output."""
@@ -118,19 +124,13 @@ class BuildStats:
         return self.report(f"[green]✓[/green] {verb} [bold]{title}[/bold] in {self.elapsed_str}")
 
 
+def _pretty(rel: str) -> str:
+    """``tags/python/index.html`` -> ``tags/python/``, matching the page's URL."""
+    return rel.removesuffix("index.html") or rel
+
+
 def _plural(n: int, noun: str) -> str:
     return f"[bold cyan]{n}[/bold cyan] {noun}{'' if n == 1 else 's'}"
-
-
-def _done_of(done: int, total: int, noun: str) -> str:
-    """``4 content pages``, or ``1 of 4 content pages`` when some were skipped."""
-    if not done:
-        return ""
-    return (
-        _plural(done, noun)
-        if done == total
-        else f"[bold cyan]{done}[/bold cyan] of {_plural(total, noun)}"
-    )
 
 
 # -- shared helpers --------------------------------------------------------
@@ -503,11 +503,11 @@ def _run_build(
     return stats, new_manifest
 
 
-def _prune(public_dir: Path, old_outputs: set[str], new_outputs: set[str]) -> int:
-    """Delete output files present last build but not this one."""
-    pruned = 0
+def _prune(public_dir: Path, old_outputs: set[str], new_outputs: set[str]) -> list[str]:
+    """Delete output files present last build but not this one; return their paths."""
+    pruned: list[str] = []
     root = public_dir.resolve()
-    for rel in old_outputs - new_outputs:
+    for rel in sorted(old_outputs - new_outputs):
         target = public_dir / rel
         # The manifest is a file on disk: never let an entry delete (or walk the
         # empty-directory cleanup) outside public/.
@@ -515,7 +515,7 @@ def _prune(public_dir: Path, old_outputs: set[str], new_outputs: set[str]) -> in
             continue
         if target.is_file():
             target.unlink()
-            pruned += 1
+            pruned.append(rel)
             # Clean up now-empty parent directories.
             parent = target.parent
             while parent != public_dir and parent.is_dir() and not any(parent.iterdir()):

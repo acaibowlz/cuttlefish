@@ -112,7 +112,8 @@ def test_f_delete_prunes_output(site: Path, build):
     assert (site / "public/blog/front-matter/index.html").is_file()
     (site / "content/blog/second-post.md").unlink()
     stats = build(site)
-    assert stats.pruned >= 1
+    assert "blog/front-matter/index.html" in stats.pruned
+    assert "blog/front-matter/" in "\n".join(stats.detail_lines())
     assert not (site / "public/blog/front-matter/index.html").exists()
 
 
@@ -125,7 +126,7 @@ def test_g_slug_rename_prunes_old_writes_new(site: Path, build):
         'title = "Hello, World"\nslug = "hi"',
     )
     stats = build(site)
-    assert stats.pruned >= 1
+    assert stats.pruned
     assert (site / "public/blog/hi/index.html").is_file()
     assert not (site / "public/blog/hello-world/index.html").exists()
 
@@ -147,7 +148,7 @@ def test_i_error_template_removed_prunes_output(site: Path, build):
     assert (site / "public/404.html").is_file()
     (site / "templates/404.html").unlink()
     stats = build(site)
-    assert stats.pruned >= 1
+    assert stats.pruned
     assert not (site / "public/404.html").exists()
 
 
