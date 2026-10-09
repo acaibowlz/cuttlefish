@@ -193,6 +193,7 @@ def _watch_loop(
     stop: threading.Event,
     drafts: bool,
     console: Console,
+    verbose: bool = False,
 ) -> None:
     def watch_filter(_change: object, path: str) -> bool:
         return is_watched(root, path)
@@ -206,7 +207,8 @@ def _watch_loop(
                 console.print(f"[dim]↻ No output changed ({stats.elapsed_str})[/dim]")
                 continue
             console.print(
-                stats.report(f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str}"), highlight=False
+                stats.report(f"[cyan]↻[/cyan] Rebuilt in {stats.elapsed_str}", verbose=verbose),
+                highlight=False,
             )
             server.broadcast("reload")
         except CuttlefishError as exc:  # keep the server alive on build errors
@@ -227,6 +229,7 @@ def serve_site(
     drafts: bool = True,
     reload: bool = True,
     console: Console | None = None,
+    verbose: bool = False,
 ) -> None:
     console = console or Console()
     root = root.resolve()
@@ -247,7 +250,7 @@ def serve_site(
     # Preview at the local root: ignore base_url's subpath so links resolve
     # against http://127.0.0.1:<port>/ rather than a deploy prefix like /repo.
     try:
-        build_site(root, drafts=drafts, base_path="", console=console)
+        build_site(root, drafts=drafts, base_path="", console=console, verbose=verbose)
     except BaseException:
         server.server_close()  # release the port on a failed first build
         raise
@@ -256,7 +259,7 @@ def serve_site(
     watcher: threading.Thread | None = None
     if reload:
         watcher = threading.Thread(
-            target=_watch_loop, args=(root, server, stop, drafts, console), daemon=True
+            target=_watch_loop, args=(root, server, stop, drafts, console, verbose), daemon=True
         )
         watcher.start()
 

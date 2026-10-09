@@ -113,7 +113,7 @@ def test_f_delete_prunes_output(site: Path, build):
     (site / "content/blog/second-post.md").unlink()
     stats = build(site)
     assert "blog/front-matter/index.html" in stats.pruned
-    assert "blog/front-matter/" in "\n".join(stats.detail_lines())
+    assert "blog/front-matter/" in "\n".join(stats.detail_lines(verbose=True))
     assert not (site / "public/blog/front-matter/index.html").exists()
 
 

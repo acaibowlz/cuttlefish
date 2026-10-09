@@ -7,9 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- `ctf build` and `ctf serve` take `--verbose` / `-v` to list the files behind
+  each count in the build report.
+
 ### Changed
 
 - Build output reads as one noun per line: "3 static files" (was "copied").
+- Removed files are reported as "− 2 removed"; the paths are listed only with
+  `--verbose`.
 
 ## [0.1.11] - 2026-10-03
 

@@ -59,6 +59,10 @@ class BuildStats:
     error_pages: int = 0
     static: int = 0
     pruned: list[str] = field(default_factory=list)
+    # Output paths behind the counts above, listed under each line by --verbose.
+    content_files: list[str] = field(default_factory=list)
+    listing_files: list[str] = field(default_factory=list)
+    static_files: list[str] = field(default_factory=list)
     feeds: int = 0
     feeds_skipped: int = 0
     sitemap: bool = False
@@ -66,7 +70,8 @@ class BuildStats:
     mode: str = "full"
     elapsed_ms: float = 0.0
 
-    def count_rendered(self, key: str) -> None:
+    def count_rendered(self, key: str, output: str) -> None:
+        self.listing_files.append(output)
         if key.startswith("index:"):
             self.indexes += 1
         elif key.startswith("taxonomy_index:"):
@@ -83,50 +88,58 @@ class BuildStats:
             return f"{self.elapsed_ms:.0f}ms"
         return f"{self.elapsed_ms / 1000:.2f}s"
 
-    def detail_lines(self, *, outputs: bool = True) -> list[str]:
+    def detail_lines(self, *, outputs: bool = True, verbose: bool = False) -> list[str]:
         """One line per kind of output this build produced; untouched kinds are omitted.
 
         Counts are what this build rendered; pages skipped as unchanged are
         left out, since they are noise to the reader. *outputs* = False
         drops the file-level lines (copies, removals, sitemap) for ``check``,
-        which writes nothing.
+        which writes nothing. *verbose* lists the paths behind each count.
         """
         listings = self.indexes + self.taxonomy_indexes + self.terms + self.home
         # sitemap.xml and robots.txt are rewritten on every build, so they are
         # only worth reporting on a full one.
         full = outputs and self.mode == "full"
-        lines = [
-            _plural(self.content, "content page") if self.content else "",
-            _plural(listings, "listing page") if listings else "",
-            _plural(self.static, "static file") if outputs and self.static else "",
-            "RSS feed" if self.feeds else "",
-            "404.html" if self.error_pages else "",
-            "sitemap.xml" if full and self.sitemap else "",
-            "robots.txt" if full and self.robots else "",
-            f"{_plural(len(self.pruned), 'file')} removed from the build" if outputs and self.pruned else "",
+        # (line, paths listed under it when verbose)
+        entries: list[tuple[str, list[str]]] = [
+            (_plural(self.content, "content page") if self.content else "", self.content_files),
+            (_plural(listings, "listing page") if listings else "", self.listing_files),
+            (_plural(self.static, "static file") if outputs and self.static else "", self.static_files),
+            ("RSS feed" if self.feeds else "", []),
+            ("404.html" if self.error_pages else "", []),
+            ("sitemap.xml" if full and self.sitemap else "", []),
+            ("robots.txt" if full and self.robots else "", []),
+            # The only line that is not an output, so it is marked rather than
+            # worded: a "−" sets it apart without breaking the noun-line pattern.
+            (f"− [bold cyan]{len(self.pruned)}[/bold cyan] removed" if outputs and self.pruned else "", self.pruned),
         ]
-        lines = [line for line in lines if line]
-        if outputs and self.pruned:
-            # Name what went: one deleted post can also take term pages that
-            # only it populated, and a bare count leaves that a mystery.
-            lines += [f"  [dim]- {escape(_pretty(rel))}[/dim]" for rel in self.pruned]
+        lines: list[str] = []
+        for line, paths in entries:
+            if not line:
+                continue
+            lines.append(line)
+            if verbose:
+                lines += [f"  [dim]{escape(url)}[/dim]" for url in sorted(map(_pretty, paths))]
         return lines
 
-    def report(self, headline: str, *, outputs: bool = True) -> str:
+    def report(self, headline: str, *, outputs: bool = True, verbose: bool = False) -> str:
         """*headline* followed by an indented line per kind of output."""
-        return "\n".join([headline, *(f"  {line}" for line in self.detail_lines(outputs=outputs))])
+        lines = self.detail_lines(outputs=outputs, verbose=verbose)
+        return "\n".join([headline, *(f"  {line}" for line in lines)])
 
-    def summary(self, title: str) -> str:
+    def summary(self, title: str, *, verbose: bool = False) -> str:
         """Multi-line summary printed after a build."""
         if self.mode == "incremental" and not self.detail_lines():
             return f"[green]✓[/green] [bold]{title}[/bold] is up to date [dim]({self.elapsed_str})[/dim]"
         verb = "Rebuilt" if self.mode == "incremental" else "Built"
-        return self.report(f"[green]✓[/green] {verb} [bold]{title}[/bold] in {self.elapsed_str}")
+        return self.report(
+            f"[green]✓[/green] {verb} [bold]{title}[/bold] in {self.elapsed_str}", verbose=verbose
+        )
 
 
 def _pretty(rel: str) -> str:
     """``tags/python/index.html`` -> ``tags/python/``, matching the page's URL."""
-    return rel.removesuffix("index.html") or rel
+    return rel.removesuffix("index.html") or "/"
 
 
 def _plural(n: int, noun: str) -> str:
@@ -238,6 +251,7 @@ def build_site(
     console: Console | None = None,
     output_dir: Path | None = None,
     persist: bool = True,
+    verbose: bool = False,
 ) -> BuildStats:
     console = console or Console()
     start = time.perf_counter()
@@ -314,7 +328,7 @@ def build_site(
     stats.elapsed_ms = (time.perf_counter() - start) * 1000
     # highlight=False: Rich's auto-highlighter would recolor whatever looks like a
     # number or Python literal (a title like "True North", a "404" label).
-    console.print(stats.summary(config.title), highlight=False)
+    console.print(stats.summary(config.title, verbose=verbose), highlight=False)
     return stats
 
 
@@ -417,6 +431,7 @@ def _run_build(
         if needs_build:
             renderer.render_content(item)
             stats.content += 1
+            stats.content_files.append(item.output_rel)
         else:
             stats.skipped += 1
         new_content[item.source_rel] = {"hash": file_hash, "outputs": outputs}
@@ -426,7 +441,8 @@ def _run_build(
     for spec in specs:
         if aggregate_is_dirty(spec, manifest.aggregates, affected_templates):
             spec.render()
-            stats.count_rendered(spec.key)
+            # One line per listing: a paginated listing is named by its first page.
+            stats.count_rendered(spec.key, spec.outputs[0])
         else:
             stats.aggregates_skipped += 1
 
@@ -475,6 +491,7 @@ def _run_build(
             dest.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src, dest)
             stats.static += 1
+            stats.static_files.append(out_rel)
         new_static[src_rel] = {"hash": file_hash, "output": out_rel}
 
     new_manifest = Manifest(

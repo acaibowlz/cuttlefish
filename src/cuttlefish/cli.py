@@ -138,11 +138,14 @@ def build(
         False, "--force", "--clean", help="Ignore the cache and rebuild everything."
     ),
     drafts: bool = typer.Option(False, "--drafts", help="Include content marked draft = true."),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="List the files behind each line of the report."
+    ),
 ) -> None:
     """Build the site into public/."""
     from cuttlefish.build import build_site
 
-    build_site(root, force=force, drafts=drafts, console=console)
+    build_site(root, force=force, drafts=drafts, console=console, verbose=verbose)
 
 
 @app.command()
@@ -168,11 +171,16 @@ def serve(
     reload: bool = typer.Option(
         True, "--reload/--no-reload", help="Watch + live-reload the browser."
     ),
+    verbose: bool = typer.Option(
+        False, "--verbose", "-v", help="List the files behind each line of the report."
+    ),
 ) -> None:
     """Serve public/ with watch + live reload."""
     from cuttlefish.serve import serve_site
 
-    serve_site(root, port=port, drafts=drafts, reload=reload, console=console)
+    serve_site(
+        root, port=port, drafts=drafts, reload=reload, console=console, verbose=verbose
+    )
 
 
 @app.command()

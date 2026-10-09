@@ -43,7 +43,7 @@ The command is non-interactive: everything is an argument or flag. See [Authorin
 ## `build`
 
 ```
-ctf build [root] [--force] [--drafts]
+ctf build [root] [--force] [--drafts] [--verbose]
 ```
 
 Render the site to `public/`.
@@ -53,6 +53,7 @@ Render the site to `public/`.
 | `root` | `.` | Site root (contains `config.toml`). |
 | `--force`, `--clean` | off | Ignore the cache and rebuild everything. |
 | `--drafts` | off | Include content marked `draft = true`. |
+| `--verbose`, `-v` | off | List the files behind each count in the report. |
 
 Builds are [incremental](incremental-builds.md) by default: only what changed since the last build is re-rendered. `--force` clears the cache and rebuilds from scratch.
 
@@ -72,7 +73,7 @@ Validate the site without writing anything. `check` runs the same pipeline as `b
 ## `serve`
 
 ```
-ctf serve [root] [--port PORT] [--drafts/--no-drafts] [--reload/--no-reload]
+ctf serve [root] [--port PORT] [--drafts/--no-drafts] [--reload/--no-reload] [--verbose]
 ```
 
 Serve `public/` with file watching and live reload — the dev server.
@@ -83,6 +84,7 @@ Serve `public/` with file watching and live reload — the dev server.
 | `--port`, `-p` | `8000` | Port to serve on. |
 | `--drafts` / `--no-drafts` | `--drafts` | Include drafts. **On by default here**, unlike `build`. |
 | `--reload` / `--no-reload` | `--reload` | Watch files and live-reload the browser. |
+| `--verbose`, `-v` | off | List the files behind each count in every rebuild report. |
 
 `serve` previews the site at the local root regardless of `base_url`, so hosting paths don't get in the way while you work. It watches every file in the site except `public/` and hidden files (`.ctf/`, `.git`, editor swap files). On each change it runs an incremental rebuild, and refreshes connected browsers only if the output changed — editing a file the build doesn't read, such as `AGENTS.md`, rebuilds nothing and leaves the page alone.
 

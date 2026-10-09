@@ -35,3 +35,14 @@ def test_init_refuses_non_empty_directory(tmp_path: Path):
     assert result.exit_code == 1
     assert "Refusing to scaffold" in result.output
     assert "Pass --force to override." in result.output
+
+
+def test_build_verbose_lists_files(site: Path, monkeypatch):
+    # The counts alone by default; -v adds the paths behind each count.
+    monkeypatch.chdir(site)
+    quiet = CliRunner().invoke(app, ["build", "--force"])
+    loud = CliRunner().invoke(app, ["build", "--force", "-v"])
+    assert quiet.exit_code == loud.exit_code == 0
+    assert "blog/front-matter/" not in quiet.output
+    assert "blog/front-matter/" in loud.output
+    assert "css/main.css" in loud.output
