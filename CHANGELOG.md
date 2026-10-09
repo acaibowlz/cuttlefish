@@ -17,6 +17,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Build output reads as one noun per line: "3 static files" (was "copied").
 - Removed files are reported as "− 2 removed"; the paths are listed only with
   `--verbose`.
+- The `ctf serve` banner aligns its lines and shows the watched path as given on
+  the command line, naming the folder when that is just `.`.
 
 ## [0.1.11] - 2026-10-03
 

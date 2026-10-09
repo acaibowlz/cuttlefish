@@ -232,6 +232,8 @@ def serve_site(
     verbose: bool = False,
 ) -> None:
     console = console or Console()
+    # The banner echoes the path as the user typed it: short, and recognisable.
+    given_root = root
     root = root.resolve()
     public_dir = root / PUBLIC_DIR
 
@@ -264,10 +266,14 @@ def serve_site(
         watcher.start()
 
     url = f"http://127.0.0.1:{port}/"
-    console.print(f"  Serving [bold]{PUBLIC_DIR}/[/bold]  →  [link={url}]{url}[/link]")
+    console.print(f"  Serving   [bold][link={url}]{url}[/link][/bold]")
     if reload:
-        console.print(f"  Watching for file changes in {escape(str(root))}/")
-    console.print("  [dim]Press Ctrl+C to stop[/dim]")
+        watching = escape(str(given_root))
+        if given_root == Path("."):
+            # A bare "." says nothing about which site this is; name the folder.
+            watching += f" [dim]({escape(root.name)})[/dim]"
+        console.print(f"  Watching  {watching}")
+    console.print("  [dim]Ctrl+C to stop[/dim]")
     try:
         server.serve_forever()
     except KeyboardInterrupt:
