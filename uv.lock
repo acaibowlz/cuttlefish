@@ -256,7 +256,7 @@ toml = [
 
 [[package]]
 name = "cuttlefish-ssg"
-version = "0.1.11"
+version = "0.1.12"
 source = { editable = "." }
 dependencies = [
     { name = "jinja2" },
