@@ -53,6 +53,24 @@ git tag -a vX.Y.Z -m vX.Y.Z
 
 Tags are annotated, with the tag name as the message, to match the earlier `v0.1.x` tags.
 
-## 6. Report
+## 6. Push
 
-Show `git log --oneline -1` and `git tag -l vX.Y.Z`. **Don't push.** Tell the user the command they can run when ready: `git push && git push origin vX.Y.Z`.
+Push without asking; running this skill is the go-ahead.
+
+- `git fetch origin` and check that `main` is not behind `origin/main` (`git rev-list --count main..origin/main` is `0`). If it is behind, stop and tell the user. Don't rebase a tagged release commit.
+- Push the branch first, then the tag, so the tag never points at a commit the remote doesn't have:
+
+  ```bash
+  git push origin main
+  git push origin vX.Y.Z
+  ```
+
+- Check that `git ls-remote --tags origin vX.Y.Z` lists the tag.
+
+## 7. Publish
+
+Run `bash scripts/release.sh` from the repo root. It clears `dist/`, builds with `uv build`, and publishes to PyPI with the `PYPI_TOKEN` from `.env`. If it fails, stop and show the output. Don't retry: PyPI never accepts the same version twice, so a partial upload needs a look before anything else.
+
+## 8. Report
+
+Show `git log --oneline -1`, the pushed tag, and the PyPI URL: `https://pypi.org/project/cuttlefish-ssg/X.Y.Z/`.
