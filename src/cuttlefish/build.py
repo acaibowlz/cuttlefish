@@ -109,9 +109,7 @@ class BuildStats:
             ("404.html" if self.error_pages else "", []),
             ("sitemap.xml" if full and self.sitemap else "", []),
             ("robots.txt" if full and self.robots else "", []),
-            # The only line that is not an output, so it is marked rather than
-            # worded: a "−" sets it apart without breaking the noun-line pattern.
-            (f"− [bold cyan]{len(self.pruned)}[/bold cyan] removed" if outputs and self.pruned else "", self.pruned),
+            (f"[bold cyan]{len(self.pruned)}[/bold cyan] removed" if outputs and self.pruned else "", self.pruned),
         ]
         lines: list[str] = []
         for line, paths in entries:
