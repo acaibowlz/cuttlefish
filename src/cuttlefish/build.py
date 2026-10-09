@@ -98,7 +98,7 @@ class BuildStats:
         lines = [
             _plural(self.content, "content page") if self.content else "",
             _plural(listings, "listing page") if listings else "",
-            f"{_plural(self.static, 'static file')} copied" if outputs and self.static else "",
+            _plural(self.static, "static file") if outputs and self.static else "",
             "RSS feed" if self.feeds else "",
             "404.html" if self.error_pages else "",
             "sitemap.xml" if full and self.sitemap else "",
