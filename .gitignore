@@ -1,23 +1,8 @@
-# Python
 __pycache__/
-*.py[cod]
 .venv/
-*.egg-info/
 dist/
 build/
 
-# uv
-# (uv.lock IS committed)
-
-# cuttlefish build artifacts (in generated sites)
-public/
-.ctf/
-
-# pytest / coverage
 .pytest_cache/
-.coverage
-coverage.xml
-htmlcov/
 
-# mkdocs build output (anchored: must not match src/cuttlefish/scaffold/site/)
-/site/
+.env
