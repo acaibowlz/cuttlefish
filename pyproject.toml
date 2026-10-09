@@ -29,6 +29,11 @@ build-backend = "hatchling.build"
 [tool.hatch.build.targets.wheel]
 packages = ["src/cuttlefish"]
 
+# Without this, hatchling ships every file git doesn't ignore, including the
+# 1.2 MiB README cover image, CI workflows and agent tooling.
+[tool.hatch.build.targets.sdist]
+include = ["/src", "/tests", "/README.md", "/CHANGELOG.md", "/LICENSE"]
+
 [tool.ruff]
 # 100, not the 88 default: this code is authored to a ~90-100 budget (long
 # error strings, frozenset literals), so 100 fits it with near-zero churn.
